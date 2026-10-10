@@ -50,6 +50,12 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"<span class="ico">◈</span> Inspection</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Inspection</h1><div class="subtitle" id="page-subtitle">Find an Item or query the product catalog</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
+<!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
+<section id="global-view" class="hidden" hidden aria-hidden="true" style="display:none!important">
+<input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
+<button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
+<div class="results"><div class="section-head"></div><table><tbody id="global-rows"></tbody></table></div>
+</section>
 <section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="inspection-mode-bar"><span class="inspection-mode-caption">SEARCH MODE</span><div class="inspection-mode-switch" role="group" aria-label="Inspection search mode"><button type="button" class="inspection-mode-button active" id="inspection-mode-item" aria-pressed="true">Item / PO lookup</button><button type="button" class="inspection-mode-button" id="inspection-mode-catalog" aria-pressed="false">Global Search / Bulk Edit</button></div></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><button class="btn" id="filter-toggle">☷ Filters</button><div class="grow"></div><span class="muted small" id="item-count">—</span></div><div id="lookup-filters" class="filters hidden" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr"><div><div class="label">Brand</div><select class="input" id="quick-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="quick-pack"><option value="">All packs</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Search description</div><input class="input" id="quick-desc" placeholder="Keyword"></div></div></div>
 <div id="inspection-query-workspace" class="hidden">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><button type="button" class="btn mini" id="inspection-query-toggle" aria-expanded="false">☷ Filters</button></div>
@@ -240,6 +246,12 @@ const estInfo={
 "482716":{primary:"P-887",others:[],trend:"No recent variation recorded."},
 "650812":{primary:"PL-109",others:["PL-204"],trend:"Plant numbers are separate from Meat EST values."},
 "650813":{primary:"PL-204",others:[],trend:"Confirm actual plant number from the received packaging."}
+};
+/* Catalog EST edits replace the editable reference, never physical observations. */
+for(const x of demo)if(estInfo[x.item])estInfo[x.item].primary=x.plant;
+window.__inspectionCatalogReferenceUpdated=function(items){
+ for(const x of items)if(estInfo[x.item])estInfo[x.item].primary=x.plant;
+ if(typeof updateProductExtras==="function")updateProductExtras();
 };
 const imagesByItem={};
 let currentImage=0;
@@ -1677,6 +1689,7 @@ $("iq-rows").onclick=e=>{
  if(!changes.description||!changes.brand||!changes.category){alert("Category, brand and description cannot be empty.");return;}
  if(changes.plant!==x.plant&&!confirm("Update catalog EST / Plant for Item "+x.item+"? This is a reference edit, NOT a physical verification."))return;
  Object.assign(x,changes);
+ if(window.__inspectionCatalogReferenceUpdated)window.__inspectionCatalogReferenceUpdated([x]);
  if(!window.__inspectionSaveCatalog())return;
  refreshAfterEdit();
 };
@@ -1687,7 +1700,8 @@ $("iq-bulk-apply").onclick=()=>{
  if(field==="category"&&!["Meat","Dairy"].includes(value)){alert("Category must be Meat or Dairy.");return;}
  const notice="Change "+field+" to '"+value+"' for "+ids.length+" selected Items?"+(field==="plant"?" This updates reference EST / Plant only and does NOT record a physical verification.":"");
  if(!confirm(notice))return;
- for(const x of demo)if(selectedIds.has(x.item))x[field]=value;
+ const updated=[];for(const x of demo)if(selectedIds.has(x.item)){x[field]=value;updated.push(x);}
+ if(window.__inspectionCatalogReferenceUpdated)window.__inspectionCatalogReferenceUpdated(updated);
  if(!window.__inspectionSaveCatalog())return;
  refreshAfterEdit();
 };
