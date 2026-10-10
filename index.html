@@ -53,19 +53,18 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
 <section id="global-view" class="hidden"><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
-<div class="inspection-query-search"><label class="iq-text-label"><span class="label">Optional keyword search</span><input class="input" id="iq-text" placeholder="Item, brand, description, EST…" aria-label="Search product catalog"></label><button type="button" class="btn primary" id="iq-run">Find products</button><button type="button" class="btn" id="iq-clear">Clear</button></div>
 <div id="inspection-query-conditions" class="inspection-query-conditions">
-<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Selections are combined: a product must match every selected condition.</span></div><div class="inspection-query-grid">
+<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Choose one or more values. Results update automatically.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
 <label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
 <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
 <label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
-<label><span class="label">EST / Plant contains</span><input class="input" id="iq-est" placeholder="e.g. P-1029"></label>
-<label class="iq-full"><span class="label">Description contains</span><input class="input" id="iq-description" placeholder="e.g. turkey"></label>
+<label><span class="label">EST / Plant</span><select class="input" id="iq-est"></select></label>
+<label class="iq-full"><span class="label">Description</span><select class="input" id="iq-description"></select></label>
 </div></div>
-<div id="iq-results" class="inspection-query-results hidden">
-<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div>
+<div id="iq-results" class="inspection-query-results">
+<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-reset">↺ Reset filters</button><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
 <div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Photo</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
@@ -1599,7 +1598,7 @@ html,body{width:100%;max-width:100%;margin:0}
 /* Global catalog query is separate from the PO and verification workflow. */
 (function(){
 const $=id=>document.getElementById(id);
-const fields=["brand","category","pack","size"];
+const fields=["brand","category","pack","size","plant","description"];
 const editable=["category","brand","description","pack","size","plant"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
@@ -1607,21 +1606,16 @@ function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
   const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes"}[field];
+  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes",plant:"EST / plant values",description:"descriptions"}[field];
   el.innerHTML='<option value="">All '+label+'</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
   if(options.includes(current))el.value=current;
  }
 }
 function match(x){
- const text=$("iq-text").value.trim().toLowerCase();
- if(text&&!Object.values(x).some(v=>String(v??"").toLowerCase().includes(text)))return false;
  for(const field of fields){const value=$("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
  const photo=$("iq-photo").value,hasPhoto=(imagesByItem[x.item]||[]).length>0;
  if(photo==="with"&&!hasPhoto)return false;
  if(photo==="without"&&hasPhoto)return false;
- const desc=$("iq-description").value.trim().toLowerCase(),est=$("iq-est").value.trim().toLowerCase();
- if(desc&&!String(x.description??"").toLowerCase().includes(desc))return false;
- if(est&&!String(x.plant??"").toLowerCase().includes(est))return false;
  return true;
 }
 function selectionLabel(){
@@ -1651,14 +1645,12 @@ function refreshAfterEdit(){
  // Preserve current query results so edited rows do not unexpectedly disappear.
  draw();
 }
-$("iq-run").onclick=run;
-$("iq-text").onkeydown=e=>{if(e.key==="Enter")run();};
-for(const id of ["iq-description","iq-est"])$(id).onkeydown=e=>{if(e.key==="Enter")run();};
-$("iq-clear").onclick=()=>{
+for(const field of fields)$("iq-"+field).addEventListener("change",run);
+$("iq-photo").addEventListener("change",run);
+$("iq-reset").onclick=()=>{
  for(const field of fields)$("iq-"+field).value="";
  $("iq-photo").value="";
- for(const id of ["iq-text","iq-description","iq-est"])$(id).value="";
- matched=[];selectedIds.clear();$("iq-results").classList.add("hidden");
+ run();
 };
 $("iq-select-all").onchange=e=>{
  selectedIds=e.target.checked?new Set(matched.map(x=>x.item)):new Set();
@@ -1672,7 +1664,7 @@ $("iq-rows").onchange=e=>{
   const photos=imagesByItem[item]||(imagesByItem[item]=[]);
   for(const file of files)photos.push({name:file.name,url:URL.createObjectURL(file)});
   if(selected&&selected.item===item&&typeof renderPhotos==="function")renderPhotos();
-  draw();return;
+  run();return;
  }
  if(!e.target.matches(".iq-select"))return;
  const tr=e.target.closest("[data-iq-item]"),item=tr.dataset.iqItem;
@@ -1703,6 +1695,14 @@ $("iq-bulk-apply").onclick=()=>{
  if(!window.__inspectionSaveCatalog())return;
  refreshAfterEdit();
 };
+$("iq-print").onclick=()=>{
+ const columns=[["Item","item"],["Type","category"],["Brand","brand"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Photo status","__photo"]];
+ const photoText=x=>(imagesByItem[x.item]||[]).length?"With photo":"Without photo";
+ let area=document.getElementById("iq-print-area");
+ if(!area){area=document.createElement("div");area.id="iq-print-area";document.body.appendChild(area);}
+ area.innerHTML='<h1>Inspection Data Hub — Global Search</h1><p>'+matched.length+' matching products · '+new Date().toLocaleDateString()+'</p><table><thead><tr>'+columns.map(c=>'<th>'+safe(c[0])+'</th>').join("")+'</tr></thead><tbody>'+matched.map(x=>'<tr>'+columns.map(c=>'<td>'+safe(c[1]==="__photo"?photoText(x):x[c[1]])+'</td>').join("")+'</tr>').join("")+'</tbody></table>';
+ window.print();
+};
 function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
 $("iq-export").onclick=()=>{
  if(!matched.length)return;
@@ -1713,6 +1713,7 @@ $("iq-export").onclick=()=>{
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 populate();
+run();
 navigate("meat");
 })();
 </script>
@@ -1767,4 +1768,26 @@ navigate("meat");
 #global-view .iq-photo-add{position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center}
 #global-view .iq-photo-upload{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 #global-view #iq-rows td:nth-last-child(2){min-width:150px}
+</style><style>
+/* Global Search: filter selections are the only search controls; results appear immediately. */
+#global-view .inspection-query-conditions{margin-top:12px}
+#global-view .inspection-query-grid .iq-full{grid-column:span 2}
+#global-view .inspection-query-results{margin-top:12px}
+#global-view .iq-result-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#iq-print-area{display:none}
+@media(max-width:620px){
+ #global-view .inspection-query-grid .iq-full{grid-column:1/-1}
+ #global-view .iq-result-actions{width:100%}
+}
+@media print{
+ body:has(#iq-print-area) .shell,body:has(#iq-print-area) #modal-root,body:has(#iq-print-area) > footer{display:none!important}
+ body:has(#iq-print-area) #iq-print-area{display:block!important;position:static!important;background:white!important;color:#111!important;font-family:Arial,sans-serif;font-size:10px}
+ #iq-print-area h1{font-size:17px;margin:0 0 8px}
+ #iq-print-area p{font-size:11px;margin:0 0 12px}
+ #iq-print-area table{border-collapse:collapse;width:100%;table-layout:auto}
+ #iq-print-area th,#iq-print-area td{border:1px solid #bbb;padding:5px 6px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+ #iq-print-area th{background:#eee!important;font-weight:700}
+ #iq-print-area tr{break-inside:avoid}
+ @page{size:landscape;margin:12mm}
+}
 </style></body></html>
