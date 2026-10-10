@@ -882,7 +882,7 @@ root.querySelectorAll("[data-po-up],[data-po-down]").forEach(b=>b.onclick=()=>{c
 }
 function verifyPORow(p,i){
 const x=p.rows[i];if(!x)return;
-if(document.querySelector(".login-pill")?.textContent?.includes("Employee")){alert("Employee preview: verification editing is disabled.");return;}
+if(!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}
 const ests=normalizeESTs(x.plant);
 if(!ests.length){alert("Enter the EST physically observed on the cases before confirming.");return;}
 const expected=x.expectedEst||x.plant;
@@ -1256,7 +1256,7 @@ return '<div class="est-variant"><strong>'+esc(est)+'</strong><small>'+n+' of '+
 const note=s.latest?"Last physically confirmed "+age+" day"+(age===1?"":"s")+" ago. "+(s.recent.ranked.length>1?"Multiple establishments have been observed in the last 10 recorded weeks. ":"")+"Historical statistics reflect sampled, manually recorded observations—not every received case.":"No physical confirmations recorded for this Item. Historical reference fields are not verification.";
 root.innerHTML='<div class="est-latest-block"><div class="label">LATEST HUMAN-CONFIRMED OBSERVATION</div><div class="est-latest-number '+p.level+'">'+esc(lastEst)+'</div><span class="est-priority '+p.level+'">'+p.label+'</span><div class="est-summary-context">'+esc(s.latest?.date||"Never verified")+(age!==null?" · "+age+" days without verification":"")+'</div></div>'+'<div class="est-summary-grid">'+tile("LAST 10 VERIFIED WEEKS",s.recent)+tile("ALL-TIME HISTORY",s.historical)+'</div><div class="est-variants"><div class="est-variants-title">Known EST references · physically verified frequency</div><div class="est-variants-grid">'+(variants||'<div class="small muted">No physical EST verifications yet</div>')+'</div></div><div class="est-summary-note"><strong>Review guidance:</strong> '+esc(p.reason)+'<br>'+esc(note)+'</div><div class="est-verify-actions"><button class="btn primary" id="est-verify-now">✓ Verify EST / Plant</button><button class="btn" id="est-review-observations">View / correct records</button><button class="btn" id="est-toggle-stable">'+((window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item))?"★ Highly stable · override":"☆ Mark highly stable")+'</button></div><div class="est-verify-foot">Highly stable is a manual classification, not a guarantee that the EST cannot change. Suggested priority is informational only and does not replace required inspection procedures. Verifying sampled boxes does not verify the entire pallet.</div>';
 $("est-verify-now").disabled=!admin();
-$("est-review-observations").disabled=!admin();
+$("est-review-observations").disabled=false;
 $("est-toggle-stable").disabled=!admin();
 $("est-toggle-stable").onclick=()=>{if(!admin())return;if(window.__inspectionSetItemStable)window.__inspectionSetItemStable(x.item,!(window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item)));else if(stableItems.has(x.item))stableItems.delete(x.item);else stableItems.add(x.item);render();};
 $("est-verify-now").onclick=verifyModal;
