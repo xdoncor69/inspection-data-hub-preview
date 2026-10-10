@@ -75,7 +75,12 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="results"><div class="section-head"></div><table><tbody id="global-rows"></tbody></table></div>
 </div>
 </section>
-<section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
+<section id="lookup-view" class="hidden">
+<div class="inspection-workflow-switch" role="group" aria-label="PO Inspection workflow">
+<button type="button" class="inspection-workflow-btn active" id="inspection-item-mode" aria-pressed="true">⌕ Item by Item</button>
+<button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Invoice</button>
+</div>
+<div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
 <div class="section-head" style="margin-bottom:0"><div><h3>Import Purchase Order</h3><span class="hint">Build a PO from a SAP / SIPI Excel export or CSV — without scanning each Item</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
@@ -95,6 +100,16 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create / Update PO from matched Items</button></div>
 <p class="muted small" style="margin-top:10px">Only Items found in the catalog are added. Unmatched Items are listed for review. EST values are references, not physical verification records.</p>
 </div></div></div>
+<div class="panel panel-pad inspection-invoice-workspace hidden" id="inspection-invoice-workspace">
+<div class="section-head"><div><h3>Invoice inspection overview</h3><span class="hint">Bulk EST references, verified history and review priorities for every Item</span></div>
+<div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn mini" id="invoice-export" type="button">↓ Excel / CSV</button><button class="btn mini primary" id="invoice-print" type="button">⎙ Print invoice</button></div></div>
+<div class="row" style="flex-wrap:wrap;gap:10px;margin-bottom:12px"><label class="label" for="invoice-select">Saved PO</label><select class="input" id="invoice-select" style="min-width:180px;max-width:100%;flex:1"><option value="">Preview imported file / choose saved PO</option></select></div>
+<div class="po-import-summary" id="invoice-overview-summary">Import an Excel/CSV file to preview the invoice, or choose a saved PO.</div>
+<div class="tablewrap"><table class="invoice-overview-table"><thead><tr>
+<th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>EST / Plant</th><th>Last confirmed</th><th>Last 10 verified weeks</th><th>Most common (all time)</th><th>Known EST variants</th><th>Weeks since check</th><th>Review priority</th>
+</tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="11" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
+<div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current plant numbers. Printing includes only Item, Description, Case / Pack, Size / Unit and EST / Plant.</div>
+</div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand / Class</div><div class="value" id="d-brand">—</div></div><div><div class="label">Producer</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></section>
 
@@ -609,6 +624,7 @@ function currentPreview(){
  el("po-import-summary").textContent=preview.length+" Item rows · "+matched.length+" catalog matches · "+unknown.length+" unmatched · "+dupes.length+" duplicate rows"+(preview.length>250?" · showing first 250":"");
  el("po-import-rows").innerHTML=preview.slice(0,250).map(r=>'<tr><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.product?.description||"—")+'</td><td>'+escHtml(r.product?initialEST(r.product):"—")+'</td><td class="'+(r.product&&!r.duplicate?"po-import-found":"po-import-missing")+'">'+(r.duplicate?"Duplicate":r.product?"Matched":"Not in catalog")+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No Item rows found.</td></tr>';
  el("po-import-create").disabled=!matched.length;
+ renderInvoiceOverview();
 }
 async function loadFile(file){
  if(!file)return;
@@ -632,6 +648,7 @@ async function loadFile(file){
  if(!headers.length||!sourceRows.length)throw Error("The file contains no data rows.");
  fillMappings();el("po-import-preview").classList.remove("hidden");
  setStatus(fileName+" · "+sourceRows.length+" data rows. Confirm the column mapping and review matches.");
+ el("invoice-select").value="";
  currentPreview();
 }
 el("po-import-file").addEventListener("change",async e=>{
@@ -639,7 +656,80 @@ el("po-import-file").addEventListener("change",async e=>{
  try{await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
 });
 for(const id of ["po-import-item-col","po-import-desc-col"])el(id).addEventListener("change",currentPreview);
-el("po-import-cancel").onclick=()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");};
+el("po-import-cancel").onclick=()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
+
+/* Invoice-mode view: historical EST intelligence per imported/saved Item. */
+const itemMode=el("inspection-item-mode"),invoiceMode=el("inspection-invoice-mode"),lookupView=el("lookup-view");
+function setInspectionMode(mode){
+ const invoice=mode==="invoice";
+ lookupView.classList.toggle("invoice-mode",invoice);
+ itemMode.classList.toggle("active",!invoice);invoiceMode.classList.toggle("active",invoice);
+ itemMode.setAttribute("aria-pressed",String(!invoice));invoiceMode.setAttribute("aria-pressed",String(invoice));
+ if(invoice){body.classList.remove("hidden");toggle.setAttribute("aria-expanded","true");renderInvoiceOverview();}
+}
+itemMode.onclick=()=>setInspectionMode("item");
+invoiceMode.onclick=()=>setInspectionMode("invoice");
+function weekOf(date){
+ const d=new Date(String(date)+"T12:00:00");
+ if(!Number.isFinite(d.getTime()))return String(date);
+ d.setDate(d.getDate()-(d.getDay()+6)%7);
+ return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+}
+function statsFor(item){
+ const obs=[...(window.__inspectionPeriodObservations?.[item]||[])].filter(r=>r?.date&&r?.est).sort((a,b)=>String(b.date).localeCompare(String(a.date))||Number(b.id||0)-Number(a.id||0));
+ const byWeek=new Map();
+ for(const r of obs){const week=weekOf(r.date);if(!byWeek.has(week))byWeek.set(week,new Set());for(const est of String(r.est).split(",")){if(est.trim())byWeek.get(week).add(est.trim().toUpperCase());}}
+ const count=keys=>{const map=new Map();for(const key of keys)for(const est of byWeek.get(key)||[])map.set(est,(map.get(est)||0)+1);return [...map].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));};
+ const keys=[...byWeek.keys()].sort().reverse(),recent=count(keys.slice(0,10)),all=count(keys);
+ const latestDate=obs[0]?.date||"",latest=obs.filter(r=>r.date===latestDate).flatMap(r=>String(r.est).split(",").map(s=>s.trim().toUpperCase()).filter(Boolean));
+ return {latest:[...new Set(latest)].join(" + "),date:latestDate,recent,all,recentWeeks:Math.min(10,keys.length),allWeeks:keys.length};
+}
+function getInvoiceRows(){
+ const chosen=el("invoice-select").value;
+ if(chosen){const po=invoices.find(p=>p.id===chosen);if(po)return {po:po.po,customer:po.customer,rows:po.rows.map(r=>({item:r.item,description:r.description,plant:r.plant,product:demo.find(x=>x.item===r.item)})),saved:true};}
+ const items=new Map();
+ for(const r of preview)if(r.product&&!items.has(r.item))items.set(r.item,r);
+ return {po:el("po-import-number").value.trim()||"Invoice preview",customer:el("po-import-customer").value.trim(),rows:[...items.values()].map(r=>({item:r.item,description:r.description||r.product.description,plant:initialEST(r.product),product:r.product})),saved:false};
+}
+function invoiceData(){
+ const inv=getInvoiceRows();
+ return {...inv,rows:inv.rows.map(r=>{
+  const product=r.product||demo.find(x=>x.item===r.item),s=statsFor(r.item),p=window.__inspectionItemPriority?.(r.item),fixed=fixedEST(r.item);
+  const level=fixed?"stable":p?.level||"high";
+  const label=fixed?"Stable":({low:"Low",medium:"Medium",high:"High"}[level]||"High");
+  const pct=(pair,weeks)=>pair?pair[0]+" · "+Math.round(100*pair[1]/Math.max(1,weeks))+"%":"—";
+  return {...r,pack:product?.pack||"—",size:product?.size||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
+ })};
+}
+function renderInvoiceOverview(){
+ const select=el("invoice-select"),chosen=select.value;
+ select.innerHTML='<option value="">Current imported file / preview</option>'+invoices.map(p=>'<option value="'+escHtml(p.id)+'">PO '+escHtml(p.po)+" · "+escHtml(p.customer||"No customer")+'</option>').join("");
+ select.value=invoices.some(p=>p.id===chosen)?chosen:"";
+ const data=invoiceData();
+ el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items · EST history from physically verified observations";
+ el("invoice-overview-rows").innerHTML=data.rows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td></tr>').join("")||'<tr><td colspan="11" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
+}
+el("invoice-select").addEventListener("change",renderInvoiceOverview);
+el("po-import-number").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
+el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
+el("invoice-export").onclick=()=>{
+ const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
+ saveCSV("PO_Inspection_Overview_"+String(data.po).replace(/[^a-z0-9_-]/gi,"_")+".csv",[
+ ["PO","Customer","Item","Description","Case / Pack","Size / Unit","EST / Plant","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
+ ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.description,r.pack,r.size,r.plant,r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
+ ]);
+};
+el("invoice-print").onclick=()=>{
+ const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
+ let printRoot=document.getElementById("inspection-invoice-print-sheet");
+ if(!printRoot){printRoot=document.createElement("div");printRoot.id="inspection-invoice-print-sheet";document.body.appendChild(printRoot);}
+ printRoot.innerHTML='<h2>Purchase Order '+escHtml(data.po)+'</h2><p>Customer: '+escHtml(data.customer||"—")+'</p><table><thead><tr><th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>EST / Plant</th></tr></thead><tbody>'+data.rows.map(r=>'<tr><td>'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td>'+escHtml(r.plant||"—")+'</td></tr>').join("")+'</tbody></table>';
+ document.body.classList.add("print-invoice");
+ window.print();
+ setTimeout(()=>document.body.classList.remove("print-invoice"),1200);
+};
+renderInvoiceOverview();
+
 el("po-import-create").onclick=()=>{
  const number=clean(el("po-import-number").value),customer=clean(el("po-import-customer").value);
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
@@ -668,6 +758,8 @@ el("po-import-create").onclick=()=>{
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unmatched Items were skipped.":"")+".";
  setStatus("PO "+number+" is ready for inspection. Reference ESTs have not been physically verified.");
  el("po-import-body").classList.add("hidden");toggle.setAttribute("aria-expanded","false");toggle.textContent="↑ Import Excel / CSV";
+ el("invoice-select").value=existing?existing.id:invoices[0]?.id||"";
+ renderInvoiceOverview();
  renderPOArchive();
 };
 })();
@@ -2103,4 +2195,41 @@ status();
 #lookup-view #po-import-rows .po-import-found{color:#287452;font-weight:700}
 @media(max-width:620px){#lookup-view>.panel:first-child>.toolbar{grid-template-columns:minmax(0,1fr) auto;gap:8px}#lookup-view>.panel:first-child>.toolbar #lookup-btn{padding:0 12px}#lookup-view .po-import-grid{grid-template-columns:1fr}#lookup-view .po-import-grid .po-import-file{grid-column:1}}
 @media(max-width:365px){#lookup-view>.panel:first-child>.toolbar{grid-template-columns:1fr}#lookup-view>.panel:first-child>.toolbar #lookup-btn{width:100%}}
+</style><style>
+/* Distinct PO workflows within the same navigation section. */
+#lookup-view .inspection-workflow-switch{display:flex;align-items:stretch;gap:6px;margin-bottom:14px;padding:5px;background:#e2eaf2;border:1px solid #d6e1eb;border-radius:11px;max-width:510px}
+#lookup-view .inspection-workflow-btn{flex:1;border:0;background:transparent;color:#57728b;font:inherit;font-size:13px;font-weight:750;cursor:pointer;border-radius:8px;padding:12px 14px;white-space:nowrap}
+#lookup-view .inspection-workflow-btn.active{background:#fff;color:#205d8d;box-shadow:0 1px 5px #1c3e5d20}
+#lookup-view.invoice-mode>.inspection-single-lookup,#lookup-view.invoice-mode>.layout,#lookup-view.invoice-mode>.history,#lookup-view.invoice-mode>.worklog,#lookup-view.invoice-mode>.po-archive,#lookup-view.invoice-mode>.panel:not(.po-bulk-import):not(.inspection-invoice-workspace):not(.inspection-single-lookup){display:none!important}
+#lookup-view.invoice-mode #po-bulk-import{margin-top:0!important}
+#lookup-view.invoice-mode #po-import-body{display:block!important}
+#lookup-view.invoice-mode #po-import-toggle{display:none!important}
+#lookup-view.invoice-mode #inspection-invoice-workspace{display:block!important;margin-top:14px}
+#lookup-view:not(.invoice-mode) #inspection-invoice-workspace{display:none!important}
+#lookup-view:not(.invoice-mode) #po-bulk-import{display:none!important}
+#lookup-view .invoice-overview-table{min-width:1170px}
+#lookup-view .invoice-overview-table th{font-size:10px;white-space:nowrap;vertical-align:bottom}
+#lookup-view .invoice-overview-table td{font-size:12px;vertical-align:middle;line-height:1.45}
+#lookup-view .invoice-overview-table .invoice-est{font-weight:800;color:#285b7e;white-space:nowrap}
+#lookup-view .invoice-overview-table .invoice-history{font-size:11px;color:#627d92}
+#lookup-view .invoice-overview-table .invoice-history strong{color:#254f6e}
+#lookup-view .invoice-overview-table .invoice-variants{font-size:11px;max-width:220px}
+#lookup-view .invoice-overview-table .invoice-priority{white-space:nowrap}
+#lookup-view .invoice-overview-table tr.invoice-row-high{background:#fff7f6}
+#lookup-view .invoice-overview-table tr.invoice-row-medium{background:#fffaf0}
+#lookup-view .invoice-overview-table tr.invoice-row-stable{background:#f2fbf5}
+#lookup-view .invoice-overview-table tr.invoice-row-low{background:#f5fafc}
+@media(max-width:620px){#lookup-view .inspection-workflow-switch{max-width:none}#lookup-view .inspection-workflow-btn{font-size:12px;padding:11px 8px}}
+</style><style>
+#inspection-invoice-print-sheet{display:none}
+@media print{
+ body.print-invoice{background:white!important}
+ body.print-invoice>*:not(#inspection-invoice-print-sheet){display:none!important}
+ body.print-invoice #inspection-invoice-print-sheet{display:block!important;position:static!important;color:#111!important;font:11pt Arial,sans-serif}
+ body.print-invoice #inspection-invoice-print-sheet h2{font-size:16pt;margin:0 0 8px}
+ body.print-invoice #inspection-invoice-print-sheet p{margin:0 0 14px}
+ body.print-invoice #inspection-invoice-print-sheet table{width:100%;border-collapse:collapse}
+ body.print-invoice #inspection-invoice-print-sheet th,body.print-invoice #inspection-invoice-print-sheet td{border:1px solid #bbb;padding:7px 8px;text-align:left;color:#111}
+ body.print-invoice #inspection-invoice-print-sheet tr{break-inside:avoid}
+}
 </style></body></html>
