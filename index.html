@@ -2622,6 +2622,107 @@ count();draw();
 @media(min-width:951px) and (max-width:1180px){.skin-settings .skin-gallery{gap:9px}.skin-settings .skin-choice-info strong{font-size:11px}}
 @media(max-width:620px){:root[data-skin] .sidebar{background:var(--sk-sidebar)}:root[data-skin] .sidebar .nav.active{box-shadow:inset 0 -3px 0 var(--sk-accent)}.skin-settings .skin-gallery{grid-template-columns:1fr}}
 @media print{:root[data-skin] body{background:white!important;color:#111!important}}
+
+/* Skin consistency layer: theme every nested surface and text element, not just outer panels. */
+:root[data-skin]{
+ --sk-on-accent:#fff;--sk-positive-bg:#e5f4eb;--sk-positive-ink:#1b724b;
+ --sk-warning-bg:#fff2dc;--sk-warning-ink:#94600c;
+ --sk-negative-bg:#fbeaec;--sk-negative-ink:#9b3943;
+ --sk-divider:var(--sk-border);--sk-control:var(--sk-surface);
+}
+:root[data-skin="editorial"]{
+ --sk-positive-bg:#edf3e8;--sk-positive-ink:#466e4a;
+ --sk-warning-bg:#f6ebd9;--sk-warning-ink:#875a24;
+ --sk-negative-bg:#f7e7e3;--sk-negative-ink:#944e43;
+}
+:root[data-skin="graphite"]{
+ --sk-on-accent:#102724;
+ --sk-positive-bg:#23463b;--sk-positive-ink:#a1f1c4;
+ --sk-warning-bg:#4b3d2b;--sk-warning-ink:#f1cd89;
+ --sk-negative-bg:#4b3035;--sk-negative-ink:#ffb4b8;
+ --sk-control:#1c272a;
+}
+/* Panels within panels, reference cards, and all empty states. */
+:root[data-skin] :is(
+ .subtlebox,.weekly-stats,.est-summary,.est-summary-card,.est-variant,.stat-pill,
+ .period-control,.edit-reference-field,.note-area,.auth-banner,
+ .guide-steps>div,.guide-term,.guide-rule,.guide-example>div,.guide-caution,
+ .inspection-query-conditions,.inspection-query-results,.inspection-query-bulk,
+ .iq-edit-note,.inspection-mode-switch,.inspection-query-workspace,
+ .inspection-query-results-head,.inspection-query-conditions-title,
+ .po-details-head,.po-import-summary,.po-import-grid,.po-import-table,
+ .po-bulk-import .tablewrap,.inspection-invoice-workspace .tablewrap,
+ .inspection-workflow-switch,.inspection-query-filters,
+ .est-verify-choice,.gallery .tile,.thumb,.choice,
+ #history-view .est-change-stats,#import-view .ip-review-stats,
+ #import-view .ip-feedback
+){background:var(--sk-surface2);border-color:var(--sk-border);color:var(--sk-ink)}
+:root[data-skin] :is(.est-summary-card,.est-variant,.stat-pill,.period-control,.guide-steps>div,.guide-term,.guide-rule,.guide-example>div,.choice,.gallery .tile,.thumb){background:var(--sk-surface)}
+:root[data-skin] :is(.inspection-query-results,.inspection-query-workspace,.inspection-invoice-workspace .tablewrap){background:var(--sk-surface)}
+:root[data-skin] :is(.inspection-query-results-head,.iq-edit-note,.inspection-query-bulk,#history-view .est-change-stats){background:var(--sk-surface2)}
+:root[data-skin] :is(.est-summary,.weekly-stats,.note-area,.guide-caution,.edit-reference-field,.inspection-query-conditions){background:var(--sk-surface2)}
+:root[data-skin] :is(.product-header,.stat-head,.guide-faq,.po-list-row,.po-details-head,.skin-setting-footer){border-color:var(--sk-border)}
+:root[data-skin] :is(.empty,.inspection-query-empty,.iq-edit-note,.stat-small,.stat-comment,.est-summary-context,.est-verify-foot,.period-context,.guide-steps span,.guide-term span,.guide-rule span,.guide-example span,.brand-card p,.note-area p,.note-area .small,.invoice-history,.po-import-help){color:var(--sk-muted)}
+:root[data-skin] :is(.est-number,.est-summary-value,.est-variant strong,.stat-primary,.stat-percent,.product-name,.value,.note-area strong,.est-variants-title,.guide-steps strong,.guide-term strong,.guide-rule strong,.guide-example strong,.guide-faq summary,.inspection-query-intro strong,.inspection-query-results-head strong,#global-view .inspection-query-conditions-title strong,#history-view .est-change-stats strong,.brand-card strong){color:var(--sk-ink)!important}
+:root[data-skin] :is(.est-number,.est-summary-value,.est-variant strong,.stat-primary,.stat-percent){color:var(--sk-accent)!important}
+:root[data-skin] #guide-view p{color:var(--sk-muted)}
+:root[data-skin] :is(.note-area,.est-summary-note,.stat-comment,.auth-banner){border:1px solid var(--sk-border);background:var(--sk-accent-soft);color:var(--sk-ink)}
+:root[data-skin] :is(.est-summary-note,.stat-comment,.auth-banner) *{color:inherit}
+:root[data-skin] :is(.chip,.est-tag,.est-tag.main,.inspection-mode-button.active,.context-help){background:var(--sk-accent-soft);border-color:var(--sk-border);color:var(--sk-accent)}
+:root[data-skin] :is(.inspection-mode-button,.inspection-workflow-btn,#import-view .ip-mode){color:var(--sk-muted)}
+:root[data-skin] :is(.inspection-mode-button.active,.inspection-workflow-btn.active,#import-view .ip-mode.active){background:var(--sk-surface);color:var(--sk-accent);box-shadow:var(--sk-shadow)}
+:root[data-skin] :is(.brand-link,.est-variant em,.period-control label){color:var(--sk-accent)}
+:root[data-skin] .est-variant em{background:var(--sk-accent-soft)}
+:root[data-skin] .period-control select{background:var(--sk-surface2);color:var(--sk-ink)}
+:root[data-skin] .photo-space{background:linear-gradient(145deg,var(--sk-surface2),var(--sk-accent-soft));border-color:var(--sk-border);color:var(--sk-muted)}
+:root[data-skin] .photo-space:hover{background:var(--sk-accent-soft);border-color:var(--sk-accent)}
+:root[data-skin] .photo-space strong{color:var(--sk-ink)}
+:root[data-skin] .photo-space.has-image{background:var(--sk-surface2)}
+:root[data-skin] .gallery .tile:hover,:root[data-skin] .choice:hover{background:var(--sk-accent-soft)}
+:root[data-skin] .thumb.active{border-color:var(--sk-accent)}
+:root[data-skin] .modal{background:var(--sk-surface);color:var(--sk-ink);border:1px solid var(--sk-border)}
+:root[data-skin] .modal p{color:var(--sk-muted)}
+:root[data-skin] .lightbox .btn{background:var(--sk-surface);color:var(--sk-ink)}
+:root[data-skin] .tablewrap,:root[data-skin] table,:root[data-skin] .inspection-query-results{border-color:var(--sk-border)}
+:root[data-skin] :is(th,thead td){background:var(--sk-head);color:var(--sk-muted)}
+:root[data-skin] :is(td,th){border-color:var(--sk-border)}
+:root[data-skin] :is(tbody tr,.iq-table tbody tr){background:transparent}
+:root[data-skin] tbody tr:hover{background:var(--sk-surface2)}
+:root[data-skin] .inspection-query-bulk :is(label,span),:root[data-skin] .iq-edit-note{color:var(--sk-muted)}
+:root[data-skin] #global-view .inspection-query-results-head strong{color:var(--sk-ink)}
+:root[data-skin] #global-view .inspection-query-conditions-title strong{color:var(--sk-ink)}
+:root[data-skin] #history-view .est-change-stats strong{color:var(--sk-accent)}
+:root[data-skin] .stat-pill{color:var(--sk-ink)}
+:root[data-skin] #lookup-view .po-details-head{background:var(--sk-surface2)}
+:root[data-skin] #lookup-view .po-list-row{border-color:var(--sk-border)}
+:root[data-skin] #lookup-view .po-verified,:root[data-skin] #global-view .iq-photo-yes{color:var(--sk-positive-ink)}
+:root[data-skin] :is(.est-priority.low,#lookup-view .est-summary .est-priority.low,#lookup-view .po-priority.low,.ip-tag.new){background:var(--sk-positive-bg)!important;color:var(--sk-positive-ink)!important;border-color:var(--sk-positive-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.est-priority.medium,#lookup-view .est-summary .est-priority.medium,#lookup-view .po-priority.medium,.ip-tag.changed){background:var(--sk-warning-bg)!important;color:var(--sk-warning-ink)!important;border-color:var(--sk-warning-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.est-priority.high,#lookup-view .est-summary .est-priority.high,#lookup-view .po-priority.high,.ip-tag.duplicate,.ip-tag.invalid){background:var(--sk-negative-bg)!important;color:var(--sk-negative-ink)!important;border-color:var(--sk-negative-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.ip-tag.same,.po-type.meat,.po-type.dairy){background:var(--sk-accent-soft);color:var(--sk-accent)}
+:root[data-skin] :is(#lookup-view .est-latest-number.low){color:var(--sk-positive-ink)!important}
+:root[data-skin] :is(#lookup-view .est-latest-number.medium){color:var(--sk-warning-ink)!important}
+:root[data-skin] :is(#lookup-view .est-latest-number.high){color:var(--sk-negative-ink)!important}
+:root[data-skin] :is(#import-view .ip-feedback.error){background:var(--sk-negative-bg);border-color:var(--sk-negative-ink);color:var(--sk-negative-ink)}
+:root[data-skin] :is(#import-view .ip-row-new){background:color-mix(in srgb,var(--sk-positive-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#import-view .ip-row-changed){background:color-mix(in srgb,var(--sk-warning-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#import-view .ip-row-duplicate,#import-view .ip-row-invalid){background:color-mix(in srgb,var(--sk-negative-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#lookup-view .invoice-row-high){background:color-mix(in srgb,var(--sk-negative-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#lookup-view .invoice-row-medium){background:color-mix(in srgb,var(--sk-warning-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#lookup-view .invoice-row-stable){background:color-mix(in srgb,var(--sk-positive-bg) 45%,var(--sk-surface))}
+:root[data-skin] :is(#lookup-view .invoice-row-low){background:var(--sk-surface2)}
+/* Strong readable controls across all skins, including Graphite's mint accent. */
+:root[data-skin] :is(.btn.primary,button.primary,#lookup-view .find-btn,#global-view .iq-filter-actions .primary){background:var(--sk-accent);border-color:var(--sk-accent);color:var(--sk-on-accent)}
+:root[data-skin] :is(.btn.primary,button.primary,#lookup-view .find-btn):hover{background:var(--sk-accent-hover);border-color:var(--sk-accent-hover);color:var(--sk-on-accent)}
+:root[data-skin] :is(button,input,select,textarea){accent-color:var(--sk-accent)}
+:root[data-skin] :is(input,textarea)::placeholder{color:var(--sk-muted)}
+:root[data-skin] :is(.context-help,.inspection-query-intro strong,.inspection-query-results-head strong){text-shadow:none}
+:root[data-skin] .sidebar .brand span{color:var(--sk-accent)}
+/* Print documents remain white with black text, regardless of selected screen skin. */
+@media print{
+ :root[data-skin] :is(#iq-print-area,#inspection-invoice-print-sheet){background:#fff!important;color:#111!important}
+ :root[data-skin] :is(#iq-print-area,#inspection-invoice-print-sheet) :is(table,th,td){background:#fff!important;color:#111!important;border-color:#999!important}
+}
 </style><script>
 /* Appearance preference only; no catalog, PO, sync or business-logic changes. */
 (function(){
