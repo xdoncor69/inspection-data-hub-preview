@@ -296,7 +296,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div><div class="label">Access</div><div class="value" id="sb-access">Authentication required</div></div>
 </div>
 <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:16px">
-<button class="btn primary" id="sb-open-connect" type="button">Connect to Supabase</button>
+<button class="btn primary" id="sb-open-connect" type="button">Connect Supabase database</button>
 <button class="btn" id="sb-logout" type="button" disabled>Sign out</button>
 </div>
 <dialog id="sb-connect-dialog" class="sb-connect-dialog" aria-labelledby="sb-connect-title">
@@ -311,6 +311,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <label><span class="label">Application account email</span><input class="input" id="sb-email" type="email" placeholder="you@company.com" autocomplete="off" required></label>
 <label><span class="label">Application account password</span><input class="input" id="sb-password" type="password" placeholder="Supabase Auth user password" autocomplete="off" required></label>
 </div>
+<p class="muted small">Find the URL in your Supabase project’s Connect dialog. Find the public key in Settings → API Keys → Publishable key. Create the application email/password in Authentication → Users → Add user → Create new user.</p>
 <p class="muted small">The URL and publishable key are public configuration. Never enter a secret key, service_role key or database connection string.</p>
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:16px">
 <button class="btn" id="sb-test" type="button">Test project</button>
@@ -2224,7 +2225,7 @@ function status(){
  $("sb-status").textContent=busy?"CONNECTING / SYNCING":ready?"CONNECTED":session?"CHECKING CONNECTION":"NOT CONNECTED";
  $("sb-project-name").textContent=connection.name||(connection.url?new URL(connection.url).hostname.split(".")[0]:"Not configured");
  $("sb-access").textContent=ready?"Authenticated · private account data":"Authentication required";
- $("sb-open-connect").textContent=ready?"Connection settings":"Connect to Supabase";
+ $("sb-open-connect").textContent=ready?"Connection settings":"Connect Supabase database";
  $("sb-open-connect").disabled=busy;
  $("sb-upload").disabled=!ready||busy;$("sb-download").disabled=!ready||busy||!cloudExists;
  $("sb-logout").disabled=!session||busy;$("sb-auto").disabled=!ready||busy;
@@ -2854,6 +2855,9 @@ count();draw();
  apply(initial);
 })();
 </script><style id="supabase-connection-ui">
+#sb-connect-dialog:not([open]){display:none!important}
+#sb-connect-dialog[open]{display:block}
+
 .sb-connect-dialog{width:640px;max-width:calc(100vw - 32px);max-height:90vh;overflow:auto;padding:24px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);background:var(--sk-surface);color:var(--sk-ink);box-shadow:var(--sk-shadow)}
 .sb-connect-dialog::backdrop{background:rgba(8,18,28,.65)}
 .sb-connect-dialog .input{width:100%;min-width:0}
