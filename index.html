@@ -47,21 +47,15 @@ body.print-global #lookup-view,body.print-global #history-view,body.print-global
 table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 }
 </style></head><body>
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"<span class="ico">◈</span> Inspection</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
 <main class="main">
-<div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Inspection</h1><div class="subtitle" id="page-subtitle">Find an Item or query the product catalog</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
+<div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
-<section id="global-view" class="hidden" hidden aria-hidden="true" style="display:none!important">
-<input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
-<button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
-<div class="results"><div class="section-head"></div><table><tbody id="global-rows"></tbody></table></div>
-</section>
-<section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="inspection-mode-bar"><span class="inspection-mode-caption">SEARCH MODE</span><div class="inspection-mode-switch" role="group" aria-label="Inspection search mode"><button type="button" class="inspection-mode-button active" id="inspection-mode-item" aria-pressed="true">Item / PO lookup</button><button type="button" class="inspection-mode-button" id="inspection-mode-catalog" aria-pressed="false">Global Search / Bulk Edit</button></div></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><button class="btn" id="filter-toggle">☷ Filters</button><div class="grow"></div><span class="muted small" id="item-count">—</span></div><div id="lookup-filters" class="filters hidden" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr"><div><div class="label">Brand</div><select class="input" id="quick-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="quick-pack"><option value="">All packs</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Search description</div><input class="input" id="quick-desc" placeholder="Keyword"></div></div></div>
-<div id="inspection-query-workspace" class="hidden">
-<div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><button type="button" class="btn mini" id="inspection-query-toggle" aria-expanded="false">☷ Filters</button></div>
-<div class="inspection-query-search"><input class="input" id="iq-text" placeholder="Item, brand, description, EST…" aria-label="Search product catalog"><button type="button" class="btn primary" id="iq-run">Find products</button><button type="button" class="btn" id="iq-clear">Clear</button></div>
-<div id="inspection-query-conditions" class="inspection-query-conditions hidden">
-<div class="inspection-query-grid">
+<section id="global-view" class="hidden"><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
+<div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
+<div class="inspection-query-search"><label class="iq-text-label"><span class="label">Optional keyword search</span><input class="input" id="iq-text" placeholder="Item, brand, description, EST…" aria-label="Search product catalog"></label><button type="button" class="btn primary" id="iq-run">Find products</button><button type="button" class="btn" id="iq-clear">Clear</button></div>
+<div id="inspection-query-conditions" class="inspection-query-conditions">
+<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Selections are combined: a product must match every selected condition.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
 <label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
@@ -75,6 +69,13 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="producer">Producer</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
 <div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Producer</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
+</div><div class="legacy-global-compat hidden" aria-hidden="true">
+<input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
+<button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
+<div class="results"><div class="section-head"></div><table><tbody id="global-rows"></tbody></table></div>
+</div>
+</section>
+<section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><button class="btn" id="filter-toggle">☷ Filters</button><div class="grow"></div><span class="muted small" id="item-count">—</span></div><div id="lookup-filters" class="filters hidden" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr"><div><div class="label">Brand</div><select class="input" id="quick-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="quick-pack"><option value="">All packs</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Search description</div><input class="input" id="quick-desc" placeholder="Keyword"></div></div></div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand / Class</div><div class="value" id="d-brand">—</div></div><div><div class="label">Producer</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></section>
 
@@ -208,8 +209,8 @@ window.__inspectionSaveCatalog=function(){
 };
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const sections=["lookup","history","sync","guide","brands"];
-function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={meat:["Inspection","Find an Item or query the Meat and Dairy catalog"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+const sections=["global","lookup","history","sync","guide","brands"];
+function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||"Select or scan a product";$("product-chip").textContent=x?x.category.toUpperCase()+" PRODUCT":"NO ITEM SELECTED";["item","brand","producer","description","pack"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";$("photo-area").querySelector("strong").textContent=photoName||"Click to select a photo";}
@@ -1567,7 +1568,7 @@ html,body{width:100%;max-width:100%;margin:0}
 
 <style>
 /* One Inspection screen: item lookup or a separate, non-PO catalog query. */
-#global-view{display:none!important}
+
 .inspection-mode-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .inspection-mode-caption{font-size:9px;font-weight:800;letter-spacing:.1em;color:#8093a5}
 .inspection-mode-switch{display:inline-flex;gap:3px;background:#edf3f8;padding:3px;border-radius:8px;border:1px solid #e0e8ef}
@@ -1598,26 +1599,10 @@ html,body{width:100%;max-width:100%;margin:0}
 /* Global catalog query is separate from the PO and verification workflow. */
 (function(){
 const $=id=>document.getElementById(id);
-const viewEl=$("lookup-view"),query=$("inspection-query-workspace");
-const modeItem=$("inspection-mode-item"),modeCatalog=$("inspection-mode-catalog");
-const conditions=$("inspection-query-conditions"),toggle=$("inspection-query-toggle");
 const fields=["brand","category","pack","size","producer"];
 const editable=["category","brand","description","pack","size","plant","producer"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
-function setMode(catalog){
- viewEl.classList.toggle("catalog-mode",catalog);
- query.classList.toggle("hidden",!catalog);
- modeItem.classList.toggle("active",!catalog);modeCatalog.classList.toggle("active",catalog);
- modeItem.setAttribute("aria-pressed",String(!catalog));modeCatalog.setAttribute("aria-pressed",String(catalog));
- if(catalog){$("iq-text").focus();}
-}
-modeItem.onclick=()=>setMode(false);modeCatalog.onclick=()=>setMode(true);
-toggle.onclick=()=>{
- const open=conditions.classList.toggle("hidden")===false;
- toggle.setAttribute("aria-expanded",String(open));
- toggle.textContent=open?"▴ Hide filters":"☷ Filters";
-};
 function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
@@ -1744,4 +1729,22 @@ navigate("meat");
 #iq-rows td:nth-child(9){min-width:120px}
 #iq-rows td:last-child{min-width:70px}
 @media(max-width:620px){.inspection-query-bulk-divider{display:none}.inspection-query-bulk #iq-bulk-value{flex-basis:100%}}
+</style><style>
+/* Distinct PO Inspection and Global Search workspaces. */
+#global-view{min-width:0;max-width:100%}
+#global-view:not(.hidden){display:block!important}
+#global-view>.global-query-panel{display:block!important;min-width:0;max-width:100%}
+#global-view>.legacy-global-compat,#global-view>.panel:not(.global-query-panel){display:none!important}
+#global-view .inspection-query-conditions{display:block!important;margin:12px 0}
+#global-view .inspection-query-conditions-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+#global-view .inspection-query-conditions-title strong{font-size:12px;color:#274761}
+#global-view .inspection-query-search{margin-top:13px}
+#global-view .iq-text-label{flex:1 1 250px;min-width:0}
+#global-view .iq-text-label input{width:100%;margin-top:4px}
+#global-view .inspection-query-intro{padding:0 0 7px}
+#global-view .inspection-query-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+#global-view .inspection-query-results{max-width:100%}
+#lookup-view .inspection-mode-bar{display:none!important}
+@media(max-width:620px){#global-view .inspection-query-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#global-view .inspection-query-grid .iq-full{grid-column:1/-1}}
+@media(max-width:360px){#global-view .inspection-query-grid{grid-template-columns:1fr}}
 </style></body></html>
