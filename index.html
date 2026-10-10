@@ -500,6 +500,7 @@ try{await window.InspectionCloud.uploadPhotos(selected.item,Array.from(e.target.
 refresh();
 }
 $("manage-gallery").onclick=photoManager;
+window.__inspectionPhotoRefresh=renderPhotos;
 const originalShow=showProduct;
 showProduct=function(){originalShow();updateProductExtras();};
 const originalNavigate=navigate;
@@ -759,6 +760,7 @@ function renderInvoiceOverview(){
  el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items · EST history from physically verified observations";
  el("invoice-overview-rows").innerHTML=data.rows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td></tr>').join("")||'<tr><td colspan="11" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
 }
+window.__inspectionInvoiceRefresh=renderInvoiceOverview;
 el("invoice-select").addEventListener("change",renderInvoiceOverview);
 el("po-import-number").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
 el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
@@ -901,7 +903,7 @@ if(!sameESTs(original,x.plant)){x.changeFrom=original;x.changeTo=x.plant;}else{x
 persistPOWorkspace();renderPOArchive();
 if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();
 }
-window.__inspectionReloadCloudWorkspace=()=>{const id=openPO;loadPOWorkspace();openPO=invoices.some(p=>p.id===id)?id:null;renderLog();renderPOArchive();renderInvoiceOverview();};
+window.__inspectionReloadCloudWorkspace=()=>{const id=openPO;loadPOWorkspace();openPO=invoices.some(p=>p.id===id)?id:null;renderLog();renderPOArchive();window.__inspectionInvoiceRefresh?.();};
 renderLog();renderPOArchive();
 const loginPill=document.createElement("button");loginPill.className="pill login-pill";loginPill.textContent="♙ Guest · read only";loginPill.title="Sign in as administrator";
 const topRight=document.querySelector(".topright");const oldPill=Array.from(topRight.children).find(x=>x.textContent.includes("Admin access"));if(oldPill)oldPill.replaceWith(loginPill);
@@ -1962,6 +1964,8 @@ function draw(){
 function run(){
  matched=demo.filter(match);selectedIds=new Set();draw();
 }
+window.__inspectionGlobalRefresh=()=>{populate();run();};
+window.addEventListener("inspection:catalog-updated",window.__inspectionGlobalRefresh);
 // Show the catalog and its dropdown values before optional event bindings.
 populate();
 run();
@@ -2725,7 +2729,7 @@ async function loadState({hydrate=true}={}){
  official=clone(rows[0].records);revision=rows[0].revision;
  memory.clear();for(const [k,v]of Object.entries(official))memory.set(k,JSON.stringify(v));
  await buildPhotos();
- if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionReloadCloudWorkspace?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
+ if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionReloadCloudWorkspace?.();window.__inspectionGlobalRefresh?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
  ready=true;offline=false;if(started&&hydrate){window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();}updateRole();return rows[0];
 }
 function differences(){const changes={};for(const [k,c]of collectors)memory.set(k,JSON.stringify(c.get()));for(const [k,v]of memory){const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(official[k]))changes[k]=d;}return changes}
@@ -2790,7 +2794,7 @@ document.getElementById('online-login-dialog').addEventListener('cancel',e=>{if(
 document.getElementById('online-login-dialog').addEventListener('close',clearLogin);
 document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(!started||saving||photoBusy||signingIn||!navigator.onLine)return;try{const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=revision');if(!ready||offline||rows[0]?.revision!==revision){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionProductRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(!started||saving||photoBusy||signingIn||!navigator.onLine)return;try{const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=revision');if(!ready||offline||rows[0]?.revision!==revision){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
 connect();
 })();
 </script></body></html>
