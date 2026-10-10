@@ -54,7 +54,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <section id="global-view" class="hidden"><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
 <div id="inspection-query-conditions" class="inspection-query-conditions">
-<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Select any combination. Results update automatically.</span></div><div class="inspection-query-grid">
+<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Select filters, then Search. The table below can be edited directly.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
 <label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
@@ -63,8 +63,9 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <label><span class="label">EST / Plant</span><select class="input" id="iq-est"></select></label>
 <label class="iq-full"><span class="label">Description</span><select class="input" id="iq-description"></select></label>
 </div></div>
-<div id="iq-results" class="inspection-query-results hidden">
-<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-reset">↺ Reset filters</button><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
+<div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
+<div id="iq-results" class="inspection-query-results">
+<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
 <div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Photo</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
@@ -211,6 +212,8 @@ const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,
 const sections=["global","lookup","history","sync","guide","brands"];
 function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
+// Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
+navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||"Select or scan a product";$("product-chip").textContent=x?x.category.toUpperCase()+" PRODUCT":"NO ITEM SELECTED";["item","brand","producer","description","pack"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";$("photo-area").querySelector("strong").textContent=photoName||"Click to select a photo";}
 function lookup(){let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));if($("quick-brand").value)matches=matches.filter(x=>x.brand===$("quick-brand").value);if($("quick-pack").value)matches=matches.filter(x=>x.pack===$("quick-pack").value);if($("quick-desc").value.trim())matches=matches.filter(x=>x.description.toLowerCase().includes($("quick-desc").value.toLowerCase()));selected=matches[0]||null;history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
@@ -223,7 +226,7 @@ $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an exist
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
 function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this device to preview its filename.</p><input type="file" id="photo-file" accept="image/*" class="input" style="width:100%">');$("photo-file").onchange=e=>{photoName=e.target.files?.[0]?.name||"";showProduct();closeModal()};}
 $("edit-btn").onclick=()=>{let x=selected||{item:"",brand:"",description:"",producer:"",plant:"",pack:"",size:""};modal('<h2>Edit product · Admin</h2><p>Layout prototype. Changes are temporary and are not written to a database.</p><div class="edit-grid">'+[["item","Item number"],["plant",view==="dairy"?"Plant number":"EST"],["brand","Brand / Class"],["producer","Producer"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<div><div class="label">'+label+'</div><input class="input" id="edit-'+k+'" value="'+esc(x[k])+'"></div>').join("")+'</div><div class="edit-reference-field"><div class="label">Alternative EST / Plant references (comma-separated)</div><input class="input" id="edit-alternative-est" style="width:100%" placeholder="e.g. P-301, P-1029" value="'+esc(window.__inspectionGetAlternativeRefs?.(x.item)||"")+'"><div class="muted small" style="margin-top:4px">References are editable; percentages are calculated only from physical verifications.</div></div><div style="margin-top:18px"><button class="btn primary" id="save-demo">Save demo changes</button></div>');$("save-demo").onclick=()=>{let obj={...x,category:view==="dairy"?"Dairy":"Meat"};["item","plant","brand","producer","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value);if(!obj.item.trim()){alert("Item number required");return;}let i=demo.findIndex(p=>p.item===x.item&&p.category===x.category);if(i>=0)demo[i]=obj;else demo.push(obj);if(window.__inspectionSaveCatalog)window.__inspectionSaveCatalog();selected=obj;if(window.__inspectionSaveAlternativeRefs)window.__inspectionSaveAlternativeRefs(obj.item,$("edit-alternative-est").value,obj.plant);showProduct();renderGlobal();closeModal();};};
-["demo-export","demo-backup","demo-sync"].forEach(id=>$(id).onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration."));
+["demo-export","demo-backup","demo-sync"].forEach(id=>{const el=$(id);if(el)el.onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration.");});
 renderGlobal();renderRecent();
 </script>
 <script>
@@ -1602,6 +1605,7 @@ const fields=["brand","category","pack","size","plant","description"];
 const editable=["category","brand","description","pack","size","plant"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
+// Initialize the visible filter choices before attaching any optional table handlers.
 function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
@@ -1646,6 +1650,7 @@ function refreshAfterEdit(){
  draw();
 }
 // Filter controls drive the result list; there is no keyword bar or Search button.
+$("iq-run").onclick=run;
 for(const field of fields)$("iq-"+field).addEventListener("change",run);
 $("iq-photo").addEventListener("change",run);
 $("iq-reset").onclick=()=>{
@@ -1720,6 +1725,7 @@ $("iq-export").onclick=()=>{
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 populate();
+run();
 navigate("meat");
 })();
 </script>
@@ -1789,4 +1795,16 @@ body.iq-printing #iq-print-area th,body.iq-printing #iq-print-area td{border:1px
 body.iq-printing #iq-print-area tr{break-inside:avoid}
 @page{size:landscape;margin:12mm}
 }
+</style><style>
+/* Navigation recovery: a hidden parent must never suppress PO Inspection. */
+body:has(.nav.active[data-view="meat"]) #lookup-view,
+body:has(.nav.active[data-view="dairy"]) #lookup-view{display:block!important}
+body:has(.nav.active[data-view="global"]) #global-view{display:block!important}
+body:has(.nav.active[data-view="meat"]) #global-view,
+body:has(.nav.active[data-view="dairy"]) #global-view,
+body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
+#global-view .iq-filter-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin:10px 0 16px}
+#global-view .inspection-query-results{display:block}
+#global-view #iq-results .tablewrap{max-width:100%;overflow-x:auto}
+@media(max-width:620px){#global-view .iq-filter-actions .btn{flex:1 1 auto}}
 </style></body></html>
