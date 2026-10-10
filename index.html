@@ -202,12 +202,12 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <p>The verification records table shows confirmed observations. The collapsible Search history is only a consultation log; it does not measure physical inspections. The queue is a temporary working list in this preview.</p>
 </div>
 <div class="panel panel-pad" id="guide-sync">
-<div class="section-head"><h3>Database Sync · Preview status</h3></div>
-<p>Database connectivity and permanent storage are not implemented in this web design preview. Do not enter live credentials. Sample records, manual observations and brand profile changes are temporary and may reset when the page reloads.</p>
+<div class="section-head"><h3>Online database · Visitor access and approvals</h3></div>
+<p>The application uses the official Supabase database and requires internet. Visitors can create and import POs and edit PO lines. Changes to catalog products, official EST records, brands and photographs are submitted as requests. Only an administrator can approve or reject them in Aprobaciones pendientes. Pending values and photos are not visible in the official catalog. Sign in with the application administrator account; credentials are cleared when the login window closes.</p>
 </div>
 
 <div class="panel panel-pad" id="guide-faq"><div class="section-head"><h3>Common questions</h3></div>
-<details class="guide-faq"><summary>Does looking up an Item confirm its EST?</summary><p>No. Only using Verify EST after physically checking the cases adds an observation.</p></details>
+<details class="guide-faq"><summary>Does looking up an Item confirm its EST?</summary><p>No. Use Verify EST only after physically checking the cases. Visitor verifications become official observations after administrator approval.</p></details>
 <details class="guide-faq"><summary>Can a product have two or three EST values?</summary><p>Yes. The card shows all confirmed variants. You can select multiple values in the verification popup if you physically observed them.</p></details>
 <details class="guide-faq"><summary>What if I only check a few cases from a large pallet?</summary><p>Record the ESTs you actually observed. The app does not assume that every case or every unexamined product matches your sample.</p></details>
 <details class="guide-faq"><summary>Can I correct an incorrectly entered observation?</summary><p>Yes. An administrator can open View / correct records. Edits are saved to the official Supabase database.</p></details>
@@ -240,7 +240,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <section id="import-view" class="hidden">
 <div class="panel panel-pad">
 <div class="section-head"><div><h3>Import Products</h3><span class="hint">Add new catalog Items, compare existing records and approve every change</span></div><span class="pill" id="ip-catalog-count">— Items</span></div>
-<div class="notice">Importing products updates the product catalog only. It does not create a Purchase Order or record a physical EST verification. Existing Items are never replaced without your approval.</div>
+<div class="notice">Product imports affect the catalog, not POs or physical EST verification. Administrator imports save directly; visitor imports submit new Items and updates for administrator approval. Import a PO in PO Inspection → Import Invoice.</div>
 <div class="ip-modes" role="group" aria-label="Product import method">
 <button type="button" class="ip-mode active" id="ip-mode-manual" aria-pressed="true">＋ Single Product</button>
 <button type="button" class="ip-mode" id="ip-mode-excel" aria-pressed="false">▤ Excel / CSV Batch</button>
@@ -1555,7 +1555,7 @@ refresh();
 <script type="application/inspection-script">
 (function(){
 const $=id=>document.getElementById(id);
-const targetByView={global:"guide-overview",meat:"guide-products",dairy:"guide-products",history:"guide-verification",brands:"guide-brands",sync:"guide-sync",guide:"guide-faq"};
+const targetByView={global:"guide-overview",meat:"guide-products",dairy:"guide-products",history:"guide-verification",brands:"guide-brands",sync:"guide-sync",approvals:"guide-sync",guide:"guide-faq"};
 window.__inspectionOpenHelp=function(section){
 const id=targetByView[section]||"guide-overview";
 navigate("guide");
