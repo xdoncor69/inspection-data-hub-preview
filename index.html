@@ -289,17 +289,35 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <section id="sync-view" class="hidden"><div class="panel panel-pad">
 <div class="section-head"><div><h3>Supabase database connection</h3><span class="hint">Secure, per-user cloud backup and synchronization</span></div><span class="pill" id="sb-status">NOT CONNECTED</span></div>
 <div class="notice" id="sb-message">Configure your Supabase project, run the database setup SQL once, then sign in. Existing local data stays untouched until you choose Upload or Download.</div>
-<div class="settings-grid" style="margin-top:20px">
-<label><span class="label">Supabase Project URL</span><input class="input" id="sb-url" type="url" placeholder="https://your-project.supabase.co" autocomplete="url"></label>
-<label><span class="label">Publishable / anon key (public)</span><input class="input" id="sb-key" type="text" placeholder="sb_publishable_... or legacy anon JWT" autocomplete="off"></label>
-<label><span class="label">Account email</span><input class="input" id="sb-email" type="email" placeholder="you@company.com" autocomplete="username"></label>
-<label><span class="label">Account password</span><input class="input" id="sb-password" type="password" placeholder="Supabase Auth user password" autocomplete="current-password"></label>
+<div class="settings-grid sb-connection-summary" style="margin-top:20px" aria-label="Database connection details">
+<div><div class="label">Project name</div><div class="value" id="sb-project-name">Not configured</div></div>
+<div><div class="label">Provider / database engine</div><div class="value">Supabase · PostgreSQL</div></div>
+<div><div class="label">Snapshot table</div><div class="value">public.inspection_snapshots</div></div>
+<div><div class="label">Access</div><div class="value" id="sb-access">Authentication required</div></div>
 </div>
 <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:16px">
-<button class="btn" id="sb-test" type="button">Test project</button>
-<button class="btn primary" id="sb-login" type="button">Sign in to Supabase</button>
+<button class="btn primary" id="sb-open-connect" type="button">Connect to Supabase</button>
 <button class="btn" id="sb-logout" type="button" disabled>Sign out</button>
 </div>
+<dialog id="sb-connect-dialog" class="sb-connect-dialog" aria-labelledby="sb-connect-title">
+<form id="sb-connect-form" autocomplete="off">
+<div class="section-head"><h3 id="sb-connect-title">Connect to Supabase</h3><button class="btn mini" id="sb-connect-close" type="button" aria-label="Close connection window">×</button></div>
+<p class="muted small">Use a Supabase Auth user created for this application, not your Supabase dashboard login or PostgreSQL password. Credentials are cleared when this window closes.</p>
+<div class="notice" id="sb-connect-message" role="status">Enter your project details and application account.</div>
+<div class="settings-grid" style="margin-top:16px">
+<label><span class="label">Project display name (optional)</span><input class="input" id="sb-name" maxlength="100" placeholder="Inspection Data Hub" autocomplete="off"></label>
+<label><span class="label">Supabase Project URL</span><input class="input" id="sb-url" type="url" placeholder="https://your-project.supabase.co" autocomplete="off" required></label>
+<label class="sb-full"><span class="label">Publishable / anon key (public)</span><input class="input" id="sb-key" type="password" placeholder="sb_publishable_... or legacy anon JWT" autocomplete="off" required></label>
+<label><span class="label">Application account email</span><input class="input" id="sb-email" type="email" placeholder="you@company.com" autocomplete="off" required></label>
+<label><span class="label">Application account password</span><input class="input" id="sb-password" type="password" placeholder="Supabase Auth user password" autocomplete="off" required></label>
+</div>
+<p class="muted small">The URL and publishable key are public configuration. Never enter a secret key, service_role key or database connection string.</p>
+<div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:16px">
+<button class="btn" id="sb-test" type="button">Test project</button>
+<button class="btn primary" id="sb-login" type="submit">Connect</button>
+</div>
+</form>
+</dialog>
 <div class="panel" style="margin-top:18px;padding:16px">
 <div class="section-head"><div><h3>Cloud data</h3><span class="hint" id="sb-cloud-info">Sign in to check your cloud snapshot.</span></div></div>
 <p class="muted small">Upload saves your current catalog edits, Purchase Orders, physical EST observations and fixed-EST settings to your private Supabase account. Download replaces those local records with your saved cloud copy. Neither action transfers photos.</p>
@@ -2183,12 +2201,48 @@ const DATA_KEYS=[
  "inspection-data-hub-fixed-est-v1"
 ];
 let session=null,connected=false,auto=false,busy=false,dirty=false,timer=null,cloudExists=false;
-const cfg=()=>({url:$("sb-url").value.trim().replace(/\/+$/,""),key:$("sb-key").value.trim()});
-function message(text,isError=false){$("sb-message").textContent=text;$("sb-message").style.color=isError?"#a12736":"";}
-function status(){const label=session?"SIGNED IN":"NOT CONNECTED";$("sb-status").textContent=label;$("sb-upload").disabled=!session||busy;$("sb-download").disabled=!session||busy||!cloudExists;$("sb-logout").disabled=!session||busy;$("sb-auto").disabled=!session||busy;$("sb-login").disabled=busy;$("sb-test").disabled=busy;$("sb-auto").checked=auto;}
-function configValid(){const c=cfg();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.url))throw Error("Enter your Supabase project URL (https://project-ref.supabase.co).");if(!c.key||/^sb_secret_|^sb_service_role_/i.test(c.key)||c.key.includes("service_role"))throw Error("Use only the public publishable or anon key. Never enter a secret/service_role key.");return c;}
-function saveConfig(){const c=configValid();localStorage.setItem(CONFIG_KEY,JSON.stringify(c));return c;}
-function persistSession(){if(session)sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));else sessionStorage.removeItem(SESSION_KEY);}
+let connection={url:"",key:"",name:""},validatedSession=false;
+const dialog=$("sb-connect-dialog");
+function clearCredentials(){for(const id of ["sb-email","sb-password","sb-key","sb-url","sb-name"])$(id).value="";}
+function closeConnection(){dialog.close();clearCredentials();}
+$("sb-open-connect").onclick=()=>{
+ $("sb-url").value=connection.url;$("sb-key").value=connection.key;$("sb-name").value=connection.name||"";
+ $("sb-email").value="";$("sb-password").value="";$("sb-connect-message").textContent="Enter your project details and application account.";
+ dialog.showModal();$("sb-url").focus();
+};
+$("sb-connect-close").onclick=()=>{if(!busy)closeConnection();};
+dialog.addEventListener("cancel",e=>{if(busy)e.preventDefault();});
+dialog.addEventListener("close",clearCredentials);
+const cfg=()=>connection;
+const formConfig=()=>({url:$("sb-url").value.trim().replace(/\/+$/,""),key:$("sb-key").value.trim(),name:$("sb-name").value.trim().slice(0,100)});
+function message(text,isError=false){
+ $("sb-message").textContent=text;$("sb-message").classList.toggle("sb-error",isError);
+ if(dialog.open){$("sb-connect-message").textContent=text;$("sb-connect-message").classList.toggle("sb-error",isError);}
+}
+function status(){
+ const ready=!!session&&validatedSession;
+ $("sb-status").textContent=busy?"CONNECTING / SYNCING":ready?"CONNECTED":session?"CHECKING CONNECTION":"NOT CONNECTED";
+ $("sb-project-name").textContent=connection.name||(connection.url?new URL(connection.url).hostname.split(".")[0]:"Not configured");
+ $("sb-access").textContent=ready?"Authenticated · private account data":"Authentication required";
+ $("sb-open-connect").textContent=ready?"Connection settings":"Connect to Supabase";
+ $("sb-open-connect").disabled=busy;
+ $("sb-upload").disabled=!ready||busy;$("sb-download").disabled=!ready||busy||!cloudExists;
+ $("sb-logout").disabled=!session||busy;$("sb-auto").disabled=!ready||busy;
+ $("sb-login").disabled=busy;$("sb-test").disabled=busy;$("sb-connect-close").disabled=busy;$("sb-auto").checked=auto;
+}
+function configValid(c=cfg()){
+ if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.url))throw Error("Enter your Supabase project URL (https://project-ref.supabase.co).");
+ let publicKey=/^sb_publishable_[A-Za-z0-9_-]+$/.test(c.key);
+ if(!publicKey){try{const parts=c.key.split(".");const payload=JSON.parse(atob(parts[1].replace(/-/g,"+").replace(/_/g,"/")));publicKey=parts.length===3&&payload.role==="anon";}catch{}}
+ if(!publicKey)throw Error("Use only a public publishable or legacy anon key. Secret/service_role keys and database passwords are not allowed.");
+ return c;
+}
+function saveConfig(c=formConfig()){configValid(c);localStorage.setItem(CONFIG_KEY,JSON.stringify(c));connection=c;return c;}
+function persistSession(){
+ if(session)sessionStorage.setItem(SESSION_KEY,JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,user:{id:session.user.id}}));
+ else sessionStorage.removeItem(SESSION_KEY);
+}
+function clearSession(){session=null;validatedSession=false;auto=false;cloudExists=false;clearTimeout(timer);dirty=false;persistSession();clearCredentials();}
 async function api(path,{method="GET",body,auth=true,headers={}}={}){
  const c=configValid();let token=auth?session?.access_token:null;
  const request=async bearer=>fetch(c.url+path,{method,headers:{"apikey":c.key,...(bearer?{"Authorization":"Bearer "+bearer}:{}),...(body!==undefined?{"Content-Type":"application/json"}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})});
@@ -2197,13 +2251,13 @@ async function api(path,{method="GET",body,auth=true,headers={}}={}){
   const refreshed=await fetch(c.url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"apikey":c.key,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});
   if(refreshed.ok){const data=await refreshed.json();session={...session,...data};persistSession();response=await request(session.access_token);}
  }
- if(!response.ok){let info="";try{const data=await response.json();info=data.message||data.error_description||data.hint||data.error||data.code||"";}catch{}throw Error("Supabase HTTP "+response.status+(info?": "+info:"")+(response.status===404?" — run the SQL setup first.":""));}
+ if(!response.ok){if(response.status===401&&auth)clearSession();let info="";try{const data=await response.json();info=data.message||data.error_description||data.hint||data.error||data.code||"";}catch{}throw Error("Supabase HTTP "+response.status+(info?": "+info:"")+(response.status===404?" — run the SQL setup first.":""));}
  if(response.status===204)return null;
  const raw=await response.text();return raw?JSON.parse(raw):null;
 }
 function localSnapshot(){const data={schema_version:1,saved_at:new Date().toISOString(),records:{}};for(const key of DATA_KEYS){const raw=localStorage.getItem(key);if(raw!==null){try{data.records[key]=JSON.parse(raw);}catch{throw Error("Invalid local JSON for "+key+". Make a backup before syncing.");}}}return data;}
 function downloadFile(name,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-async function cloudCheck(){const rows=await api("/rest/v1/inspection_snapshots?select=updated_at&user_id=eq."+encodeURIComponent(session.user.id)+"&limit=1");cloudExists=rows.length>0;$("sb-cloud-info").textContent=cloudExists?"Cloud snapshot found · last updated "+new Date(rows[0].updated_at).toLocaleString():"No cloud snapshot yet. Upload local data to create one.";status();}
+async function cloudCheck(){const rows=await api("/rest/v1/inspection_snapshots?select=updated_at&user_id=eq."+encodeURIComponent(session.user.id)+"&limit=1");validatedSession=true;cloudExists=rows.length>0;$("sb-cloud-info").textContent=cloudExists?"Cloud snapshot found · last updated "+new Date(rows[0].updated_at).toLocaleString():"No cloud snapshot yet. Upload local data to create one.";status();}
 async function upload({quiet=false}={}){
  if(!session)throw Error("Sign in first.");
  const payload=localSnapshot();
@@ -2225,17 +2279,33 @@ async function download(){
  location.reload();
 }
 async function task(fn){if(busy)return;busy=true;status();try{await fn();}catch(error){message(error.message||String(error),true);console.error("Supabase sync:",error);}finally{busy=false;status();}}
-$("sb-test").onclick=()=>task(async()=>{saveConfig();await api("/auth/v1/settings",{auth:false});message("Supabase project is reachable. Next, sign in to verify table access.");});
-$("sb-login").onclick=()=>task(async()=>{
- const c=saveConfig(),email=$("sb-email").value.trim(),password=$("sb-password").value;
- if(!email||!password)throw Error("Enter your Supabase Auth email and password.");
- const response=await fetch(c.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":c.key,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
- const data=await response.json();if(!response.ok)throw Error(data.msg||data.error_description||data.message||"Login failed");
- if(!data.access_token||!data.user?.id)throw Error("Supabase did not return an authenticated user.");
- session=data;persistSession();$("sb-password").value="";auto=false;await cloudCheck();
- message("Signed in as "+data.user.email+". Choose Upload or Download to initialize synchronization.");
+$("sb-test").onclick=()=>task(async()=>{
+ const c=configValid(formConfig());
+ const response=await fetch(c.url+"/auth/v1/settings",{headers:{apikey:c.key}});
+ if(!response.ok)throw Error("Project test failed (HTTP "+response.status+"). Check the URL and publishable key.");
+ message("Supabase project is reachable. Connect to verify your account and table access.");
 });
-$("sb-logout").onclick=()=>task(async()=>{session=null;auto=false;cloudExists=false;persistSession();$("sb-cloud-info").textContent="Signed out.";message("Signed out. Your browser data remains intact.");});
+$("sb-connect-form").onsubmit=e=>{e.preventDefault();task(async()=>{
+ const c=configValid(formConfig()),email=$("sb-email").value.trim(),password=$("sb-password").value;
+ if(!email||!password)throw Error("Enter your Supabase Auth email and password.");
+ if(session)throw Error("Sign out before changing the connection or account.");
+ let signedIn=false;
+ try{
+  const response=await fetch(c.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":c.key,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+  if(!response.ok)throw Error("Sign-in failed (HTTP "+response.status+"). Check your application account email/password and confirmation status.");
+  const data=await response.json();if(!data.access_token||!data.user?.id)throw Error("Supabase did not return an authenticated user.");
+  session={access_token:data.access_token,refresh_token:data.refresh_token,user:{id:data.user.id}};signedIn=true;
+  saveConfig(c);auto=false;await cloudCheck();persistSession();
+  closeConnection();message("Connection successful. Choose Upload or Download to initialize synchronization.");
+ }catch(error){if(signedIn)clearSession();throw error;}
+ finally{$("sb-password").value="";$("sb-email").value="";}
+});};
+$("sb-logout").onclick=()=>task(async()=>{
+ let revoked=true;
+ try{await api("/auth/v1/logout?scope=local",{method:"POST"});}catch{revoked=false;}
+ finally{clearSession();closeConnection();$("sb-cloud-info").textContent="Signed out.";}
+ message(revoked?"Signed out. Your browser data remains intact.":"Signed out on this browser. The server could not confirm session revocation; local data remains intact.",!revoked);
+});
 $("sb-upload").onclick=()=>task(async()=>{if(!confirm("Upload this browser's current data to Supabase? This REPLACES the cloud snapshot for your account."))return;await upload();auto=true;$("sb-auto").checked=true;$("sb-sync-info").textContent="Auto-sync enabled. Changes in this browser will upload to your account.";});
 $("sb-download").onclick=()=>task(download);
 $("sb-backup").onclick=()=>{try{downloadFile("inspection-local-backup-"+new Date().toISOString().slice(0,10)+".json",localSnapshot());}catch(error){message(error.message,true);}};
@@ -2245,8 +2315,8 @@ window.addEventListener("inspection:local-change",()=>{
  if(!auto||!session)return;dirty=true;clearTimeout(timer);
  timer=setTimeout(()=>{if(!auto||!dirty)return;if(busy){timer=setTimeout(()=>window.dispatchEvent(new Event("inspection:local-change")),1000);return;}task(async()=>{await upload({quiet:true});});},1200);
 });
-try{const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");if(saved?.url)$("sb-url").value=saved.url;if(saved?.key)$("sb-key").value=saved.key;}catch{}
-try{const stored=JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");if(stored?.access_token&&stored?.user?.id){session=stored;task(async()=>{await cloudCheck();message("Supabase session restored. Auto-sync is off until enabled.");});}}catch{}
+try{const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");if(saved?.url&&saved?.key){connection=configValid({url:saved.url,key:saved.key,name:String(saved.name||"").slice(0,100)});}}catch{connection={url:"",key:"",name:""};localStorage.removeItem(CONFIG_KEY);}
+try{const stored=JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");if(stored?.access_token&&stored?.user?.id&&connection.url){session={access_token:stored.access_token,refresh_token:stored.refresh_token,user:{id:stored.user.id}};persistSession();task(async()=>{try{await cloudCheck();message("Supabase connection restored. Auto-sync is off until enabled.");}catch(error){clearSession();throw error;}});}else sessionStorage.removeItem(SESSION_KEY);}catch{clearSession();}
 if(sessionStorage.getItem("inspection-data-hub-cloud-restored")){sessionStorage.removeItem("inspection-data-hub-cloud-restored");message("Cloud data downloaded. Catalog and PO workspace loaded from Supabase.");}
 status();
 })();
@@ -2783,4 +2853,13 @@ count();draw();
  document.getElementById("skin-reset").addEventListener("click",()=>apply("executive"));
  apply(initial);
 })();
-</script></body></html>
+</script><style id="supabase-connection-ui">
+.sb-connect-dialog{width:640px;max-width:calc(100vw - 32px);max-height:90vh;overflow:auto;padding:24px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);background:var(--sk-surface);color:var(--sk-ink);box-shadow:var(--sk-shadow)}
+.sb-connect-dialog::backdrop{background:rgba(8,18,28,.65)}
+.sb-connect-dialog .input{width:100%;min-width:0}
+.sb-connect-dialog .sb-full{grid-column:1/-1}
+.sb-connection-summary>div{padding:12px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-button-radius)}
+:root[data-skin] .notice.sb-error{background:var(--sk-negative-bg);color:var(--sk-negative-ink);border-color:var(--sk-negative-ink)}
+@media(max-width:620px){.sb-connect-dialog .settings-grid,.sb-connection-summary{grid-template-columns:1fr}.sb-connect-dialog{padding:16px}}
+@media print{#sb-connect-dialog{display:none!important}}
+</style></body></html>
