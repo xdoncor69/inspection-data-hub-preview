@@ -47,7 +47,7 @@ body.print-global #lookup-view,body.print-global #history-view,body.print-global
 table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 }
 </style></head><body>
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
@@ -214,6 +214,50 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div id="brand-directory" class="brand-directory"></div>
 </div>
 </section>
+<section id="import-view" class="hidden">
+<div class="panel panel-pad">
+<div class="section-head"><div><h3>Import Products</h3><span class="hint">Add new catalog Items, compare existing records and approve every change</span></div><span class="pill" id="ip-catalog-count">— Items</span></div>
+<div class="notice">Importing products updates the product catalog only. It does not create a Purchase Order or record a physical EST verification. Existing Items are never replaced without your approval.</div>
+<div class="ip-modes" role="group" aria-label="Product import method">
+<button type="button" class="ip-mode active" id="ip-mode-manual" aria-pressed="true">＋ Single Product</button>
+<button type="button" class="ip-mode" id="ip-mode-excel" aria-pressed="false">▤ Excel / CSV Batch</button>
+</div>
+<div id="ip-manual">
+<div class="ip-fields">
+<label><span class="label">Item Number *</span><input class="input" id="ip-item" placeholder="e.g. 272319" autocomplete="off"></label>
+<label><span class="label">Product group *</span><select class="input" id="ip-category"><option>Meat</option><option>Poultry</option><option>Dairy</option></select></label>
+<label><span class="label">Brand / Producer *</span><input class="input" id="ip-brand" list="ip-brands" placeholder="Choose or enter a brand"></label>
+<label><span class="label">Description *</span><input class="input" id="ip-description" placeholder="Product description"></label>
+<label><span class="label">Case / Pack</span><input class="input" id="ip-pack" placeholder="e.g. 12 × 7"></label>
+<label><span class="label">Size / Unit</span><input class="input" id="ip-size" placeholder="e.g. 7 OZ"></label>
+<label><span class="label">EST / Plant reference</span><input class="input" id="ip-plant" placeholder="e.g. P-1029"></label>
+</div><datalist id="ip-brands"></datalist>
+<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn primary" id="ip-stage-manual">Review Product</button><button type="button" class="btn" id="ip-manual-clear">Clear fields</button></div>
+</div>
+<div id="ip-excel" class="hidden">
+<div class="ip-fields">
+<label class="ip-wide"><span class="label">SAP product listing — Excel / CSV</span><input class="input" id="ip-file" type="file" accept=".xlsx,.xls,.csv,.tsv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"></label>
+<label><span class="label">Item Number column *</span><select class="input" id="ip-map-item"></select></label>
+<label><span class="label">Description column</span><select class="input" id="ip-map-description"></select></label>
+<label><span class="label">Brand / Producer column</span><select class="input" id="ip-map-brand"></select></label>
+<label><span class="label">Product group column</span><select class="input" id="ip-map-category"></select></label>
+<label><span class="label">Case / Pack column</span><select class="input" id="ip-map-pack"></select></label>
+<label><span class="label">Size / Unit column</span><select class="input" id="ip-map-size"></select></label>
+<label><span class="label">EST / Plant column</span><select class="input" id="ip-map-plant"></select></label>
+<label><span class="label">Default product group (when missing)</span><select class="input" id="ip-default-category"><option>Meat</option><option>Poultry</option><option>Dairy</option></select></label>
+</div>
+<p class="muted small" style="margin-top:12px">Map only the columns needed by Inspection Data Hub. Price, weight, cost and all other SAP columns are ignored. Empty mapped cells do not erase existing values.</p>
+<div class="row" style="margin-top:12px;gap:10px;flex-wrap:wrap"><button type="button" class="btn primary" id="ip-stage-file" disabled>Compare spreadsheet with catalog</button><button type="button" class="btn" id="ip-file-clear">Clear file</button></div>
+</div>
+<div id="ip-feedback" class="ip-feedback" role="status">Choose a method to prepare an import.</div>
+</div>
+<div class="panel panel-pad" id="ip-review-panel" style="margin-top:14px">
+<div class="section-head"><div><h3>Import Review</h3><span class="hint">Choose an action for each Item before committing changes</span></div><button type="button" class="btn mini" id="ip-clear-review">Clear review</button></div>
+<div class="ip-review-stats" id="ip-review-stats">No products staged for review.</div>
+<div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" class="btn mini" id="ip-accept-new">Select all new</button><button type="button" class="btn mini" id="ip-skip-existing">Skip existing Items</button><button type="button" class="btn mini" id="ip-skip-all">Skip all</button></div>
+<div class="tablewrap"><table class="ip-review-table"><thead><tr><th>Item</th><th>Brand</th><th>Type</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Comparison</th><th>Changes</th><th>Decision</th></tr></thead><tbody id="ip-review-rows"><tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr></tbody></table></div>
+<div class="row" style="gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:14px"><span class="muted small" id="ip-selection">0 selected</span><button type="button" class="btn primary" id="ip-commit" disabled>Apply selected changes</button></div>
+</div></section>
 <section id="sync-view" class="hidden"><div class="panel panel-pad">
 <div class="section-head"><div><h3>Supabase database connection</h3><span class="hint">Secure, per-user cloud backup and synchronization</span></div><span class="pill" id="sb-status">NOT CONNECTED</span></div>
 <div class="notice" id="sb-message">Configure your Supabase project, run the database setup SQL once, then sign in. Existing local data stays untouched until you choose Upload or Download.</div>
@@ -259,9 +303,11 @@ const demo=[
 const CATALOG_STORAGE_KEY="inspection-data-hub-catalog-overrides-v1";
 try{
  const overrides=JSON.parse(localStorage.getItem(CATALOG_STORAGE_KEY)||"{}");
- for(const product of demo){
-  const o=overrides[product.item];
-  if(o&&typeof o==="object")for(const key of ["category","brand","description","pack","plant","producer","size"])if(typeof o[key]==="string")product[key]=o[key];
+ for(const [item,o] of Object.entries(overrides)){
+  if(!o||typeof o!=="object"||!/^[-A-Za-z0-9_.]+$/.test(item))continue;
+  let product=demo.find(p=>p.item===item);
+  if(!product){product={item,category:"Meat",brand:"Other",description:"",pack:"",plant:"",producer:"Other",size:""};demo.push(product);}
+  for(const key of ["category","brand","description","pack","plant","producer","size"])if(typeof o[key]==="string")product[key]=o[key];
  }
 }catch(error){console.warn("Could not load local catalog overrides",error);}
 window.__inspectionSaveCatalog=function(){
@@ -274,8 +320,8 @@ window.__inspectionSaveCatalog=function(){
 };
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const sections=["global","lookup","history","sync","guide","brands"];
-function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+const sections=["global","lookup","history","sync","guide","brands","import"];
+function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -2232,4 +2278,216 @@ status();
  body.print-invoice #inspection-invoice-print-sheet th,body.print-invoice #inspection-invoice-print-sheet td{border:1px solid #bbb;padding:7px 8px;text-align:left;color:#111}
  body.print-invoice #inspection-invoice-print-sheet tr{break-inside:avoid}
 }
-</style></body></html>
+</style><style>
+#ip-manual.hidden,#ip-excel.hidden{display:none!important}
+#import-view .ip-modes{display:flex;gap:5px;background:#e8eef4;padding:5px;border-radius:10px;margin:20px 0 16px;max-width:500px}
+#import-view .ip-mode{flex:1;background:transparent;border:0;border-radius:7px;color:#58718a;padding:11px 14px;font-weight:750;cursor:pointer}
+#import-view .ip-mode.active{background:white;color:#246394;box-shadow:0 1px 5px #274c6d1a}
+#import-view .ip-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#import-view .ip-fields label{display:flex;flex-direction:column;gap:6px;min-width:0}
+#import-view .ip-fields .input{width:100%;min-width:0}
+#import-view .ip-fields .ip-wide{grid-column:1/-1}
+#import-view .ip-feedback{font-size:12px;color:#54718c;background:#f1f6fb;border:1px solid #dbe7f2;border-radius:8px;padding:12px;margin-top:18px}
+#import-view .ip-feedback.error{color:#a03b3b;background:#fff5f4;border-color:#f0d0cb}
+#import-view .ip-review-stats{color:#496a84;font-size:12px;margin-top:10px}
+#import-view .ip-review-table{min-width:1150px}
+#import-view .ip-review-table td{vertical-align:middle;font-size:12px;line-height:1.5}
+#import-view .ip-review-table td.ip-changes{max-width:300px;min-width:180px}
+#import-view .ip-review-table .input{min-width:128px;font-size:12px;padding:8px}
+#import-view .ip-tag{display:inline-flex;border-radius:6px;padding:4px 7px;font-size:11px;font-weight:800;white-space:nowrap}
+#import-view .ip-tag.new{background:#e5f5eb;color:#25704b}
+#import-view .ip-tag.changed{background:#fff0da;color:#a86b13}
+#import-view .ip-tag.same{background:#eaf1f7;color:#61798e}
+#import-view .ip-tag.duplicate,#import-view .ip-tag.invalid{background:#fce8e6;color:#ad4242}
+#import-view tr.ip-row-new{background:#f7fcf9}
+#import-view tr.ip-row-changed{background:#fffcf6}
+#import-view tr.ip-row-duplicate,#import-view tr.ip-row-invalid{background:#fff8f7}
+@media(max-width:650px){#import-view .ip-fields{grid-template-columns:1fr}#import-view .ip-fields .ip-wide{grid-column:1}#import-view .ip-mode{padding:10px 6px;font-size:12px}}
+</style><script>
+/* Product catalog import: manual and SAP spreadsheet with per-Item conflict resolution. */
+(function(){
+"use strict";
+const el=id=>document.getElementById(id);
+const keys=["category","brand","description","pack","size","plant"];
+const trim=s=>String(s??"").replace(/^\uFEFF/,"").trim();
+const norm=s=>trim(s).toLowerCase().replace(/[^a-z0-9]/g,"");
+const html=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let staged=[],rawRows=[],headers=[],activeMode="manual",busy=false;
+function notice(text,error=false){el("ip-feedback").textContent=text;el("ip-feedback").classList.toggle("error",error);}
+function count(){el("ip-catalog-count").textContent=demo.length+" catalog Items";el("ip-brands").innerHTML=[...new Set(demo.map(x=>x.brand).filter(Boolean))].sort().map(b=>'<option value="'+html(b)+'"></option>').join("");}
+function setMode(mode){activeMode=mode;for(const m of ["manual","excel"]){el("ip-"+m).classList.toggle("hidden",m!==mode);el("ip-mode-"+m).classList.toggle("active",m===mode);el("ip-mode-"+m).setAttribute("aria-pressed",String(m===mode));}}
+el("ip-mode-manual").onclick=()=>setMode("manual");el("ip-mode-excel").onclick=()=>setMode("excel");
+function canonicalGroup(value){
+ const v=norm(value);
+ if(!v)return "";
+ if(/dairy|milk|cheese|cream|yogurt/.test(v))return "Dairy";
+ if(/poultry|chicken|turkey|duck/.test(v))return "Poultry";
+ if(/meat|beef|pork|ham|sausage|deli|lamb/.test(v))return "Meat";
+ return "";
+}
+function productFrom(input){
+ const item=trim(input.item).replace(/\.0$/,"");
+ const brand=trim(input.brand),description=trim(input.description);
+ const category=canonicalGroup(input.category)||"";
+ return {item,category,brand,producer:brand,description,pack:trim(input.pack),size:trim(input.size),plant:trim(input.plant)};
+}
+function compare(product,original,provided){
+ const diffs=[];
+ if(original)for(const key of keys){
+  if(!provided.has(key))continue;
+  const a=trim(original[key]),b=trim(product[key]);
+  if(a!==b)diffs.push({key,from:a,to:b});
+ }
+ return diffs;
+}
+function prepare(entries){
+ const seen=new Map();
+ staged=entries.map((entry,index)=>{
+  const p=productFrom(entry.data),existing=demo.find(x=>x.item===p.item);
+  const provided=new Set(entry.provided||keys);
+  const valid=/^[A-Za-z0-9_.-]{1,64}$/.test(p.item)&&!!(p.description||existing?.description)&&!!(p.brand||existing?.brand);
+  const diffs=compare(p,existing,provided);
+  const duplicate=seen.has(p.item);
+  if(p.item)seen.set(p.item,index);
+  const status=!valid?"invalid":duplicate?"duplicate":!existing?"new":diffs.length?"changed":"same";
+  return {index,line:entry.line||index+1,p,existing,provided,diffs,status,action:status==="new"?"add":"skip"};
+ });
+ draw();
+}
+function actionOptions(r){
+ const allowed=r.status==="new"?[["add","Import new"],["skip","Skip"]]:r.status==="changed"?[["skip","Skip"],["update","Update existing"]]:[["skip","Skip"]];
+ return allowed.map(([value,label])=>'<option value="'+value+'" '+(r.action===value?"selected":"")+'>'+label+'</option>').join("");
+}
+function draw(){
+ const totals={new:0,changed:0,same:0,duplicate:0,invalid:0};for(const r of staged)totals[r.status]++;
+ el("ip-review-stats").textContent=staged.length?staged.length+" rows · "+totals.new+" new · "+totals.changed+" changed · "+totals.same+" unchanged · "+totals.duplicate+" duplicate in file · "+totals.invalid+" invalid":"No products staged for review.";
+ el("ip-review-rows").innerHTML=staged.map((r,i)=>{
+  const p=r.p,details=r.diffs.map(d=>'<div><strong>'+html(d.key)+':</strong> '+html(d.from||"—")+' → '+html(d.to||"—")+'</div>').join("");
+  const changes=r.status==="duplicate"?"Repeated Item Number in this file; review the source rows.":r.status==="invalid"?"Missing/invalid Item Number, Brand or Description.":r.status==="new"?"New catalog record":r.status==="same"?"No changes to mapped fields":details;
+  return '<tr class="ip-row-'+r.status+'"><td><strong>'+html(p.item||"—")+'</strong><div class="muted small">Row '+r.line+'</div></td><td>'+html(p.brand||r.existing?.brand||"—")+'</td><td>'+html(p.category||r.existing?.category||"—")+'</td><td>'+html(p.description||r.existing?.description||"—")+'</td><td>'+html(p.pack||r.existing?.pack||"—")+' / '+html(p.size||r.existing?.size||"—")+'</td><td>'+html(p.plant||r.existing?.plant||"—")+'</td><td><span class="ip-tag '+r.status+'">'+({new:"NEW",changed:"CHANGED",same:"UNCHANGED",duplicate:"DUPLICATE",invalid:"INVALID"}[r.status])+'</span></td><td class="ip-changes">'+changes+'</td><td><select class="input" data-ip-action="'+i+'" aria-label="Decision for Item '+html(p.item)+'">'+actionOptions(r)+'</select></td></tr>';
+ }).join("")||'<tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr>';
+ const add=staged.filter(r=>r.action==="add").length,update=staged.filter(r=>r.action==="update").length;
+ el("ip-selection").textContent=add+" new + "+update+" updates selected";
+ el("ip-commit").disabled=busy||add+update===0;
+ el("ip-commit").textContent="Apply "+(add+update)+" selected changes";
+}
+el("ip-review-rows").onchange=e=>{const i=e.target.dataset.ipAction;if(i!==undefined&&staged[Number(i)]){staged[Number(i)].action=e.target.value;draw();}};
+el("ip-accept-new").onclick=()=>{for(const r of staged)if(r.status==="new")r.action="add";draw();};
+el("ip-skip-existing").onclick=()=>{for(const r of staged)if(r.status!=="new")r.action="skip";draw();};
+el("ip-skip-all").onclick=()=>{for(const r of staged)r.action="skip";draw();};
+el("ip-clear-review").onclick=()=>{staged=[];draw();notice("Review cleared. No catalog data was changed.");};
+function manualData(){const data={};for(const key of ["item",...keys])data[key]=el("ip-"+key).value;return data;}
+el("ip-stage-manual").onclick=()=>{
+ const data=manualData();if(!trim(data.item)||!trim(data.brand)||!trim(data.description)){notice("Item Number, Brand and Description are required.",true);return;}
+ prepare([{data,provided:keys,line:1}]);
+ notice("Review the Item below. Existing products default to Skip; choose Update existing to replace changed fields.");
+};
+el("ip-manual-clear").onclick=()=>{for(const key of ["item","brand","description","pack","size","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";};
+const mappings={
+ item:[/^item(number|no|id|code)?$/,/^material(number|no|id)?$/,/^sku$/,/^product(code|number|id)?$/,/^article(number)?$/,/item/,/material/],
+ description:[/^description$/,/^materialdescription$/,/^itemdescription$/,/^productdescription$/,/^shorttext$/,/description/,/shorttext/],
+ brand:[/^brand$/,/^producer$/,/^manufacturer$/,/^vendorname$/,/^suppliername$/,/^vendor$/,/^supplier$/,/brand/,/manufacturer/],
+ category:[/^category$/,/^productgroup$/,/^itemgroup$/,/^type$/,/^materialgroup$/,/category/,/productgroup/],
+ pack:[/^pack$/,/^casepack$/,/^packsize$/,/^casecount$/,/^unitspercase$/,/^caseqty$/,/pack/,/casecount/],
+ size:[/^size$/,/^sizeunit$/,/^unit$/,/^unitofmeasure$/,/^netcontent$/,/^productsize$/,/size/,/unitofmeasure/],
+ plant:[/^est$/,/^estnumber$/,/^establishment$/,/^establishmentnumber$/,/^plant$/,/^plantnumber$/,/^usdaplant$/,/^dairyplant$/,/establishment/,/plantnumber/]
+};
+function autoMap(key){for(const pattern of mappings[key]){const i=headers.findIndex(x=>pattern.test(norm(x)));if(i>=0)return String(i);}return "";}
+function setMaps(){
+ for(const key of ["item",...keys]){
+  const node=el("ip-map-"+key),suggested=autoMap(key);
+  node.innerHTML='<option value="">'+(key==="item"?"Select Item Number column":"Not provided / keep existing")+'</option>'+headers.map((v,i)=>'<option value="'+i+'">'+html(v)+'</option>').join("");
+  node.value=suggested;
+ }
+ el("ip-stage-file").disabled=!headers.length;
+}
+function parseDelimited(text){
+ text=String(text).replace(/^\uFEFF/,"");
+ const first=(text.split(/\r?\n/).find(s=>s.trim())||"");
+ const sep=[",","\t",";"].map(s=>({s,n:first.split(s).length-1})).sort((a,b)=>b.n-a.n)[0].s;
+ const out=[];let row=[],cell="",quoted=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
+  else if(c===sep&&!quoted){row.push(cell);cell="";}
+  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>trim(x)))out.push(row);row=[];cell="";}
+  else cell+=c;
+ }
+ row.push(cell);if(row.some(x=>trim(x)))out.push(row);return out;
+}
+async function xlsxLib(){
+ if(window.XLSX?.read)return window.XLSX;
+ return new Promise((resolve,reject)=>{
+  const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.async=true;
+  s.onload=()=>window.XLSX?.read?resolve(window.XLSX):reject(new Error("Excel reader unavailable. Export CSV from SAP instead."));
+  s.onerror=()=>reject(new Error("Could not load Excel reader. Export CSV from SAP or check internet connectivity."));document.head.appendChild(s);
+ });
+}
+el("ip-file").onchange=async e=>{
+ const file=e.target.files?.[0];headers=[];rawRows=[];el("ip-stage-file").disabled=true;
+ if(!file)return;
+ try{
+  if(file.size>12*1024*1024)throw Error("Maximum file size is 12 MB.");
+  let rows;const ext=file.name.split(".").pop().toLowerCase();
+  if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
+  else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const XLSX=await xlsxLib();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false});}
+  else throw Error("Supported file formats: XLSX, XLS, CSV and TSV.");
+  if(!rows||rows.length<2)throw Error("File needs a header row and at least one product.");
+  if(rows.length>10001)throw Error("Maximum 10,000 product rows per import.");
+  const index=rows.findIndex(r=>Array.isArray(r)&&r.some(x=>trim(x)));
+  headers=(rows[index]||[]).map((x,i)=>trim(x)||"Column "+(i+1));
+  rawRows=rows.slice(index+1).map((values,i)=>({values,line:index+i+2})).filter(r=>r.values.some(v=>trim(v)));
+  setMaps();notice(file.name+" · "+rawRows.length+" product rows loaded. Check column mapping and click Compare spreadsheet.");
+ }catch(err){notice(err.message||String(err),true);console.error("Product import",err);}
+};
+el("ip-file-clear").onclick=()=>{el("ip-file").value="";headers=[];rawRows=[];setMaps();notice("File cleared. Previously staged review remains until you clear it.");};
+el("ip-stage-file").onclick=()=>{
+ const itemCol=el("ip-map-item").value;if(itemCol===""){notice("Choose the Item Number column.",true);return;}
+ const mapped={};for(const key of keys)mapped[key]=el("ip-map-"+key).value;
+ const rows=rawRows.map(r=>{
+  const data={item:trim(r.values[Number(itemCol)])};
+  const provided=[];
+  for(const key of keys)if(mapped[key]!==""){const value=trim(r.values[Number(mapped[key])]);if(value){data[key]=value;provided.push(key);}}
+  if(!data.category){data.category=el("ip-default-category").value;if(!demo.some(x=>x.item===data.item))provided.push("category");}
+  return {data,provided,line:r.line};
+ }).filter(r=>r.data.item);
+ if(!rows.length){notice("No Item Numbers found in the mapped column.",true);return;}
+ prepare(rows);
+ notice("Comparison ready. New Items are selected; existing Items require individual approval before updates.");
+};
+el("ip-commit").onclick=()=>{
+ if(busy)return;
+ const actions=staged.filter(r=>r.action==="add"||r.action==="update");
+ if(!actions.length)return;
+ const adds=actions.filter(r=>r.action==="add").length,updates=actions.length-adds;
+ if(!confirm("Apply "+adds+" new products and "+updates+" updates to the catalog?\nExisting values will only change for the approved rows and mapped non-empty fields.\nNo POs or physical verifications will be created."))return;
+ const snapshot=demo.map(x=>({...x}));
+ busy=true;draw();
+ try{
+  // Revalidate against live catalog to prevent accidental duplicates after another import.
+  for(const r of actions){
+   const original=demo.find(x=>x.item===r.p.item);
+   if(r.action==="add"){
+    if(original)throw Error("Item "+r.p.item+" now exists. Refresh comparison before saving.");
+    const p={item:r.p.item,category:r.p.category||"Meat",brand:r.p.brand||"Other",producer:r.p.brand||"Other",description:r.p.description||"",pack:r.p.pack||"",size:r.p.size||"",plant:r.p.plant||""};
+    if(!p.description||!p.brand)throw Error("Missing required fields for Item "+p.item);
+    demo.push(p);
+   }else{
+    if(!original)throw Error("Item "+r.p.item+" no longer exists. Refresh comparison.");
+    for(const key of keys)if(r.provided.has(key)&&trim(r.p[key]))original[key]=r.p[key];
+    if(r.provided.has("brand")&&trim(r.p.brand))original.producer=r.p.brand;
+   }
+  }
+  if(!window.__inspectionSaveCatalog?.())throw Error("Could not persist catalog. No changes were applied.");
+  notice("Saved "+adds+" new Items and "+updates+" updated Items. Catalog now contains "+demo.length+" products. Supabase auto-sync (if enabled) will upload this catalog snapshot.");
+  staged=[];draw();count();
+  if(el("item-count"))el("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";
+  window.dispatchEvent(new CustomEvent("inspection:catalog-updated"));
+ }catch(error){
+  demo.splice(0,demo.length,...snapshot);notice(error.message||String(error),true);console.error("Catalog import commit",error);
+ }finally{busy=false;draw();}
+};
+document.querySelector('[data-view="import"]').addEventListener("click",count);
+count();draw();
+})();
+</script></body></html>
