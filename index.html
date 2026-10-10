@@ -60,15 +60,15 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
 <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
-<label><span class="label">Producer</span><select class="input" id="iq-producer"></select></label>
+<label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
 <label><span class="label">EST / Plant contains</span><input class="input" id="iq-est" placeholder="e.g. P-1029"></label>
 <label class="iq-full"><span class="label">Description contains</span><input class="input" id="iq-description" placeholder="e.g. turkey"></label>
 </div></div>
 <div id="iq-results" class="inspection-query-results hidden">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div>
-<div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="producer">Producer</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
+<div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
-<div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Producer</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
+<div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Photo</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
 <input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
 <button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
@@ -1599,15 +1599,15 @@ html,body{width:100%;max-width:100%;margin:0}
 /* Global catalog query is separate from the PO and verification workflow. */
 (function(){
 const $=id=>document.getElementById(id);
-const fields=["brand","category","pack","size","producer"];
-const editable=["category","brand","description","pack","size","plant","producer"];
+const fields=["brand","category","pack","size"];
+const editable=["category","brand","description","pack","size","plant"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
 function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
   const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes",producer:"producers"}[field];
+  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes"}[field];
   el.innerHTML='<option value="">All '+label+'</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
   if(options.includes(current))el.value=current;
  }
@@ -1616,6 +1616,9 @@ function match(x){
  const text=$("iq-text").value.trim().toLowerCase();
  if(text&&!Object.values(x).some(v=>String(v??"").toLowerCase().includes(text)))return false;
  for(const field of fields){const value=$("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
+ const photo=$("iq-photo").value,hasPhoto=(imagesByItem[x.item]||[]).length>0;
+ if(photo==="with"&&!hasPhoto)return false;
+ if(photo==="without"&&hasPhoto)return false;
  const desc=$("iq-description").value.trim().toLowerCase(),est=$("iq-est").value.trim().toLowerCase();
  if(desc&&!String(x.description??"").toLowerCase().includes(desc))return false;
  if(est&&!String(x.plant??"").toLowerCase().includes(est))return false;
@@ -1633,7 +1636,7 @@ function draw(){
  $("iq-rows").innerHTML=matched.map(x=>{
   const cells=editable.map(k=>'<td><input class="input iq-cell" data-field="'+k+'" value="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'"></td>').join("");
   // Place editable category before brand and keep Item number immutable in query results.
-  return '<tr data-iq-item="'+safe(x.item)+'"><td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><button type="button" class="btn mini iq-save">Save</button></td></tr>';
+  return '<tr data-iq-item="'+safe(x.item)+'"><td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><button type="button" class="btn mini iq-save">Save</button></td></tr>';
  }).join("")||'<tr><td colspan="10" class="empty">No matching products. Try removing a condition.</td></tr>';
  $("iq-export").disabled=matched.length===0;
  selectionLabel();
@@ -1653,6 +1656,7 @@ $("iq-text").onkeydown=e=>{if(e.key==="Enter")run();};
 for(const id of ["iq-description","iq-est"])$(id).onkeydown=e=>{if(e.key==="Enter")run();};
 $("iq-clear").onclick=()=>{
  for(const field of fields)$("iq-"+field).value="";
+ $("iq-photo").value="";
  for(const id of ["iq-text","iq-description","iq-est"])$(id).value="";
  matched=[];selectedIds.clear();$("iq-results").classList.add("hidden");
 };
@@ -1661,6 +1665,15 @@ $("iq-select-all").onchange=e=>{
  draw();
 };
 $("iq-rows").onchange=e=>{
+ if(e.target.matches(".iq-photo-upload")){
+  const tr=e.target.closest("[data-iq-item]");if(!tr)return;
+  const item=tr.dataset.iqItem,files=Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
+  if(!files.length)return;
+  const photos=imagesByItem[item]||(imagesByItem[item]=[]);
+  for(const file of files)photos.push({name:file.name,url:URL.createObjectURL(file)});
+  if(selected&&selected.item===item&&typeof renderPhotos==="function")renderPhotos();
+  draw();return;
+ }
  if(!e.target.matches(".iq-select"))return;
  const tr=e.target.closest("[data-iq-item]"),item=tr.dataset.iqItem;
  if(e.target.checked)selectedIds.add(item);else selectedIds.delete(item);
@@ -1693,8 +1706,8 @@ $("iq-bulk-apply").onclick=()=>{
 function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
 $("iq-export").onclick=()=>{
  if(!matched.length)return;
- const columns=[["Item","item"],["Type","category"],["Brand","brand"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Producer","producer"]];
- const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(x[c[1]])).join(",")).join("\r\n");
+ const columns=[["Item","item"],["Type","category"],["Brand","brand"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Photo status","__photo"]];
+ const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(c[1]==="__photo"?(imagesByItem[x.item]||[]).length?"With photo":"Without photo":x[c[1]])).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
  const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -1747,4 +1760,11 @@ navigate("meat");
 #lookup-view .inspection-mode-bar{display:none!important}
 @media(max-width:620px){#global-view .inspection-query-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#global-view .inspection-query-grid .iq-full{grid-column:1/-1}}
 @media(max-width:360px){#global-view .inspection-query-grid{grid-template-columns:1fr}}
+</style><style>
+#global-view .iq-photo-status{display:flex;align-items:center;gap:7px;flex-wrap:wrap;white-space:nowrap}
+#global-view .iq-photo-yes{font-size:10px;color:#237455;font-weight:700}
+#global-view .iq-photo-no{font-size:10px;color:#8a6170}
+#global-view .iq-photo-add{position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center}
+#global-view .iq-photo-upload{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+#global-view #iq-rows td:nth-last-child(2){min-width:150px}
 </style></body></html>
