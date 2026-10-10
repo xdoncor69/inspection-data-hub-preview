@@ -649,17 +649,18 @@ el("po-import-create").onclick=()=>{
  for(const r of preview)if(r.product&&!unique.has(r.item))unique.set(r.item,r.product);
  if(!unique.size){alert("No matching catalog Items. Check the mapping or update the catalog first.");return;}
  const newItems=[...unique.values()].filter(x=>!existing?.rows.some(r=>r.item===x.item));
+ const importRow=x=>{const row=rowFor(x),source=preview.find(r=>r.item===x.item&&r.description);if(source)row.description=source.description;return row;};
  const unknown=[...new Set(preview.filter(r=>!r.product).map(r=>r.item))];
  const info=(existing?"Update existing PO "+existing.po:"Create new PO "+number)+" with "+newItems.length+" matched Items?"+
  (unknown.length?"\n"+unknown.length+" unknown Item numbers will be skipped.":"")+
  "\nEST values are reference values, not physical verification.";
  if(!confirm(info))return;
  if(existing){
-  existing.rows.push(...newItems.map(rowFor));
+  existing.rows.push(...newItems.map(importRow));
   if(!persistPOWorkspace()){existing.rows.splice(existing.rows.length-newItems.length,newItems.length);return;}
   activatePO(existing.id,false);
  }else{
-  const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:[...unique.values()].map(rowFor)};
+  const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:[...unique.values()].map(importRow)};
   invoices.unshift(po);
   if(!persistPOWorkspace()){invoices.shift();return;}
   activatePO(po.id,false);
