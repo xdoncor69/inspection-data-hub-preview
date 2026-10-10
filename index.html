@@ -50,24 +50,25 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"<span class="ico">◈</span> Inspection</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Inspection</h1><div class="subtitle" id="page-subtitle">Find an Item or query the product catalog</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
-<section id="global-view" class="hidden" aria-hidden="true"><div class="panel panel-pad"><div class="section-head"><h3>Explore product catalog</h3><span class="hint">Filter by any combination</span></div><div class="toolbar"><div class="field searchwide"><div class="label">Search by Item, brand or description</div><input id="global-query" class="input" placeholder="Search all products…"></div><button class="btn primary" id="global-search">Search products</button><button class="btn" id="global-clear">Clear filters</button></div></div><div class="panel filter-panel"><div class="section-head"><h3>Advanced filters</h3><span class="hint">Independent and combinable</span></div><div class="filters"><div><div class="label">Category</div><select class="input" id="f-category"><option value="">All categories</option><option>Meat</option><option>Dairy</option></select></div><div><div class="label">Brand</div><select class="input" id="f-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option><option>Other</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="f-pack"><option value="">All pack sizes</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Producer</div><select class="input" id="f-producer"><option value="">All producers</option><option>DietzAndWatson</option><option>Applegate</option><option>Bars</option><option>Others</option></select></div></div></div><div class="panel results"><div class="section-head"><h3>Matching products</h3><span id="global-count" class="hint">—</span></div><div class="tablewrap"><table><thead><tr><th>Item</th><th>Category</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>EST / Plant</th><th></th></tr></thead><tbody id="global-rows"></tbody></table></div></div></section>
-<section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="inspection-mode-bar"><span class="inspection-mode-caption">SEARCH MODE</span><div class="inspection-mode-switch" role="group" aria-label="Inspection search mode"><button type="button" class="inspection-mode-button active" id="inspection-mode-item" aria-pressed="true">Item / EST lookup</button><button type="button" class="inspection-mode-button" id="inspection-mode-catalog" aria-pressed="false">Product list / Query</button></div></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><button class="btn" id="filter-toggle">☷ Filters</button><div class="grow"></div><span class="muted small" id="item-count">—</span></div><div id="lookup-filters" class="filters hidden" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr"><div><div class="label">Brand</div><select class="input" id="quick-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="quick-pack"><option value="">All packs</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Search description</div><input class="input" id="quick-desc" placeholder="Keyword"></div></div></div>
+<section id="lookup-view" class="hidden"><div class="panel panel-pad"><div class="inspection-mode-bar"><span class="inspection-mode-caption">SEARCH MODE</span><div class="inspection-mode-switch" role="group" aria-label="Inspection search mode"><button type="button" class="inspection-mode-button active" id="inspection-mode-item" aria-pressed="true">Item / PO lookup</button><button type="button" class="inspection-mode-button" id="inspection-mode-catalog" aria-pressed="false">Global Search / Bulk Edit</button></div></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><button class="btn" id="filter-toggle">☷ Filters</button><div class="grow"></div><span class="muted small" id="item-count">—</span></div><div id="lookup-filters" class="filters hidden" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr"><div><div class="label">Brand</div><select class="input" id="quick-brand"><option value="">All brands</option><option>Applegate</option><option>Dietz & Watson</option><option>Bars</option></select></div><div><div class="label">Case / Pack</div><select class="input" id="quick-pack"><option value="">All packs</option><option>12 × 7</option><option>6 × 5</option><option>4 × 10</option></select></div><div><div class="label">Search description</div><input class="input" id="quick-desc" placeholder="Keyword"></div></div></div>
 <div id="inspection-query-workspace" class="hidden">
- <div class="inspection-query-intro"><div><strong>Catalog query</strong><div class="muted small">Combine conditions to find matching products. This does not open or create a Purchase Order.</div></div><button type="button" class="btn mini" id="inspection-query-toggle" aria-expanded="false">☷ Add conditions</button></div>
- <div id="inspection-query-conditions" class="inspection-query-conditions hidden">
-  <div class="inspection-query-grid">
-   <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
-   <label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
-   <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
-   <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
-   <label><span class="label">Producer</span><select class="input" id="iq-producer"></select></label>
-   <label><span class="label">EST / Plant contains</span><input class="input" id="iq-est" placeholder="e.g. P-1029"></label>
-   <label class="iq-full"><span class="label">Description contains</span><input class="input" id="iq-description" placeholder="e.g. turkey, organic"></label>
-  </div>
- </div>
- <div class="inspection-query-search"><input class="input" id="iq-text" placeholder="Search by Item, description, brand, EST…" aria-label="Search product catalog"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-clear">Clear</button></div>
- <div id="iq-results" class="inspection-query-results hidden"><div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><button type="button" class="btn mini" id="iq-export">↓ Export CSV</button></div><div class="tablewrap"><table><thead><tr><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Producer</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div>
- </div>
+<div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><button type="button" class="btn mini" id="inspection-query-toggle" aria-expanded="false">☷ Filters</button></div>
+<div class="inspection-query-search"><input class="input" id="iq-text" placeholder="Item, brand, description, EST…" aria-label="Search product catalog"><button type="button" class="btn primary" id="iq-run">Find products</button><button type="button" class="btn" id="iq-clear">Clear</button></div>
+<div id="inspection-query-conditions" class="inspection-query-conditions hidden">
+<div class="inspection-query-grid">
+<label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
+<label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
+<label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
+<label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
+<label><span class="label">Producer</span><select class="input" id="iq-producer"></select></label>
+<label><span class="label">EST / Plant contains</span><input class="input" id="iq-est" placeholder="e.g. P-1029"></label>
+<label class="iq-full"><span class="label">Description contains</span><input class="input" id="iq-description" placeholder="e.g. turkey"></label>
+</div></div>
+<div id="iq-results" class="inspection-query-results hidden">
+<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div>
+<div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="producer">Producer</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
+<div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
+<div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Producer</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand / Class</div><div class="value" id="d-brand">—</div></div><div><div class="label">Producer</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></section>
 
@@ -182,13 +183,29 @@ const demo=[
 {item:"482716",category:"Meat",brand:"Other",description:"Chicken breast portions",pack:"12 × 7",plant:"P-887",producer:"Others",size:"7 LB"},
 {item:"650812",category:"Dairy",brand:"Other",description:"Cultured dairy product",pack:"6 × 5",plant:"PL-109",producer:"Others",size:"5 LB"},
 {item:"650813",category:"Dairy",brand:"Other",description:"Fresh dairy product",pack:"12 × 7",plant:"PL-204",producer:"Others",size:"7 OZ"}];
+/* Persist catalog edits in this browser; no backend and no physical verification implied. */
+const CATALOG_STORAGE_KEY="inspection-data-hub-catalog-overrides-v1";
+try{
+ const overrides=JSON.parse(localStorage.getItem(CATALOG_STORAGE_KEY)||"{}");
+ for(const product of demo){
+  const o=overrides[product.item];
+  if(o&&typeof o==="object")for(const key of ["category","brand","description","pack","plant","producer","size"])if(typeof o[key]==="string")product[key]=o[key];
+ }
+}catch(error){console.warn("Could not load local catalog overrides",error);}
+window.__inspectionSaveCatalog=function(){
+ try{
+  const entries={};
+  for(const product of demo)entries[product.item]={category:product.category,brand:product.brand,description:product.description,pack:product.pack,plant:product.plant,producer:product.producer,size:product.size};
+  localStorage.setItem(CATALOG_STORAGE_KEY,JSON.stringify(entries));
+  return true;
+ }catch(error){console.error("Could not save local catalog changes",error);alert("Unable to save catalog edits in this browser. Check storage settings.");return false;}
+};
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const sections=["global","lookup","history","sync","guide","brands"];
-function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={global:["Global Search","Explore your product catalog across all departments"],meat:["Inspection","Find an Item or query the Meat and Dairy catalog"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+const sections=["lookup","history","sync","guide","brands"];
+function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={meat:["Inspection","Find an Item or query the Meat and Dairy catalog"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
-function renderGlobal(){let q=$("global-query").value.toLowerCase().trim(),category=$("f-category").value,brand=$("f-brand").value,pack=$("f-pack").value,producer=$("f-producer").value;let rows=demo.filter(x=>(!q||Object.values(x).some(v=>String(v).toLowerCase().includes(q)))&&(!category||x.category===category)&&(!brand||x.brand===brand)&&(!pack||x.pack===pack)&&(!producer||x.producer===producer));$("global-count").textContent=rows.length+" sample products";$("global-rows").innerHTML=rows.map(x=>'<tr data-item="'+esc(x.item)+'"><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.pack)+'</td><td>'+esc(window.__inspectionPeriodLabel?window.__inspectionPeriodLabel(x):x.plant)+'</td><td>↗</td></tr>').join("")||'<tr><td colspan="7" class="empty">No matching products</td></tr>';$("global-rows").querySelectorAll("tr[data-item]").forEach(tr=>tr.onclick=()=>{let x=demo.find(p=>p.item===tr.dataset.item);navigate(x.category.toLowerCase());selected=x;showProduct();});}
-["global-query","f-category","f-brand","f-pack","f-producer"].forEach(id=>$(id).addEventListener("input",renderGlobal));$("global-search").onclick=renderGlobal;$("global-clear").onclick=()=>{["global-query","f-category","f-brand","f-pack","f-producer"].forEach(id=>$(id).value="");renderGlobal();};
+function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||"Select or scan a product";$("product-chip").textContent=x?x.category.toUpperCase()+" PRODUCT":"NO ITEM SELECTED";["item","brand","producer","description","pack"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";$("photo-area").querySelector("strong").textContent=photoName||"Click to select a photo";}
 function lookup(){let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));if($("quick-brand").value)matches=matches.filter(x=>x.brand===$("quick-brand").value);if($("quick-pack").value)matches=matches.filter(x=>x.pack===$("quick-pack").value);if($("quick-desc").value.trim())matches=matches.filter(x=>x.description.toLowerCase().includes($("quick-desc").value.toLowerCase()));selected=matches[0]||null;history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup()};$("filter-toggle").onclick=()=>$("lookup-filters").classList.toggle("hidden");$("history-all").onclick=()=>navigate("history");
@@ -199,7 +216,7 @@ function closeModal(){$("modal-root").innerHTML="";}
 $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an existing image or upload a new one. This preview does not save files.</p><div class="choice" id="choose-gallery">▦ &nbsp; Browse photo gallery</div><div class="choice" id="choose-upload">＋ &nbsp; Add a new photo</div><div class="choice" id="choose-remove">× &nbsp; Remove assigned photo</div>');$("choose-gallery").onclick=gallery;$("choose-upload").onclick=upload;$("choose-remove").onclick=()=>{photoName="";showProduct();closeModal()};};
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
 function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this device to preview its filename.</p><input type="file" id="photo-file" accept="image/*" class="input" style="width:100%">');$("photo-file").onchange=e=>{photoName=e.target.files?.[0]?.name||"";showProduct();closeModal()};}
-$("edit-btn").onclick=()=>{let x=selected||{item:"",brand:"",description:"",producer:"",plant:"",pack:"",size:""};modal('<h2>Edit product · Admin</h2><p>Layout prototype. Changes are temporary and are not written to a database.</p><div class="edit-grid">'+[["item","Item number"],["plant",view==="dairy"?"Plant number":"EST"],["brand","Brand / Class"],["producer","Producer"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<div><div class="label">'+label+'</div><input class="input" id="edit-'+k+'" value="'+esc(x[k])+'"></div>').join("")+'</div><div class="edit-reference-field"><div class="label">Alternative EST / Plant references (comma-separated)</div><input class="input" id="edit-alternative-est" style="width:100%" placeholder="e.g. P-301, P-1029" value="'+esc(window.__inspectionGetAlternativeRefs?.(x.item)||"")+'"><div class="muted small" style="margin-top:4px">References are editable; percentages are calculated only from physical verifications.</div></div><div style="margin-top:18px"><button class="btn primary" id="save-demo">Save demo changes</button></div>');$("save-demo").onclick=()=>{let obj={...x,category:view==="dairy"?"Dairy":"Meat"};["item","plant","brand","producer","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value);if(!obj.item.trim()){alert("Item number required");return;}let i=demo.findIndex(p=>p.item===x.item&&p.category===x.category);if(i>=0)demo[i]=obj;else demo.push(obj);selected=obj;if(window.__inspectionSaveAlternativeRefs)window.__inspectionSaveAlternativeRefs(obj.item,$("edit-alternative-est").value,obj.plant);showProduct();renderGlobal();closeModal();};};
+$("edit-btn").onclick=()=>{let x=selected||{item:"",brand:"",description:"",producer:"",plant:"",pack:"",size:""};modal('<h2>Edit product · Admin</h2><p>Layout prototype. Changes are temporary and are not written to a database.</p><div class="edit-grid">'+[["item","Item number"],["plant",view==="dairy"?"Plant number":"EST"],["brand","Brand / Class"],["producer","Producer"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<div><div class="label">'+label+'</div><input class="input" id="edit-'+k+'" value="'+esc(x[k])+'"></div>').join("")+'</div><div class="edit-reference-field"><div class="label">Alternative EST / Plant references (comma-separated)</div><input class="input" id="edit-alternative-est" style="width:100%" placeholder="e.g. P-301, P-1029" value="'+esc(window.__inspectionGetAlternativeRefs?.(x.item)||"")+'"><div class="muted small" style="margin-top:4px">References are editable; percentages are calculated only from physical verifications.</div></div><div style="margin-top:18px"><button class="btn primary" id="save-demo">Save demo changes</button></div>');$("save-demo").onclick=()=>{let obj={...x,category:view==="dairy"?"Dairy":"Meat"};["item","plant","brand","producer","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value);if(!obj.item.trim()){alert("Item number required");return;}let i=demo.findIndex(p=>p.item===x.item&&p.category===x.category);if(i>=0)demo[i]=obj;else demo.push(obj);if(window.__inspectionSaveCatalog)window.__inspectionSaveCatalog();selected=obj;if(window.__inspectionSaveAlternativeRefs)window.__inspectionSaveAlternativeRefs(obj.item,$("edit-alternative-est").value,obj.plant);showProduct();renderGlobal();closeModal();};};
 ["demo-export","demo-backup","demo-sync"].forEach(id=>$(id).onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration."));
 renderGlobal();renderRecent();
 </script>
@@ -1566,66 +1583,151 @@ html,body{width:100%;max-width:100%;margin:0}
 </style>
 
 <script>
-/* Catalog query is intentionally read-only and never calls __inspectionOnLookup. */
+/* Global catalog query is separate from the PO and verification workflow. */
 (function(){
-const byId=id=>document.getElementById(id);
-const lookupView=byId("lookup-view");
-const queryWorkspace=byId("inspection-query-workspace");
-const modeItem=byId("inspection-mode-item"),modeCatalog=byId("inspection-mode-catalog");
-const conditions=byId("inspection-query-conditions"),toggle=byId("inspection-query-toggle");
+const $=id=>document.getElementById(id);
+const viewEl=$("lookup-view"),query=$("inspection-query-workspace");
+const modeItem=$("inspection-mode-item"),modeCatalog=$("inspection-mode-catalog");
+const conditions=$("inspection-query-conditions"),toggle=$("inspection-query-toggle");
 const fields=["brand","category","pack","size","producer"];
+const editable=["category","brand","description","pack","size","plant","producer"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let matched=[],selectedIds=new Set();
 function setMode(catalog){
- lookupView.classList.toggle("catalog-mode",catalog);
- queryWorkspace.classList.toggle("hidden",!catalog);
+ viewEl.classList.toggle("catalog-mode",catalog);
+ query.classList.toggle("hidden",!catalog);
  modeItem.classList.toggle("active",!catalog);modeCatalog.classList.toggle("active",catalog);
  modeItem.setAttribute("aria-pressed",String(!catalog));modeCatalog.setAttribute("aria-pressed",String(catalog));
- if(catalog)byId("iq-text").focus();
+ if(catalog){$("iq-text").focus();}
 }
-modeItem.onclick=()=>setMode(false);
-modeCatalog.onclick=()=>setMode(true);
+modeItem.onclick=()=>setMode(false);modeCatalog.onclick=()=>setMode(true);
 toggle.onclick=()=>{
  const open=conditions.classList.toggle("hidden")===false;
  toggle.setAttribute("aria-expanded",String(open));
- toggle.textContent=open?"▴ Hide conditions":"☷ Add conditions";
+ toggle.textContent=open?"▴ Hide filters":"☷ Filters";
 };
-for(const field of fields){
- const el=byId("iq-"+field),options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
- el.innerHTML='<option value="">All '+safe(field==="category"?"categories":field==="size"?"sizes":field==="pack"?"packs":field==="producer"?"producers":"brands")+'</option>'+options.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join("");
+function populate(){
+ for(const field of fields){
+  const el=$("iq-"+field),current=el.value;
+  const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes",producer:"producers"}[field];
+  el.innerHTML='<option value="">All '+label+'</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
+  if(options.includes(current))el.value=current;
+ }
 }
-let matched=[];
-function matches(x){
- const text=byId("iq-text").value.trim().toLowerCase();
+function match(x){
+ const text=$("iq-text").value.trim().toLowerCase();
  if(text&&!Object.values(x).some(v=>String(v??"").toLowerCase().includes(text)))return false;
- for(const field of fields){const value=byId("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
- const desc=byId("iq-description").value.trim().toLowerCase(),est=byId("iq-est").value.trim().toLowerCase();
+ for(const field of fields){const value=$("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
+ const desc=$("iq-description").value.trim().toLowerCase(),est=$("iq-est").value.trim().toLowerCase();
  if(desc&&!String(x.description??"").toLowerCase().includes(desc))return false;
  if(est&&!String(x.plant??"").toLowerCase().includes(est))return false;
  return true;
 }
-function run(){
- matched=demo.filter(matches);
- byId("iq-results").classList.remove("hidden");
- byId("iq-count").textContent=matched.length+" of "+demo.length+" products";
- byId("iq-rows").innerHTML=matched.map(x=>"<tr>"+["item","category","brand","description","pack","size","plant","producer"].map(field=>"<td>"+safe(x[field])+"</td>").join("")+"</tr>").join("")||'<tr><td colspan="8" class="empty">No matching products. Try removing a condition.</td></tr>';
- byId("iq-export").disabled=matched.length===0;
+function selectionLabel(){
+ $("iq-selected-count").textContent=selectedIds.size+" selected";
+ $("iq-select-all").checked=matched.length>0&&matched.every(x=>selectedIds.has(x.item));
+ $("iq-select-all").indeterminate=selectedIds.size>0&&!$("iq-select-all").checked;
+ $("iq-bulk-apply").disabled=selectedIds.size===0;
 }
-byId("iq-run").onclick=run;
-byId("iq-text").onkeydown=e=>{if(e.key==="Enter")run();};
-byId("iq-clear").onclick=()=>{
- for(const field of fields)byId("iq-"+field).value="";
- for(const id of ["iq-text","iq-description","iq-est"])byId(id).value="";
- matched=[];byId("iq-results").classList.add("hidden");
+function draw(){
+ $("iq-results").classList.remove("hidden");
+ $("iq-count").textContent=matched.length+" of "+demo.length+" products";
+ $("iq-rows").innerHTML=matched.map(x=>{
+  const cells=editable.map(k=>'<td><input class="input iq-cell" data-field="'+k+'" value="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'"></td>').join("");
+  // Place editable category before brand and keep Item number immutable in query results.
+  return '<tr data-iq-item="'+safe(x.item)+'"><td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><button type="button" class="btn mini iq-save">Save</button></td></tr>';
+ }).join("")||'<tr><td colspan="10" class="empty">No matching products. Try removing a condition.</td></tr>';
+ $("iq-export").disabled=matched.length===0;
+ selectionLabel();
+}
+function run(){
+ matched=demo.filter(match);selectedIds=new Set();draw();
+}
+function refreshAfterEdit(){
+ if(typeof showProduct==="function")showProduct();
+ if(typeof renderGlobal==="function")renderGlobal();
+ populate();
+ // Preserve current query results so edited rows do not unexpectedly disappear.
+ draw();
+}
+$("iq-run").onclick=run;
+$("iq-text").onkeydown=e=>{if(e.key==="Enter")run();};
+for(const id of ["iq-description","iq-est"])$(id).onkeydown=e=>{if(e.key==="Enter")run();};
+$("iq-clear").onclick=()=>{
+ for(const field of fields)$("iq-"+field).value="";
+ for(const id of ["iq-text","iq-description","iq-est"])$(id).value="";
+ matched=[];selectedIds.clear();$("iq-results").classList.add("hidden");
 };
-function csvCell(value){const v=String(value??"");return '"'+v.replace(/"/g,'""')+'"';}
-byId("iq-export").onclick=()=>{
+$("iq-select-all").onchange=e=>{
+ selectedIds=e.target.checked?new Set(matched.map(x=>x.item)):new Set();
+ draw();
+};
+$("iq-rows").onchange=e=>{
+ if(!e.target.matches(".iq-select"))return;
+ const tr=e.target.closest("[data-iq-item]"),item=tr.dataset.iqItem;
+ if(e.target.checked)selectedIds.add(item);else selectedIds.delete(item);
+ selectionLabel();
+};
+$("iq-rows").onclick=e=>{
+ const button=e.target.closest(".iq-save");if(!button)return;
+ const tr=button.closest("[data-iq-item]"),x=demo.find(p=>p.item===tr.dataset.iqItem);
+ if(!x)return;
+ const changes={};for(const input of tr.querySelectorAll(".iq-cell"))changes[input.dataset.field]=input.value.trim();
+ if(!changes.description||!changes.brand||!changes.category){alert("Category, brand and description cannot be empty.");return;}
+ if(changes.plant!==x.plant&&!confirm("Update catalog EST / Plant for Item "+x.item+"? This is a reference edit, NOT a physical verification."))return;
+ Object.assign(x,changes);
+ if(!window.__inspectionSaveCatalog())return;
+ refreshAfterEdit();
+};
+$("iq-bulk-apply").onclick=()=>{
+ const field=$("iq-bulk-field").value,value=$("iq-bulk-value").value.trim(),ids=[...selectedIds];
+ if(!ids.length){alert("Select at least one Item.");return;}
+ if(!value){alert("Enter a new value.");return;}
+ if(field==="category"&&!["Meat","Dairy"].includes(value)){alert("Category must be Meat or Dairy.");return;}
+ const notice="Change "+field+" to '"+value+"' for "+ids.length+" selected Items?"+(field==="plant"?" This updates reference EST / Plant only and does NOT record a physical verification.":"");
+ if(!confirm(notice))return;
+ for(const x of demo)if(selectedIds.has(x.item))x[field]=value;
+ if(!window.__inspectionSaveCatalog())return;
+ refreshAfterEdit();
+};
+function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
+$("iq-export").onclick=()=>{
  if(!matched.length)return;
- const cols=[["Item","item"],["Type","category"],["Brand","brand"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Producer","producer"]];
- const csv="\uFEFF"+cols.map(c=>csvCell(c[0])).join(",")+"\r\n"+matched.map(x=>cols.map(c=>csvCell(x[c[1]])).join(",")).join("\r\n");
+ const columns=[["Item","item"],["Type","category"],["Brand","brand"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Producer","producer"]];
+ const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(x[c[1]])).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
- const a=document.createElement("a");a.href=url;a.download="inspection-product-query-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
+populate();
 navigate("meat");
 })();
 </script>
-</body></html>
+<style>
+/* Explicitly isolate both Inspection modes, including dynamically added PO panels. */
+#lookup-view.catalog-mode > .layout,
+#lookup-view.catalog-mode > .history,
+#lookup-view.catalog-mode > .po-archive,
+#lookup-view.catalog-mode > .po-worklog,
+#lookup-view.catalog-mode > .worklog,
+#lookup-view.catalog-mode > .panel:not(:first-child){display:none!important}
+#lookup-view.catalog-mode > .panel:first-child > .toolbar,
+#lookup-view.catalog-mode > .panel:first-child > #lookup-filters{display:none!important}
+#lookup-view.catalog-mode #inspection-query-workspace{display:block!important}
+.inspection-query-bulk{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 12px;background:#f6f9fc;border-top:1px solid #e1e9f0;border-bottom:1px solid #e1e9f0}
+.inspection-query-bulk .input{width:auto;max-width:100%;min-width:120px;flex:0 1 160px}
+.inspection-query-bulk #iq-bulk-value{flex:1 1 180px}
+.inspection-query-select{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;font-weight:650}
+.inspection-query-bulk-divider{flex:1 1 15px}
+.iq-edit-note{padding:8px 12px;background:#fbfcfe}
+#iq-rows .iq-cell{width:100%;min-width:90px;padding:6px 7px;font-size:11px}
+#iq-rows td{min-width:100px;padding:6px}
+#iq-rows td:nth-child(1){min-width:52px;text-align:center}
+#iq-rows td:nth-child(2){min-width:75px}
+#iq-rows td:nth-child(5){min-width:215px}
+#iq-rows td:nth-child(8){min-width:105px}
+#iq-rows td:nth-child(9){min-width:120px}
+#iq-rows td:last-child{min-width:70px}
+@media(max-width:620px){.inspection-query-bulk-divider{display:none}.inspection-query-bulk #iq-bulk-value{flex-basis:100%}}
+</style></body></html>
