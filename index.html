@@ -69,7 +69,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Administrator login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Use your Supabase Auth administrator account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Credentials are cleared when this window closes. The session lasts only while this page remains open.</p></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Administrator account</h3><p class="muted">Your account can modify the official database. Sign out to return to guest access.</p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out</button></div></dialog>
 
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ADMIN WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
@@ -82,14 +82,14 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
 <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
 <label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
-<label><span class="label">EST / Plant</span><select class="input" id="iq-est"></select></label>
+<label><span class="label">EST / Plant</span><select class="input" id="iq-plant"></select></label>
 <label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <div id="iq-results" class="inspection-query-results">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Category</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
-<div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Changes update this browser's catalog reference only — not physical verification history.</div>
+<div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
 <div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Photo</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
 <input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
@@ -910,7 +910,7 @@ function applyRole(){window.InspectionCloud.updateRole();}
 const originalRenderLog=renderLog;
 renderLog=function(){originalRenderLog();applyRole();};
 $("demo-export").onclick=()=>saveCSV("Inspection_History_Demo.csv",[["Date / Time","Item","Category","Brand","Description","Status"],...history.map(x=>[x.time,x.item,x.category,x.brand,x.description,x.status])]);
-$("demo-backup").onclick=()=>alert("Design preview only. Real database backups will be handled in the Windows application.");
+
 
 
 applyRole();
@@ -2675,6 +2675,7 @@ const collectors=new Map(),memory=new Map();
 let official={},revision=0,session=null,administrator=false,ready=false,started=false,saving=false,scheduled=false,offline=false,photoBusy=false,signingIn=false;
 let photoMetadata={},photoDisplay={},photoSignedAt=0;
 const nativeStorage=window.localStorage;
+try{sessionStorage.removeItem('inspection-data-hub-supabase-session-v1');sessionStorage.removeItem('inspection-data-hub-cloud-restored');nativeStorage.removeItem('inspection-data-hub-supabase-config-v1')}catch{}
 const isData=k=>String(k).startsWith('inspection-data-hub-')&&k!=='inspection-data-hub-appearance-v1';
 const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(!canEdit())throw Error('No tienes permisos para modificar la base de datos.');memory.set(k,String(v));scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
 Object.defineProperty(window,'localStorage',{value:adapter,configurable:true});
@@ -2759,7 +2760,7 @@ async function uploadPhotos(item,files){
  }catch(error){if(paths.length&&!committed)try{await request('/storage/v1/object/inspection-photos',{method:'DELETE',body:{prefixes:paths}})}catch{}throw error}
  finally{photoBusy=false;updateRole();if(ready&&!offline)unblock();}
 }
-const MUTATING='#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const MUTATING='.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
 // All actual mutation entry points also persist through the server-enforced commit function.
 for(const event of ['click','change','keydown'])document.addEventListener(event,()=>{if(canEdit())scheduleSave()},false);
@@ -2771,7 +2772,8 @@ async function connect(){
  overlay('Conectando con la base de datos oficial…',true);
  try{await loadState();if(!started){
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
- for(const original of scripts){const node=document.createElement('script');node.textContent=original.textContent;document.body.appendChild(node);node.remove();}
+ let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
+ try{for(const original of scripts){const node=document.createElement('script');node.textContent=original.textContent;document.body.appendChild(node);node.remove();if(startupError)throw startupError;}}finally{window.removeEventListener('error',onStartupError)}
  started=true;
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
