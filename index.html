@@ -91,12 +91,12 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div id="inspection-query-conditions" class="inspection-query-conditions">
 <div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Select filters, then Search. The table below can be edited directly.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
-<label><span class="label">Product group</span><select class="input" id="iq-category"><option value="">All groups</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
+<label><span class="label">Product group</span><select class="input" id="iq-category"><option value="">All groups</option><option value="__inspection_blank__">Blank field</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
 <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
 <label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
 <label><span class="label">EST / Plant</span><select class="input" id="iq-plant"></select></label>
-<label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
+<label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">All descriptions</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <div id="iq-results" class="inspection-query-results">
@@ -1936,6 +1936,8 @@ html,body{width:100%;max-width:100%;margin:0}
 const imagesByItem=window.InspectionCloud.photoMap();
 const $=id=>document.getElementById(id);
 const fields=["brand","pack","size","plant"];
+const BLANK_FILTER="__inspection_blank__";
+const isBlankCatalogField=value=>String(value??"").trim()==="";
 const editable=["category","brand","description","pack","size","plant"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
@@ -1943,10 +1945,10 @@ let matched=[],selectedIds=new Set();
 function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
-  const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(v=>!isBlankCatalogField(v)))].sort((a,b)=>a.localeCompare(b));
   const label={brand:"brands",pack:"packs",size:"sizes",plant:"EST / Plant values"}[field];
-  el.innerHTML='<option value="">All '+label+'</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
-  if(options.includes(current))el.value=current;
+  el.innerHTML='<option value="">All '+label+'</option><option value="__inspection_blank__">Blank field</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
+  if(current===BLANK_FILTER||options.includes(current))el.value=current;
  }
 }
 function groupOf(x){
@@ -1957,9 +1959,12 @@ function groupOf(x){
  return "Meat";
 }
 function match(x){
- for(const field of fields){const value=$("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
+ for(const field of fields){const value=$("iq-"+field).value;if(value===BLANK_FILTER){if(!isBlankCatalogField(x[field]))return false;}else if(value&&String(x[field]??"")!==value)return false;}
  const group=$("iq-category").value;
- if(group&&groupOf(x)!==group)return false;
+ if(group===BLANK_FILTER){if(!isBlankCatalogField(x.category))return false;}else if(group&&groupOf(x)!==group)return false;
+ const descriptionState=$("iq-description-state").value;
+ if(descriptionState==="blank"&&!isBlankCatalogField(x.description))return false;
+ if(descriptionState==="filled"&&isBlankCatalogField(x.description))return false;
  const description=$("iq-description").value.trim().toLocaleLowerCase();
  if(description&&!String(x.description||"").toLocaleLowerCase().includes(description))return false;
  const photo=$("iq-photo").value,hasPhoto=(imagesByItem[x.item]||[]).length>0;
@@ -2004,11 +2009,13 @@ $("iq-run").onclick=run;
 for(const field of fields)$("iq-"+field).addEventListener("change",run);
 $("iq-category").addEventListener("change",run);
 $("iq-description").addEventListener("input",run);
+$("iq-description-state").addEventListener("change",run);
 $("iq-photo").addEventListener("change",run);
 $("iq-reset").onclick=()=>{
  for(const field of fields)$("iq-"+field).value="";
  $("iq-category").value="";
  $("iq-description").value="";
+ $("iq-description-state").value="";
  $("iq-photo").value="";
  run();
 };
@@ -2895,4 +2902,5 @@ document.getElementById('approval-nav').addEventListener('click',loadRequests);
 connect();
 })();
 </script></body></html>
+
 
