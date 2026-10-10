@@ -1642,6 +1642,9 @@ function draw(){
 function run(){
  matched=demo.filter(match);selectedIds=new Set();draw();
 }
+// Show the catalog and its dropdown values before optional event bindings.
+populate();
+run();
 function refreshAfterEdit(){
  if(typeof showProduct==="function")showProduct();
  if(typeof renderGlobal==="function")renderGlobal();
@@ -1724,8 +1727,6 @@ $("iq-export").onclick=()=>{
  const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
-populate();
-run();
 navigate("meat");
 })();
 </script>
