@@ -1908,6 +1908,7 @@ html,body{width:100%;max-width:100%;margin:0}
 <script type="application/inspection-script">
 /* Global catalog query is separate from the PO and verification workflow. */
 (function(){
+const imagesByItem=window.InspectionCloud.photoMap();
 const $=id=>document.getElementById(id);
 const fields=["brand","pack","size","plant"];
 const editable=["category","brand","description","pack","size","plant"];
