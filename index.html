@@ -56,12 +56,12 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div id="inspection-query-conditions" class="inspection-query-conditions">
 <div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Select filters, then Search. The table below can be edited directly.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
-<label><span class="label">Category</span><select class="input" id="iq-category"></select></label>
+<label><span class="label">Product group</span><select class="input" id="iq-category"><option value="">All groups</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
 <label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
 <label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
 <label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
 <label><span class="label">EST / Plant</span><select class="input" id="iq-est"></select></label>
-<label class="iq-full"><span class="label">Description</span><select class="input" id="iq-description"></select></label>
+<label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <div id="iq-results" class="inspection-query-results">
@@ -1601,7 +1601,7 @@ html,body{width:100%;max-width:100%;margin:0}
 /* Global catalog query is separate from the PO and verification workflow. */
 (function(){
 const $=id=>document.getElementById(id);
-const fields=["brand","category","pack","size","plant","description"];
+const fields=["brand","pack","size","plant"];
 const editable=["category","brand","description","pack","size","plant"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set();
@@ -1610,13 +1610,24 @@ function populate(){
  for(const field of fields){
   const el=$("iq-"+field),current=el.value;
   const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const label={brand:"brands",category:"categories",pack:"packs",size:"sizes",plant:"EST / Plant values",description:"descriptions"}[field];
+  const label={brand:"brands",pack:"packs",size:"sizes",plant:"EST / Plant values"}[field];
   el.innerHTML='<option value="">All '+label+'</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
   if(options.includes(current))el.value=current;
  }
 }
+function groupOf(x){
+ // Dairy remains distinct; poultry is identified using the existing product type logic.
+ if(String(x.category||"").toLowerCase()==="dairy")return "Dairy";
+ if(String(x.category||"").toLowerCase()==="poultry")return "Poultry";
+ if(/\b(chicken|turkey|poultry|duck|hen|goose)\b/i.test(String(x.description||"")))return "Poultry";
+ return "Meat";
+}
 function match(x){
  for(const field of fields){const value=$("iq-"+field).value;if(value&&String(x[field]??"")!==value)return false;}
+ const group=$("iq-category").value;
+ if(group&&groupOf(x)!==group)return false;
+ const description=$("iq-description").value.trim().toLocaleLowerCase();
+ if(description&&!String(x.description||"").toLocaleLowerCase().includes(description))return false;
  const photo=$("iq-photo").value,hasPhoto=(imagesByItem[x.item]||[]).length>0;
  if(photo==="with"&&!hasPhoto)return false;
  if(photo==="without"&&hasPhoto)return false;
@@ -1655,9 +1666,13 @@ function refreshAfterEdit(){
 // Filter controls drive the result list; there is no keyword bar or Search button.
 $("iq-run").onclick=run;
 for(const field of fields)$("iq-"+field).addEventListener("change",run);
+$("iq-category").addEventListener("change",run);
+$("iq-description").addEventListener("input",run);
 $("iq-photo").addEventListener("change",run);
 $("iq-reset").onclick=()=>{
  for(const field of fields)$("iq-"+field).value="";
+ $("iq-category").value="";
+ $("iq-description").value="";
  $("iq-photo").value="";
  run();
 };
