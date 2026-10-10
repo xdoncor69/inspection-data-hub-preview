@@ -180,7 +180,38 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div id="brand-directory" class="brand-directory"></div>
 </div>
 </section>
-<section id="sync-view" class="hidden"><div class="panel panel-pad"><div class="section-head"><h3>Database connection</h3><span class="pill">NOT CONNECTED · DESIGN ONLY</span></div><div class="notice">This is a visual preview only. No credentials are saved or transmitted. Supabase integration will be implemented later.</div><div class="settings-grid" style="margin-top:20px"><div><div class="label">Database provider</div><input class="input" value="Supabase (planned)" readonly style="width:100%"></div><div><div class="label">Connection status</div><input class="input" value="Not configured" readonly style="width:100%"></div><div><div class="label">Project URL</div><input class="input" placeholder="https://your-project.supabase.co" readonly style="width:100%"></div><div><div class="label">Authentication</div><input class="input" value="User login / secure session (planned)" readonly style="width:100%"></div></div><div style="margin-top:20px"><button class="btn" id="demo-sync">Test connection (coming soon)</button></div></div></section>
+<section id="sync-view" class="hidden"><div class="panel panel-pad">
+<div class="section-head"><div><h3>Supabase database connection</h3><span class="hint">Secure, per-user cloud backup and synchronization</span></div><span class="pill" id="sb-status">NOT CONNECTED</span></div>
+<div class="notice" id="sb-message">Configure your Supabase project, run the database setup SQL once, then sign in. Existing local data stays untouched until you choose Upload or Download.</div>
+<div class="settings-grid" style="margin-top:20px">
+<label><span class="label">Supabase Project URL</span><input class="input" id="sb-url" type="url" placeholder="https://your-project.supabase.co" autocomplete="url"></label>
+<label><span class="label">Publishable / anon key (public)</span><input class="input" id="sb-key" type="text" placeholder="sb_publishable_... or legacy anon JWT" autocomplete="off"></label>
+<label><span class="label">Account email</span><input class="input" id="sb-email" type="email" placeholder="you@company.com" autocomplete="username"></label>
+<label><span class="label">Account password</span><input class="input" id="sb-password" type="password" placeholder="Supabase Auth user password" autocomplete="current-password"></label>
+</div>
+<div class="row" style="flex-wrap:wrap;gap:8px;margin-top:16px">
+<button class="btn" id="sb-test" type="button">Test project</button>
+<button class="btn primary" id="sb-login" type="button">Sign in to Supabase</button>
+<button class="btn" id="sb-logout" type="button" disabled>Sign out</button>
+</div>
+<div class="panel" style="margin-top:18px;padding:16px">
+<div class="section-head"><div><h3>Cloud data</h3><span class="hint" id="sb-cloud-info">Sign in to check your cloud snapshot.</span></div></div>
+<p class="muted small">Upload saves your current catalog edits, Purchase Orders, physical EST observations and fixed-EST settings to your private Supabase account. Download replaces those local records with your saved cloud copy. Neither action transfers photos.</p>
+<div class="row" style="flex-wrap:wrap;gap:8px;margin-top:12px">
+<button class="btn primary" id="sb-upload" type="button" disabled>↑ Upload local data</button>
+<button class="btn" id="sb-download" type="button" disabled>↓ Download cloud data</button>
+<button class="btn" id="sb-backup" type="button">↓ Backup local JSON</button>
+</div>
+<label style="display:flex;align-items:center;gap:8px;margin-top:15px;font-size:12px"><input type="checkbox" id="sb-auto" disabled> Auto-upload subsequent local changes after initial manual sync</label>
+<div class="muted small" style="margin-top:8px" id="sb-sync-info">Auto-sync is off until you sign in and explicitly upload or download once.</div>
+</div>
+<details style="margin-top:18px"><summary style="cursor:pointer;font-weight:700">One-time database setup (SQL)</summary>
+<p class="muted small">In Supabase → SQL Editor, run the SQL below. It creates a private snapshot table protected by Row Level Security (RLS). Create your user under Authentication → Users, or enable your chosen signup flow. Do not disable RLS.</p>
+<button class="btn mini" type="button" id="sb-copy-sql">Copy SQL</button>
+<pre id="sb-sql-preview" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;background:#f5f8fc;padding:12px;border-radius:8px;max-height:280px;overflow:auto"></pre>
+</details>
+<p class="muted small" style="margin-top:12px"><strong>Security:</strong> Never paste a service_role / secret key, database password, or connection string here. Only a public Supabase key is allowed. Data is isolated by authenticated user, not shared across employees. This browser preview is not a production permission system.</p>
+</div></section>
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
 <script>
 const demo=[
@@ -203,7 +234,7 @@ window.__inspectionSaveCatalog=function(){
  try{
   const entries={};
   for(const product of demo)entries[product.item]={category:product.category,brand:product.brand,description:product.description,pack:product.pack,plant:product.plant,producer:product.producer,size:product.size};
-  localStorage.setItem(CATALOG_STORAGE_KEY,JSON.stringify(entries));
+  localStorage.setItem(CATALOG_STORAGE_KEY,JSON.stringify(entries));window.dispatchEvent(new Event("inspection:local-change"));
   return true;
  }catch(error){console.error("Could not save local catalog changes",error);alert("Unable to save catalog edits in this browser. Check storage settings.");return false;}
 };
@@ -406,7 +437,7 @@ if(Array.isArray(data.invoices))invoices=data.invoices.filter(x=>x&&typeof x.po=
 }catch(e){console.warn("PO workspace not available",e);}
 }
 function persistPOWorkspace(){
-try{localStorage.setItem(poStorageKey,JSON.stringify({draft:log,invoices}));return true;}
+try{localStorage.setItem(poStorageKey,JSON.stringify({draft:log,invoices}));window.dispatchEvent(new Event("inspection:local-change"));return true;}
 catch(e){console.warn("Could not save PO workspace",e);alert("Browser storage is unavailable or full. Export your PO as CSV before closing the page.");return false;}
 }
 const localDate=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");};
@@ -448,7 +479,7 @@ return '<span class="po-priority '+level+'" title="'+safe(p.reason)+'">'+label+'
 window.__inspectionFixedESTOverride=item=>Object.prototype.hasOwnProperty.call(fixedESTOverrides,item)?fixedESTOverrides[item]:null;
 function setFixedEST(item,value){
 fixedESTOverrides[item]=!!value;
-try{localStorage.setItem(fixedESTKey,JSON.stringify(fixedESTOverrides));}catch(e){alert("Could not save fixed EST classification in this browser.");}
+try{localStorage.setItem(fixedESTKey,JSON.stringify(fixedESTOverrides));window.dispatchEvent(new Event("inspection:local-change"));}catch(e){alert("Could not save fixed EST classification in this browser.");}
 renderPOArchive();
 }
 window.__inspectionPOChanges=()=>invoices.flatMap(p=>p.rows.filter(x=>x.verifiedAt&&x.changeFrom&&x.changeTo&&!sameESTs(x.changeFrom,x.changeTo)).map(x=>({item:x.item,date:x.verifiedAt,from:x.changeFrom,to:x.changeTo,description:x.description}))).sort((a,b)=>b.date.localeCompare(a.date));
@@ -599,7 +630,7 @@ const originalRenderLog=renderLog;
 renderLog=function(){originalRenderLog();applyRole();};
 $("demo-export").onclick=()=>saveCSV("Inspection_History_Demo.csv",[["Date / Time","Item","Category","Brand","Description","Status"],...history.map(x=>[x.time,x.item,x.category,x.brand,x.description,x.status])]);
 $("demo-backup").onclick=()=>alert("Design preview only. Real database backups will be handled in the Windows application.");
-$("demo-sync").onclick=()=>alert("Supabase connection is not implemented in this design preview. Never enter real credentials here.");
+
 $("page-subtitle").insertAdjacentHTML("afterend",'<div class="small muted" style="margin-top:6px">Interactive design mockup · sample products, local session only · no official inspection records</div>');
 applyRole();
 })();
@@ -1121,7 +1152,7 @@ if(!clean.length)return false;
 save(item,clean,date,note||"");
 for(const est of clean)if(window.__inspectionRecordEstReference)window.__inspectionRecordEstReference(item,est);
 poChecks.push({item,ests:clean,date,note:note||""});
-try{localStorage.setItem(poChecksKey,JSON.stringify(poChecks));}catch(e){console.warn("PO observation storage unavailable",e);alert("Verification recorded in this session but not stored in the browser.");}
+try{localStorage.setItem(poChecksKey,JSON.stringify(poChecks));window.dispatchEvent(new Event("inspection:local-change"));}catch(e){console.warn("PO observation storage unavailable",e);alert("Verification recorded in this session but not stored in the browser.");}
 afterSave();return true;
 };
 $("quick-queue-add").onclick=()=>{
@@ -1823,4 +1854,87 @@ body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
 #global-view .inspection-query-results{display:block}
 #global-view #iq-results .tablewrap{max-width:100%;overflow-x:auto}
 @media(max-width:620px){#global-view .iq-filter-actions .btn{flex:1 1 auto}}
-</style></body></html>
+</style><script>
+/* Real Supabase Auth + PostgREST integration. No privileged keys, no implicit overwrites. */
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const SQL="create table if not exists public.inspection_snapshots (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz not null default now()\n);\nalter table public.inspection_snapshots enable row level security;\nrevoke all on public.inspection_snapshots from anon;\ngrant select, insert, update on public.inspection_snapshots to authenticated;\ndrop policy if exists \"Read own inspection snapshot\" on public.inspection_snapshots;\ncreate policy \"Read own inspection snapshot\" on public.inspection_snapshots\nfor select to authenticated using ((select auth.uid()) = user_id);\ndrop policy if exists \"Insert own inspection snapshot\" on public.inspection_snapshots;\ncreate policy \"Insert own inspection snapshot\" on public.inspection_snapshots\nfor insert to authenticated with check ((select auth.uid()) = user_id);\ndrop policy if exists \"Update own inspection snapshot\" on public.inspection_snapshots;\ncreate policy \"Update own inspection snapshot\" on public.inspection_snapshots\nfor update to authenticated using ((select auth.uid()) = user_id)\nwith check ((select auth.uid()) = user_id);";
+$("sb-sql-preview").textContent=SQL;
+const CONFIG_KEY="inspection-data-hub-supabase-config-v1";
+const SESSION_KEY="inspection-data-hub-supabase-session-v1";
+const DATA_KEYS=[
+ "inspection-data-hub-catalog-overrides-v1",
+ "inspection-data-hub-po-workspace-v1",
+ "inspection-data-hub-po-observations-v1",
+ "inspection-data-hub-fixed-est-v1"
+];
+let session=null,connected=false,auto=false,busy=false,dirty=false,timer=null,cloudExists=false;
+const cfg=()=>({url:$("sb-url").value.trim().replace(/\/+$/,""),key:$("sb-key").value.trim()});
+function message(text,isError=false){$("sb-message").textContent=text;$("sb-message").style.color=isError?"#a12736":"";}
+function status(){const label=session?"SIGNED IN":"NOT CONNECTED";$("sb-status").textContent=label;$("sb-upload").disabled=!session||busy;$("sb-download").disabled=!session||busy||!cloudExists;$("sb-logout").disabled=!session||busy;$("sb-auto").disabled=!session||busy;$("sb-login").disabled=busy;$("sb-test").disabled=busy;$("sb-auto").checked=auto;}
+function configValid(){const c=cfg();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.url))throw Error("Enter your Supabase project URL (https://project-ref.supabase.co).");if(!c.key||/^sb_secret_|^sb_service_role_/i.test(c.key)||c.key.includes("service_role"))throw Error("Use only the public publishable or anon key. Never enter a secret/service_role key.");return c;}
+function saveConfig(){const c=configValid();localStorage.setItem(CONFIG_KEY,JSON.stringify(c));return c;}
+function persistSession(){if(session)sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));else sessionStorage.removeItem(SESSION_KEY);}
+async function api(path,{method="GET",body,auth=true,headers={}}={}){
+ const c=configValid();let token=auth?session?.access_token:null;
+ const request=async bearer=>fetch(c.url+path,{method,headers:{"apikey":c.key,...(bearer?{"Authorization":"Bearer "+bearer}:{}),...(body!==undefined?{"Content-Type":"application/json"}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})});
+ let response=await request(token);
+ if(response.status===401&&auth&&session?.refresh_token){
+  const refreshed=await fetch(c.url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"apikey":c.key,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});
+  if(refreshed.ok){const data=await refreshed.json();session={...session,...data};persistSession();response=await request(session.access_token);}
+ }
+ if(!response.ok){let info="";try{const data=await response.json();info=data.message||data.error_description||data.hint||data.error||data.code||"";}catch{}throw Error("Supabase HTTP "+response.status+(info?": "+info:"")+(response.status===404?" — run the SQL setup first.":""));}
+ if(response.status===204)return null;
+ const raw=await response.text();return raw?JSON.parse(raw):null;
+}
+function localSnapshot(){const data={schema_version:1,saved_at:new Date().toISOString(),records:{}};for(const key of DATA_KEYS){const raw=localStorage.getItem(key);if(raw!==null){try{data.records[key]=JSON.parse(raw);}catch{throw Error("Invalid local JSON for "+key+". Make a backup before syncing.");}}}return data;}
+function downloadFile(name,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function cloudCheck(){const rows=await api("/rest/v1/inspection_snapshots?select=updated_at&user_id=eq."+encodeURIComponent(session.user.id)+"&limit=1");cloudExists=rows.length>0;$("sb-cloud-info").textContent=cloudExists?"Cloud snapshot found · last updated "+new Date(rows[0].updated_at).toLocaleString():"No cloud snapshot yet. Upload local data to create one.";status();}
+async function upload({quiet=false}={}){
+ if(!session)throw Error("Sign in first.");
+ const payload=localSnapshot();
+ await api("/rest/v1/inspection_snapshots?on_conflict=user_id",{method:"POST",body:{user_id:session.user.id,payload,updated_at:new Date().toISOString()},headers:{"Prefer":"resolution=merge-duplicates,return=minimal"}});
+ cloudExists=true;dirty=false;$("sb-sync-info").textContent="Last uploaded "+new Date().toLocaleString()+(auto?" · Auto-sync on":"");
+ if(!quiet)message("Local catalog and PO data uploaded to your Supabase account.");
+ status();
+}
+async function download(){
+ if(!session)throw Error("Sign in first.");
+ const rows=await api("/rest/v1/inspection_snapshots?select=payload,updated_at&user_id=eq."+encodeURIComponent(session.user.id)+"&limit=1");
+ if(!rows.length)throw Error("No cloud snapshot exists. Upload your local data first.");
+ const payload=rows[0].payload;
+ if(payload?.schema_version!==1||!payload.records||typeof payload.records!=="object"||Array.isArray(payload.records))throw Error("Unexpected cloud snapshot format; local data was not changed.");
+ if(!confirm("Replace this browser's local catalog edits, POs and EST observations with the Supabase copy? Download a local JSON backup first. This cannot be undone."))return;
+ downloadFile("inspection-before-cloud-restore-"+new Date().toISOString().slice(0,10)+".json",localSnapshot());
+ for(const key of DATA_KEYS){if(Object.prototype.hasOwnProperty.call(payload.records,key))localStorage.setItem(key,JSON.stringify(payload.records[key]));else localStorage.removeItem(key);}
+ sessionStorage.setItem("inspection-data-hub-cloud-restored","1");
+ location.reload();
+}
+async function task(fn){if(busy)return;busy=true;status();try{await fn();}catch(error){message(error.message||String(error),true);console.error("Supabase sync:",error);}finally{busy=false;status();}}
+$("sb-test").onclick=()=>task(async()=>{saveConfig();await api("/auth/v1/settings",{auth:false});message("Supabase project is reachable. Next, sign in to verify table access.");});
+$("sb-login").onclick=()=>task(async()=>{
+ const c=saveConfig(),email=$("sb-email").value.trim(),password=$("sb-password").value;
+ if(!email||!password)throw Error("Enter your Supabase Auth email and password.");
+ const response=await fetch(c.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":c.key,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+ const data=await response.json();if(!response.ok)throw Error(data.msg||data.error_description||data.message||"Login failed");
+ if(!data.access_token||!data.user?.id)throw Error("Supabase did not return an authenticated user.");
+ session=data;persistSession();$("sb-password").value="";auto=false;await cloudCheck();
+ message("Signed in as "+data.user.email+". Choose Upload or Download to initialize synchronization.");
+});
+$("sb-logout").onclick=()=>task(async()=>{session=null;auto=false;cloudExists=false;persistSession();$("sb-cloud-info").textContent="Signed out.";message("Signed out. Your browser data remains intact.");});
+$("sb-upload").onclick=()=>task(async()=>{if(!confirm("Upload this browser's current data to Supabase? This REPLACES the cloud snapshot for your account."))return;await upload();auto=true;$("sb-auto").checked=true;$("sb-sync-info").textContent="Auto-sync enabled. Changes in this browser will upload to your account.";});
+$("sb-download").onclick=()=>task(download);
+$("sb-backup").onclick=()=>{try{downloadFile("inspection-local-backup-"+new Date().toISOString().slice(0,10)+".json",localSnapshot());}catch(error){message(error.message,true);}};
+$("sb-copy-sql").onclick=()=>{navigator.clipboard.writeText(SQL).then(()=>message("SQL copied. Run it once in Supabase SQL Editor."),()=>message("Could not copy automatically; select the SQL text below.",true));};
+$("sb-auto").onchange=e=>{auto=e.target.checked;if(auto&&!cloudExists){auto=false;message("Upload local data before enabling auto-sync.",true);}else $("sb-sync-info").textContent=auto?"Auto-upload is on. Local changes are queued for Supabase.":"Auto-upload is off.";status();};
+window.addEventListener("inspection:local-change",()=>{
+ if(!auto||!session)return;dirty=true;clearTimeout(timer);
+ timer=setTimeout(()=>{if(!auto||!dirty)return;if(busy){timer=setTimeout(()=>window.dispatchEvent(new Event("inspection:local-change")),1000);return;}task(async()=>{await upload({quiet:true});});},1200);
+});
+try{const saved=JSON.parse(localStorage.getItem(CONFIG_KEY)||"null");if(saved?.url)$("sb-url").value=saved.url;if(saved?.key)$("sb-key").value=saved.key;}catch{}
+try{const stored=JSON.parse(sessionStorage.getItem(SESSION_KEY)||"null");if(stored?.access_token&&stored?.user?.id){session=stored;task(async()=>{await cloudCheck();message("Supabase session restored. Auto-sync is off until enabled.");});}}catch{}
+if(sessionStorage.getItem("inspection-data-hub-cloud-restored")){sessionStorage.removeItem("inspection-data-hub-cloud-restored");message("Cloud data downloaded. Catalog and PO workspace loaded from Supabase.");}
+status();
+})();
+</script></body></html>
