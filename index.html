@@ -2336,7 +2336,8 @@ function compare(product,original,provided){
  if(original)for(const key of keys){
   if(!provided.has(key))continue;
   const a=trim(original[key]),b=trim(product[key]);
-  if(a!==b)diffs.push({key,from:a,to:b});
+  // Missing spreadsheet cells are not destructive updates; keep the comparison consistent with saving.
+  if(b&&a!==b)diffs.push({key,from:a,to:b});
  }
  return diffs;
 }
