@@ -47,7 +47,7 @@ body.print-global #lookup-view,body.print-global #history-view,body.print-global
 table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 }
 </style></head><body>
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Verification History</button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● DESIGN PREVIEW · v0.3<br><br>ADMIN WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ UI DEMO · SAMPLE DATA</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
@@ -258,6 +258,26 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="tablewrap"><table class="ip-review-table"><thead><tr><th>Item</th><th>Brand</th><th>Type</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Comparison</th><th>Changes</th><th>Decision</th></tr></thead><tbody id="ip-review-rows"><tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr></tbody></table></div>
 <div class="row" style="gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:14px"><span class="muted small" id="ip-selection">0 selected</span><button type="button" class="btn primary" id="ip-commit" disabled>Apply selected changes</button></div>
 </div></section>
+<section id="settings-view" class="hidden">
+<div class="panel panel-pad skin-settings">
+<div class="section-head"><div><h3>Appearance</h3><span class="hint">Three carefully designed visual identities · same tools, same data, same workflow</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
+<p class="muted" style="margin:0 0 20px;line-height:1.65">Switch the interface style instantly. This changes only the visual design: colors, surfaces, typography, borders, buttons and spacing. Your products, Purchase Orders, filters and database connection remain unchanged.</p>
+<div class="skin-gallery">
+<button type="button" class="skin-choice active" data-skin-choice="executive" aria-pressed="true">
+<div class="skin-preview skin-preview-executive" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>01 · Slate Executive</strong><small>Deep navy, refined blue and restrained precision. Built for operational clarity.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+<button type="button" class="skin-choice" data-skin-choice="editorial" aria-pressed="false">
+<div class="skin-preview skin-preview-editorial" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>02 · Ivory Editorial</strong><small>Warm porcelain, graphite ink and bronze details. Calm, distinctive and premium.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+<button type="button" class="skin-choice" data-skin-choice="graphite" aria-pressed="false">
+<div class="skin-preview skin-preview-graphite" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>03 · Graphite Studio</strong><small>Dark charcoal, mineral gray and mint accents. A focused modern control room.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+</div>
+<div class="skin-setting-footer"><div><strong>Your choice is saved in this browser.</strong><div class="muted small">Switch anytime. Appearance settings do not change your Supabase data.</div></div><button class="btn" type="button" id="skin-reset">Restore Slate Executive</button></div>
+</div></section>
 <section id="sync-view" class="hidden"><div class="panel panel-pad">
 <div class="section-head"><div><h3>Supabase database connection</h3><span class="hint">Secure, per-user cloud backup and synchronization</span></div><span class="pill" id="sb-status">NOT CONNECTED</span></div>
 <div class="notice" id="sb-message">Configure your Supabase project, run the database setup SQL once, then sign in. Existing local data stays untouched until you choose Upload or Download.</div>
@@ -320,8 +340,8 @@ window.__inspectionSaveCatalog=function(){
 };
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const sections=["global","lookup","history","sync","guide","brands","import"];
-function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+const sections=["global","lookup","history","sync","guide","brands","import","settings"];
+function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={settings:["Settings","Choose your preferred visual theme · Changes apply instantly"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Verification History","Review physical EST changes and their statistics across all saved POs"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -2490,5 +2510,136 @@ el("ip-commit").onclick=()=>{
 };
 document.querySelector('[data-view="import"]').addEventListener("click",count);
 count();draw();
+})();
+</script><style id="inspection-skins">
+/* Three visual skins. Overrides only; application structure and business behavior unchanged. */
+:root{
+ --sk-bg:#eef2f6;--sk-surface:#fff;--sk-surface2:#f4f7fa;--sk-border:#dce5ed;--sk-ink:#20364b;--sk-muted:#72869a;--sk-accent:#286a9b;--sk-accent-hover:#1d557f;--sk-accent-soft:#e8f2fa;--sk-sidebar:#14283e;--sk-sidebar-ink:#bfcfdf;--sk-sidebar-active:#244c70;--sk-head:#f4f7fa;--sk-shadow:0 5px 20px rgba(21,48,75,.055);--sk-radius:12px;--sk-button-radius:8px;
+}
+:root[data-skin="editorial"]{
+ --sk-bg:#f6f3ed;--sk-surface:#fffefa;--sk-surface2:#f7f4ee;--sk-border:#e5ded1;--sk-ink:#302f2a;--sk-muted:#817b70;--sk-accent:#8d5838;--sk-accent-hover:#734429;--sk-accent-soft:#f3e8dc;--sk-sidebar:#282c29;--sk-sidebar-ink:#d0cfc5;--sk-sidebar-active:#414940;--sk-head:#f5f0e7;--sk-shadow:0 4px 18px rgba(55,48,35,.035);--sk-radius:7px;--sk-button-radius:5px;
+}
+:root[data-skin="graphite"]{
+ --sk-bg:#11191c;--sk-surface:#1c272a;--sk-surface2:#243135;--sk-border:#334347;--sk-ink:#ecf4f2;--sk-muted:#a4b7b7;--sk-accent:#70d3bc;--sk-accent-hover:#9ae9d7;--sk-accent-soft:#243f3b;--sk-sidebar:#0c1316;--sk-sidebar-ink:#a8bdbb;--sk-sidebar-active:#233c39;--sk-head:#263438;--sk-shadow:0 8px 28px rgba(0,0,0,.14);--sk-radius:12px;--sk-button-radius:9px;
+}
+:root[data-skin] {color:var(--sk-ink);background:var(--sk-bg);color-scheme:light}
+:root[data-skin="graphite"]{color-scheme:dark}
+:root[data-skin] body{background:var(--sk-bg);color:var(--sk-ink)}
+:root[data-skin] .main{color:var(--sk-ink)}
+:root[data-skin] .sidebar{background:var(--sk-sidebar);color:var(--sk-sidebar-ink)}
+:root[data-skin] .sidebar .brand{color:#fff}
+:root[data-skin] .sidebar .brand span{color:var(--sk-accent)}
+:root[data-skin] .sidebar .nav{color:var(--sk-sidebar-ink);border-radius:var(--sk-button-radius)}
+:root[data-skin] .sidebar .nav:hover,:root[data-skin] .sidebar .nav.active{background:var(--sk-sidebar-active);color:#fff}
+:root[data-skin] .sidebar .nav.active{box-shadow:inset 3px 0 0 var(--sk-accent)}
+:root[data-skin] .sidebar .side-foot{color:var(--sk-sidebar-ink);border-color:var(--sk-border)}
+:root[data-skin] .title,:root[data-skin] .section-head h3,:root[data-skin] .product-header h2{color:var(--sk-ink)}
+:root[data-skin] .subtitle,:root[data-skin] .eyebrow,:root[data-skin] .muted,:root[data-skin] .section-head .hint,:root[data-skin] .label,:root[data-skin] .hint{color:var(--sk-muted)}
+:root[data-skin] .panel,:root[data-skin] .card,:root[data-skin] .brand-card{background:var(--sk-surface);border-color:var(--sk-border);border-radius:var(--sk-radius);box-shadow:var(--sk-shadow);color:var(--sk-ink)}
+:root[data-skin] .brand-card{background:var(--sk-surface2)}
+:root[data-skin] .brand-card strong,:root[data-skin] .strong{color:var(--sk-ink)}
+:root[data-skin] .input,:root[data-skin] input:not([type="checkbox"]):not([type="radio"]),:root[data-skin] select,:root[data-skin] textarea{background:var(--sk-surface);border-color:var(--sk-border);color:var(--sk-ink);border-radius:var(--sk-button-radius)}
+:root[data-skin] .input::placeholder,:root[data-skin] input::placeholder,:root[data-skin] textarea::placeholder{color:var(--sk-muted);opacity:.75}
+:root[data-skin] .input:focus,:root[data-skin] input:focus,:root[data-skin] select:focus,:root[data-skin] textarea:focus{outline:2px solid var(--sk-accent);outline-offset:1px;box-shadow:0 0 0 3px var(--sk-accent-soft)}
+:root[data-skin] .btn{background:var(--sk-surface);color:var(--sk-ink);border-color:var(--sk-border);border-radius:var(--sk-button-radius);box-shadow:none}
+:root[data-skin] .btn:hover{background:var(--sk-surface2)}
+:root[data-skin] .btn.primary,:root[data-skin] button.primary{background:var(--sk-accent);border-color:var(--sk-accent);color:#fff}
+:root[data-skin] .btn.primary:hover,:root[data-skin] button.primary:hover{background:var(--sk-accent-hover);border-color:var(--sk-accent-hover)}
+:root[data-skin="graphite"] .btn.primary,:root[data-skin="graphite"] button.primary{color:#0c2320}
+:root[data-skin="graphite"] .btn.primary:hover,:root[data-skin="graphite"] button.primary:hover{color:#0c2320}
+:root[data-skin] .btn.soft{background:var(--sk-accent-soft);color:var(--sk-accent);border-color:var(--sk-border)}
+:root[data-skin] .pill{background:var(--sk-surface2);border-color:var(--sk-border);color:var(--sk-muted)}
+:root[data-skin] .avatar{background:var(--sk-accent-soft);color:var(--sk-accent)}
+:root[data-skin] .notice{background:var(--sk-accent-soft);border-color:var(--sk-border);color:var(--sk-ink);border-radius:var(--sk-button-radius)}
+:root[data-skin] th{background:var(--sk-head);color:var(--sk-muted);border-color:var(--sk-border)}
+:root[data-skin] td{color:var(--sk-ink);border-color:var(--sk-border)}
+:root[data-skin] tbody tr:hover{background:var(--sk-surface2)}
+:root[data-skin] .tablewrap{border-color:var(--sk-border)}
+:root[data-skin] .app-footer{color:var(--sk-muted);border-color:var(--sk-border)}
+:root[data-skin] .app-footer a{color:var(--sk-accent)}
+:root[data-skin] .inspection-workflow-switch,:root[data-skin] #import-view .ip-modes{background:var(--sk-surface2);border-color:var(--sk-border)}
+:root[data-skin] .inspection-workflow-btn,:root[data-skin] #import-view .ip-mode{color:var(--sk-muted)}
+:root[data-skin] .inspection-workflow-btn.active,:root[data-skin] #import-view .ip-mode.active{background:var(--sk-surface);color:var(--sk-accent);box-shadow:var(--sk-shadow)}
+:root[data-skin] .po-import-summary,:root[data-skin] .ip-review-stats,:root[data-skin] #import-view .ip-feedback{background:var(--sk-surface2);border-color:var(--sk-border);color:var(--sk-ink)}
+:root[data-skin] #lookup-view .invoice-overview-table tr.invoice-row-high{background:color-mix(in srgb,#d9605d 9%,var(--sk-surface))}
+:root[data-skin] #lookup-view .invoice-overview-table tr.invoice-row-medium{background:color-mix(in srgb,#d4a34a 10%,var(--sk-surface))}
+:root[data-skin] #lookup-view .invoice-overview-table tr.invoice-row-stable{background:color-mix(in srgb,#51ae7e 9%,var(--sk-surface))}
+:root[data-skin] #lookup-view .invoice-overview-table tr.invoice-row-low{background:var(--sk-surface2)}
+:root[data-skin] #lookup-view .invoice-overview-table .invoice-est,:root[data-skin] #lookup-view .invoice-overview-table .invoice-history strong{color:var(--sk-accent)}
+:root[data-skin] #lookup-view .invoice-overview-table .invoice-history{color:var(--sk-muted)}
+:root[data-skin] #import-view tr.ip-row-new{background:color-mix(in srgb,#52a775 7%,var(--sk-surface))}
+:root[data-skin] #import-view tr.ip-row-changed{background:color-mix(in srgb,#d2a34d 7%,var(--sk-surface))}
+:root[data-skin] #import-view tr.ip-row-duplicate,:root[data-skin] #import-view tr.ip-row-invalid{background:color-mix(in srgb,#d66a65 7%,var(--sk-surface))}
+:root[data-skin] #inspection-invoice-print-sheet{color:#111}
+:root[data-skin="editorial"] .title{font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.025em}
+:root[data-skin="editorial"] .section-head h3{font-family:Georgia,"Times New Roman",serif;font-size:17px;letter-spacing:-.01em}
+:root[data-skin="editorial"] .sidebar .brand{letter-spacing:.085em}
+:root[data-skin="editorial"] .btn{font-weight:650}
+:root[data-skin="graphite"] .title{letter-spacing:-.035em;font-weight:750}
+:root[data-skin="graphite"] .sidebar .nav.active{box-shadow:inset 3px 0 0 var(--sk-accent)}
+:root[data-skin="graphite"] .po-priority.low,:root[data-skin="graphite"] #lookup-view .po-priority.low{background:#204838;color:#a1f1c4}
+:root[data-skin="graphite"] .po-priority.medium,:root[data-skin="graphite"] #lookup-view .po-priority.medium{background:#554329;color:#f2ce85}
+:root[data-skin="graphite"] .po-priority.high,:root[data-skin="graphite"] #lookup-view .po-priority.high{background:#5b3034;color:#ffb2b2}
+:root[data-skin="graphite"] .est-summary-value,:root[data-skin="graphite"] .est-summary-label{color:var(--sk-ink)}
+:root[data-skin="graphite"] .brand-card p,:root[data-skin="graphite"] .small{color:var(--sk-muted)}
+:root[data-skin="graphite"] #lookup-view .po-import-summary,:root[data-skin="graphite"] #lookup-view .po-import-grid,:root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-intro{color:var(--sk-ink)}
+:root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-results,:root[data-skin="graphite"] #global-view .inspection-query-workspace{background:var(--sk-surface);border-color:var(--sk-border)}
+:root[data-skin="graphite"] #global-view .inspection-query-conditions label,:root[data-skin="graphite"] #global-view .inspection-query-conditions span{color:var(--sk-muted)}
+:root[data-skin="graphite"] #sync-view pre{background:var(--sk-surface2)!important;color:var(--sk-ink)}
+/* Settings gallery: self-contained previews, no change to existing components. */
+.skin-settings .skin-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.skin-settings .skin-choice{appearance:none;border:2px solid var(--sk-border);border-radius:14px;background:var(--sk-surface);padding:9px;text-align:left;color:var(--sk-ink);cursor:pointer;min-width:0;transition:border-color .16s,transform .16s,box-shadow .16s}
+.skin-settings .skin-choice:hover{transform:translateY(-2px);border-color:var(--sk-accent)}
+.skin-settings .skin-choice.active{border-color:var(--sk-accent);box-shadow:0 0 0 3px var(--sk-accent-soft)}
+.skin-settings .skin-choice:focus-visible{outline:3px solid var(--sk-accent);outline-offset:3px}
+.skin-settings .skin-preview{height:168px;border-radius:9px;display:flex;overflow:hidden;background:var(--p-bg);border:1px solid var(--p-border)}
+.skin-preview-executive{--p-bg:#edf2f6;--p-sidebar:#14283e;--p-card:#fff;--p-text:#2d4255;--p-border:#dae4ec;--p-accent:#286a9b;--p-faint:#e4ebf2}
+.skin-preview-editorial{--p-bg:#f6f3ed;--p-sidebar:#282c29;--p-card:#fffefa;--p-text:#3b3932;--p-border:#e5ded1;--p-accent:#8d5838;--p-faint:#eee7dc}
+.skin-preview-graphite{--p-bg:#11191c;--p-sidebar:#0c1316;--p-card:#1c272a;--p-text:#e8f2ef;--p-border:#334347;--p-accent:#70d3bc;--p-faint:#334347}
+.skin-settings .skin-mini-sidebar{width:28%;background:var(--p-sidebar);padding:13px 8px;display:flex;flex-direction:column;gap:12px}
+.skin-settings .skin-mini-sidebar .skin-mini-mark{height:9px;width:70%;background:var(--p-accent);border-radius:2px;margin-bottom:8px}
+.skin-settings .skin-mini-sidebar i{height:7px;width:95%;background:#ffffff33;border-radius:2px}
+.skin-settings .skin-mini-sidebar i:nth-of-type(1){background:var(--p-accent);opacity:.8}
+.skin-settings .skin-mini-main{flex:1;padding:17px 12px;min-width:0}
+.skin-settings .skin-mini-heading{width:55%;height:13px;background:var(--p-text);border-radius:2px;opacity:.85}
+.skin-settings .skin-mini-subheading{width:78%;height:5px;background:var(--p-text);opacity:.3;border-radius:2px;margin:8px 0 14px}
+.skin-settings .skin-mini-card{background:var(--p-card);border:1px solid var(--p-border);border-radius:5px;padding:10px;margin-bottom:8px}
+.skin-settings .skin-mini-label{height:5px;width:33%;background:var(--p-text);opacity:.45;border-radius:2px;margin-bottom:7px}
+.skin-settings .skin-mini-controls{display:flex;gap:5px;height:20px}
+.skin-settings .skin-mini-controls span{flex:1;border:1px solid var(--p-border);border-radius:3px}
+.skin-settings .skin-mini-controls b{width:30%;background:var(--p-accent);border-radius:3px}
+.skin-settings .skin-mini-table{padding:6px 9px}
+.skin-settings .skin-mini-table div{height:6px;border-bottom:1px solid var(--p-faint);margin:5px 0}
+.skin-settings .skin-choice-info{display:flex;flex-direction:column;gap:12px;padding:14px 6px 8px}
+.skin-settings .skin-choice-info strong{font-size:13px;display:block;color:var(--sk-ink);margin-bottom:7px}
+.skin-settings .skin-choice-info small{display:block;color:var(--sk-muted);font-size:11px;line-height:1.6;min-height:52px}
+.skin-settings .skin-selected{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--sk-accent);visibility:hidden}
+.skin-settings .skin-choice.active .skin-selected{visibility:visible}
+.skin-settings .skin-dot{width:7px;height:7px;border-radius:50%;background:var(--sk-accent)}
+.skin-settings .skin-setting-footer{margin-top:22px;padding-top:18px;border-top:1px solid var(--sk-border);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.skin-settings .skin-setting-footer strong{font-size:12px;color:var(--sk-ink)}
+@media(max-width:950px){.skin-settings .skin-gallery{grid-template-columns:1fr}.skin-settings .skin-preview{height:175px}.skin-settings .skin-choice-info small{min-height:0}}
+@media(min-width:951px) and (max-width:1180px){.skin-settings .skin-gallery{gap:9px}.skin-settings .skin-choice-info strong{font-size:11px}}
+@media(max-width:620px){:root[data-skin] .sidebar{background:var(--sk-sidebar)}:root[data-skin] .sidebar .nav.active{box-shadow:inset 0 -3px 0 var(--sk-accent)}.skin-settings .skin-gallery{grid-template-columns:1fr}}
+@media print{:root[data-skin] body{background:white!important;color:#111!important}}
+</style><script>
+/* Appearance preference only; no catalog, PO, sync or business-logic changes. */
+(function(){
+ const key="inspection-data-hub-appearance-v1",allowed=["executive","editorial","graphite"];
+ const labels={executive:"Slate Executive",editorial:"Ivory Editorial",graphite:"Graphite Studio"};
+ function apply(skin){
+  if(!allowed.includes(skin))skin="executive";
+  document.documentElement.setAttribute("data-skin",skin);
+  try{localStorage.setItem(key,skin);}catch(_){}
+  const label=document.getElementById("skin-active-name");if(label)label.textContent=labels[skin];
+  document.querySelectorAll("[data-skin-choice]").forEach(b=>{
+   const active=b.dataset.skinChoice===skin;
+   b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
+  });
+ }
+ let initial="executive";try{initial=localStorage.getItem(key)||initial;}catch(_){}
+ document.querySelectorAll("[data-skin-choice]").forEach(b=>b.addEventListener("click",()=>apply(b.dataset.skinChoice)));
+ document.getElementById("skin-reset").addEventListener("click",()=>apply("executive"));
+ apply(initial);
 })();
 </script></body></html>
