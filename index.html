@@ -74,6 +74,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 #lookup-view :is(#approved-po-panel,.po-archive) .section-head .hint{display:block;margin:0;line-height:1.45}
 #lookup-view :is(#approved-po-panel,.po-archive) .section-head>.row{flex-wrap:wrap}
 </style>
+<style id="settings-sections-layout">#settings-view .settings-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}#settings-view>.skin-settings,#settings-view>#import-view,#settings-view>#sync-view{min-width:0}</style>
 </head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
@@ -90,7 +91,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Introduce el correo y la contraseña de tu cuenta de la aplicación.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">La contraseña no se guarda. La sesión se conserva en este navegador hasta cerrar sesión o cambiar de usuario.</p></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Cuenta de la aplicación</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History <span class="hidden" id="approval-nav-count"></span></button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History <span class="hidden" id="approval-nav-count"></span></button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
@@ -262,6 +263,33 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div id="brand-directory" class="brand-directory"></div>
 </div>
 </section>
+
+<section id="settings-view" class="hidden">
+<div class="settings-tabs panel panel-pad" role="group" aria-label="Settings sections">
+<button class="btn settings-tab active primary" type="button" data-view="settings" aria-pressed="true">Appearance</button>
+<button class="btn settings-tab" type="button" data-view="import" aria-pressed="false">⇧ Import Products</button>
+<button class="btn settings-tab" type="button" data-view="sync" aria-pressed="false">⟳ Database Sync</button>
+</div>
+
+<div class="panel panel-pad skin-settings">
+<div class="section-head"><div><h3>Appearance</h3><span class="hint">Three carefully designed visual identities · same tools, same data, same workflow</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
+<p class="muted" style="margin:0 0 20px;line-height:1.65">Switch the interface style instantly. This changes only the visual design: colors, surfaces, typography, borders, buttons and spacing. Your products, Purchase Orders, filters and database connection remain unchanged.</p>
+<div class="skin-gallery">
+<button type="button" class="skin-choice active" data-skin-choice="executive" aria-pressed="true">
+<div class="skin-preview skin-preview-executive" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>01 · Slate Executive</strong><small>Deep navy, refined blue and restrained precision. Built for operational clarity.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+<button type="button" class="skin-choice" data-skin-choice="editorial" aria-pressed="false">
+<div class="skin-preview skin-preview-editorial" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>02 · Ivory Editorial</strong><small>Warm porcelain, graphite ink and bronze details. Calm, distinctive and premium.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+<button type="button" class="skin-choice" data-skin-choice="graphite" aria-pressed="false">
+<div class="skin-preview skin-preview-graphite" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
+<div class="skin-choice-info"><span><strong>03 · Graphite Studio</strong><small>Dark charcoal, mineral gray and mint accents. A focused modern control room.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
+</button>
+</div>
+<div class="skin-setting-footer"><div><strong>Your choice is saved in this browser.</strong><div class="muted small">Switch anytime. Appearance settings do not change your Supabase data.</div></div><button class="btn" type="button" id="skin-reset">Restore Slate Executive</button></div>
+</div>
 <section id="import-view" class="hidden">
 <div class="panel panel-pad">
 <div class="section-head"><div><h3>Import Products</h3><span class="hint">Add new catalog Items, compare existing records and approve every change</span></div><span class="pill" id="ip-catalog-count">— Items</span></div>
@@ -306,26 +334,6 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="tablewrap"><table class="ip-review-table"><thead><tr><th>Item</th><th>Brand</th><th>Type</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Comparison</th><th>Changes</th><th>Decision</th></tr></thead><tbody id="ip-review-rows"><tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr></tbody></table></div>
 <div class="row" style="gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:14px"><span class="muted small" id="ip-selection">0 selected</span><button type="button" class="btn primary" id="ip-commit" disabled>Apply selected changes</button></div>
 </div></section>
-<section id="settings-view" class="hidden">
-<div class="panel panel-pad skin-settings">
-<div class="section-head"><div><h3>Appearance</h3><span class="hint">Three carefully designed visual identities · same tools, same data, same workflow</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
-<p class="muted" style="margin:0 0 20px;line-height:1.65">Switch the interface style instantly. This changes only the visual design: colors, surfaces, typography, borders, buttons and spacing. Your products, Purchase Orders, filters and database connection remain unchanged.</p>
-<div class="skin-gallery">
-<button type="button" class="skin-choice active" data-skin-choice="executive" aria-pressed="true">
-<div class="skin-preview skin-preview-executive" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
-<div class="skin-choice-info"><span><strong>01 · Slate Executive</strong><small>Deep navy, refined blue and restrained precision. Built for operational clarity.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
-</button>
-<button type="button" class="skin-choice" data-skin-choice="editorial" aria-pressed="false">
-<div class="skin-preview skin-preview-editorial" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
-<div class="skin-choice-info"><span><strong>02 · Ivory Editorial</strong><small>Warm porcelain, graphite ink and bronze details. Calm, distinctive and premium.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
-</button>
-<button type="button" class="skin-choice" data-skin-choice="graphite" aria-pressed="false">
-<div class="skin-preview skin-preview-graphite" aria-hidden="true"><div class="skin-mini-sidebar"><span class="skin-mini-mark"></span><i></i><i></i><i></i></div><div class="skin-mini-main"><div class="skin-mini-heading"></div><div class="skin-mini-subheading"></div><div class="skin-mini-card"><div class="skin-mini-label"></div><div class="skin-mini-controls"><span></span><b></b></div></div><div class="skin-mini-card skin-mini-table"><div></div><div></div><div></div></div></div></div>
-<div class="skin-choice-info"><span><strong>03 · Graphite Studio</strong><small>Dark charcoal, mineral gray and mint accents. A focused modern control room.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
-</button>
-</div>
-<div class="skin-setting-footer"><div><strong>Your choice is saved in this browser.</strong><div class="muted small">Switch anytime. Appearance settings do not change your Supabase data.</div></div><button class="btn" type="button" id="skin-reset">Restore Slate Executive</button></div>
-</div></section>
 <section id="sync-view" class="hidden"><div class="panel panel-pad">
 <div class="section-head"><h3>Official online database</h3><span class="pill" id="cloud-status">Connecting…</span></div>
 <div class="notice" id="cloud-message" role="status">Connecting to the official Supabase database. No local database is used.</div>
@@ -333,6 +341,8 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="row" style="margin-top:18px;flex-wrap:wrap"><button class="btn primary" id="cloud-login" type="button">Account login</button><button class="btn" id="cloud-refresh" type="button">Refresh database</button><button class="btn" id="cloud-logout" type="button" hidden>Sign out</button></div>
 <p class="muted small">All users must sign in. Users can create and import private PO drafts and organize their lines. Only the administrator can publish Approved POs; drafts with the same number are replaced by the approved version. Only the administrator can modify products, EST, brands and photos or access Change History. Submitted writes interrupted by connection failures are retained on this device and retried online.</p>
 </div></section>
+</section>
+
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
 <script type="application/inspection-script">
 const demo=Object.entries(window.InspectionCloud.record("inspection-data-hub-catalog-overrides-v1")||{}).map(([item,p])=>({item,...p}));
@@ -358,8 +368,8 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["global","lookup","history","sync","guide","brands","import","settings"];
-function navigate(v){if(['history','import'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={approvals:["Aprobaciones pendientes","Revisa y aprueba solicitudes de cambios al catálogo, EST, marcas y fotografías"],settings:["Settings","Choose your preferred visual theme · Changes apply instantly"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Historial de cambios, solicitudes pendientes y verificaciones de EST"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
-document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
+function navigate(v){if(['history','import'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={approvals:["Aprobaciones pendientes","Revisa y aprueba solicitudes de cambios al catálogo, EST, marcas y fotografías"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Historial de cambios, solicitudes pendientes y verificaciones de EST"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
