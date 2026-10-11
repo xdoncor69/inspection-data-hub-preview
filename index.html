@@ -66,7 +66,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 #lookup-view .po-list-meta{margin-top:4px}
 @media(max-width:800px){#lookup-view .po-list-row .row{flex-wrap:wrap}}
 </style>
-<style>.history-change-value{white-space:pre-wrap;overflow-wrap:anywhere;max-width:380px;margin:0;font-family:inherit;font-size:12px;max-height:200px;overflow:auto}#change-history-rows td{vertical-align:top}#change-history-rows td:nth-child(3){min-width:150px}</style></head><body><style id="online-workspace-style">
+<style>.history-change-value{white-space:pre-wrap;overflow-wrap:anywhere;max-width:380px;margin:0;font-family:inherit;font-size:12px;max-height:200px;overflow:auto}#change-history-rows td{vertical-align:top}#change-history-rows td:nth-child(3){min-width:150px}</style><style>.login-pill{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#blocker-pending-button,#blocker-account-button,#required-login-button{margin:6px}</style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
 #cloud-banner{position:sticky;top:0;z-index:35;padding:8px 15px;background:var(--sk-accent-soft);color:var(--sk-ink);border-bottom:1px solid var(--sk-border);font-size:11px}
@@ -77,10 +77,10 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 @media print{#cloud-blocker,#cloud-banner,.online-dialog{display:none!important}}
 .approval-card{margin:14px 0;padding:16px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);background:var(--sk-surface2)}.approval-card pre{white-space:pre-wrap;word-break:break-word;font:11px/1.5 monospace;max-height:220px;overflow:auto}.approval-card td{vertical-align:top}.approval-card img{max-width:220px;max-height:180px;object-fit:contain;margin:8px}.approval-card .approval-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 </style>
-<div id="cloud-banner" role="status">Connecting to the official database…</div>
-<div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button></div></div>
-<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Administrator login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Use your Supabase Auth administrator account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Credentials are cleared when this window closes. The session lasts only while this page remains open.</p></form></dialog>
-<dialog id="online-account-dialog" class="online-dialog"><h3>Administrator account</h3><p class="muted">Your account can modify the official database and approve visitor requests. Sign out to return to visitor PO access.</p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out</button></div></dialog>
+<button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Envíos pendientes</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Envíos pendientes de esta cuenta</h3><button class="btn" id="pending-writes-close" type="button">Cerrar</button></div><p class="muted small">Solo se guardan los cambios enviados, no una copia de la base de datos. Un conflicto requiere revisar los valores antes de volver a editar.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status">Connecting to the official database…</div>
+<div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Iniciar sesión</button><button class="btn" id="blocker-pending-button" type="button" hidden>Ver envíos pendientes</button><button class="btn" id="blocker-account-button" type="button" hidden>Cuenta / cerrar sesión</button></div></div>
+<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Introduce el correo y la contraseña de tu cuenta de la aplicación.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">La contraseña no se guarda. La sesión se conserva en este navegador hasta cerrar sesión o cambiar de usuario.</p></form></dialog>
+<dialog id="online-account-dialog" class="online-dialog"><h3>Cuenta de la aplicación</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="import"><span class="ico">⇧</span> Import Products</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History <span class="hidden" id="approval-nav-count"></span></button><button class="nav" data-view="sync"><span class="ico">⟳</span> Database Sync</button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
@@ -214,24 +214,24 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <p>The verification records table shows confirmed observations. The collapsible Search history is only a consultation log; it does not measure physical inspections. The queue is a temporary working list in this preview.</p>
 </div>
 <div class="panel panel-pad" id="guide-sync">
-<div class="section-head"><h3>Online database · Visitor access and approvals</h3></div>
-<p>The application uses the official Supabase database and requires internet. Visitors can create and import POs and edit PO lines. Changes to catalog products, official EST records, brands and photographs are submitted as requests. Only an administrator can approve or reject them in Aprobaciones pendientes. Pending values and photos are not visible in the official catalog. Sign in with the application administrator account; credentials are cleared when the login window closes.</p>
+<div class="section-head"><h3>Online database · User accounts and permissions</h3></div>
+<p>The application requires an account and uses the official Supabase database online. Users can create and import POs and organize PO lines. Only the administrator can modify products, official EST records, brands and photos, or view Change History and previous approval requests. Your session remains on this device until you sign out. Submitted changes interrupted by a connection failure remain in a pending queue and are retried online.</p>
 </div>
 
 <div class="panel panel-pad" id="guide-faq"><div class="section-head"><h3>Common questions</h3></div>
-<details class="guide-faq"><summary>Does looking up an Item confirm its EST?</summary><p>No. Use Verify EST only after physically checking the cases. Visitor verifications become official observations after administrator approval.</p></details>
+<details class="guide-faq"><summary>Does looking up an Item confirm its EST?</summary><p>No. Use Verify EST only after physically checking the cases. Only the administrator can record official physical EST verifications.</p></details>
 <details class="guide-faq"><summary>Can a product have two or three EST values?</summary><p>Yes. The card shows all confirmed variants. You can select multiple values in the verification popup if you physically observed them.</p></details>
 <details class="guide-faq"><summary>What if I only check a few cases from a large pallet?</summary><p>Record the ESTs you actually observed. The app does not assume that every case or every unexamined product matches your sample.</p></details>
 <details class="guide-faq"><summary>Can I correct an incorrectly entered observation?</summary><p>Yes. An administrator can open View / correct records. Edits are saved to the official Supabase database.</p></details>
 <details class="guide-faq"><summary>Is a highly stable product guaranteed not to change?</summary><p>No. The classification only adjusts the suggested review interval. Physical checks remain important.</p></details>
-<details class="guide-faq"><summary>Does the web preview save records permanently?</summary><p>Yes. Administrator changes, observations, stability labels and photographs are saved to the official Supabase database. An internet connection is required.</p></details>
+<details class="guide-faq"><summary>Does the web preview save records permanently?</summary><p>Yes. Administrator changes, observations, stability labels and photographs are saved to the official Supabase database. Interrupted submissions are retained on this device for retry; an internet connection is required to use the database.</p></details>
 </div>
 </section>
 
 <section id="history-view" class="hidden">
 <div id="approvals-view" class="hidden">
 <div class="panel panel-pad"><div class="section-head"><h3>Solicitudes de nuevos cambios</h3><button class="btn" id="approval-refresh">Actualizar solicitudes</button></div><p class="muted small">Los datos oficiales conservan sus valores actuales hasta que apruebes cada solicitud. Las fotografías pendientes solo se muestran aquí al administrador.</p><span class="pill" id="approval-count">0 solicitudes pendientes</span><div id="approval-list" style="margin-top:16px"></div></div>
-<div class="panel panel-pad"><div class="section-head"><h3>Historial de cambios oficiales</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Se registran los cambios oficiales desde la activación de este historial. Los valores anteriores de ediciones más antiguas no están disponibles. Incluye cambios directos del administrador y solicitudes aprobadas.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">Todos los cambios</option><option value="catalog-overrides">Datos del producto</option><option value="observations">Verificaciones EST</option><option value="photos">Fotografías</option><option value="brand">Marcas</option></select></div><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Item / Marca</th><th>Qué cambió</th><th>Antes</th><th>Después</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
+<div class="panel panel-pad"><div class="section-head"><h3>Historial de cambios oficiales</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Se registran los cambios oficiales desde la activación de este historial. Los valores anteriores de ediciones más antiguas no están disponibles. Incluye cambios directos del administrador y solicitudes aprobadas.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">Todos los cambios</option><option value="catalog-overrides">Datos del producto</option><option value="observations">Verificaciones EST</option><option value="photos">Fotografías</option><option value="brand">Marcas</option></select></div><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Item / Marca</th><th>Usuario</th><th>Qué cambió</th><th>Antes</th><th>Después</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
 <div class="panel panel-pad"><div class="section-head"><h3>Historial de solicitudes revisadas</h3><span class="pill" id="approval-history-count">0 solicitudes revisadas</span></div><div class="row"><label>Estado <select class="input" id="approval-filter"><option value="reviewed">Todas las revisadas</option><option value="approved">Aprobadas</option><option value="rejected">Rechazadas</option></select></label></div><div id="approval-history-list" style="margin-top:16px"></div></div>
 </div>
 <div class="panel panel-pad" id="history-quick-panel">
@@ -257,7 +257,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <section id="import-view" class="hidden">
 <div class="panel panel-pad">
 <div class="section-head"><div><h3>Import Products</h3><span class="hint">Add new catalog Items, compare existing records and approve every change</span></div><span class="pill" id="ip-catalog-count">— Items</span></div>
-<div class="notice">Product imports affect the catalog, not POs or physical EST verification. Administrator imports save directly; visitor imports submit new Items and updates for administrator approval. Import a PO in PO Inspection → Import Invoice.</div>
+<div class="notice">Product imports affect the catalog, not POs or physical EST verification. Only the administrator can import or modify catalog products. Import a PO in PO Inspection → Import Invoice.</div>
 <div class="ip-modes" role="group" aria-label="Product import method">
 <button type="button" class="ip-mode active" id="ip-mode-manual" aria-pressed="true">＋ Single Product</button>
 <button type="button" class="ip-mode" id="ip-mode-excel" aria-pressed="false">▤ Excel / CSV Batch</button>
@@ -321,9 +321,9 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <section id="sync-view" class="hidden"><div class="panel panel-pad">
 <div class="section-head"><h3>Official online database</h3><span class="pill" id="cloud-status">Connecting…</span></div>
 <div class="notice" id="cloud-message" role="status">Connecting to the official Supabase database. No local database is used.</div>
-<div class="settings-grid" style="margin-top:20px"><div><div class="label">Project</div><div class="value">InspectionDataHub</div></div><div><div class="label">Provider</div><div class="value">Supabase · PostgreSQL</div></div><div><div class="label">Data access</div><div class="value" id="cloud-role">Guest · PO access</div></div><div><div class="label">Connection</div><div class="value">Online only · official shared database</div></div></div>
-<div class="row" style="margin-top:18px;flex-wrap:wrap"><button class="btn primary" id="cloud-login" type="button">Administrator login</button><button class="btn" id="cloud-refresh" type="button">Refresh database</button><button class="btn" id="cloud-logout" type="button" hidden>Sign out</button></div>
-<p class="muted small">Visitors can create and import POs and edit their lines. Product, EST, brand and photo changes are submitted for administrator approval. Official values remain unchanged until approved. Without a database connection, the workspace is unavailable.</p>
+<div class="settings-grid" style="margin-top:20px"><div><div class="label">Project</div><div class="value">InspectionDataHub</div></div><div><div class="label">Provider</div><div class="value">Supabase · PostgreSQL</div></div><div><div class="label">Data access</div><div class="value" id="cloud-role">User · PO access</div></div><div><div class="label">Connection</div><div class="value">Online only · official shared database</div></div></div>
+<div class="row" style="margin-top:18px;flex-wrap:wrap"><button class="btn primary" id="cloud-login" type="button">Account login</button><button class="btn" id="cloud-refresh" type="button">Refresh database</button><button class="btn" id="cloud-logout" type="button" hidden>Sign out</button></div>
+<p class="muted small">All users must sign in. Users can create and import POs and organize their lines. Only the administrator can modify products, EST, brands and photos or access Change History. Submitted writes interrupted by connection failures are retained on this device and retried online.</p>
 </div></section>
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
 <script type="application/inspection-script">
@@ -350,7 +350,7 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["global","lookup","history","sync","guide","brands","import","settings"];
-function navigate(v){view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={approvals:["Aprobaciones pendientes","Revisa y aprueba solicitudes de cambios al catálogo, EST, marcas y fotografías"],settings:["Settings","Choose your preferred visual theme · Changes apply instantly"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Historial de cambios, solicitudes pendientes y verificaciones de EST"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+function navigate(v){if(['history','import'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===v));sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={approvals:["Aprobaciones pendientes","Revisa y aprueba solicitudes de cambios al catálogo, EST, marcas y fotografías"],settings:["Settings","Choose your preferred visual theme · Changes apply instantly"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Historial de cambios, solicitudes pendientes y verificaciones de EST"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -365,7 +365,7 @@ function closeModal(){$("modal-root").innerHTML="";}
 $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an existing image or upload a new one. This preview does not save files.</p><div class="choice" id="choose-gallery">▦ &nbsp; Browse photo gallery</div><div class="choice" id="choose-upload">＋ &nbsp; Add a new photo</div><div class="choice" id="choose-remove">× &nbsp; Remove assigned photo</div>');$("choose-gallery").onclick=gallery;$("choose-upload").onclick=upload;$("choose-remove").onclick=()=>{photoName="";showProduct();closeModal()};};
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
 function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this device to preview its filename.</p><input type="file" id="photo-file" accept="image/*" class="input" style="width:100%">');$("photo-file").onchange=e=>{photoName=e.target.files?.[0]?.name||"";showProduct();closeModal()};}
-$("edit-btn").onclick=()=>{let x=selected||{item:"",brand:"",description:"",producer:"",plant:"",pack:"",size:""};modal('<h2>Edit product / request a change</h2><p>Administrator changes are saved directly. Visitor changes are submitted for approval; official values remain unchanged until approved.</p><div class="edit-grid">'+[["item","Item number"],["plant",view==="dairy"?"Plant number":"EST"],["brand","Brand / Class"],["producer","Producer"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<div><div class="label">'+label+'</div><input class="input" id="edit-'+k+'" value="'+esc(x[k])+'"></div>').join("")+'</div><div class="edit-reference-field"><div class="label">Alternative EST / Plant references (comma-separated)</div><input class="input" id="edit-alternative-est" style="width:100%" placeholder="e.g. P-301, P-1029" value="'+esc(window.__inspectionGetAlternativeRefs?.(x.item)||"")+'"><div class="muted small" style="margin-top:4px">References are editable; percentages are calculated only from physical verifications.</div></div><div style="margin-top:18px"><button class="btn primary" id="save-demo">Save changes</button></div>');$("save-demo").onclick=()=>{let obj={...x,category:view==="dairy"?"Dairy":"Meat"};["item","plant","brand","producer","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value);if(!obj.item.trim()){alert("Item number required");return;}let i=demo.findIndex(p=>p.item===x.item&&p.category===x.category);if(i>=0)demo[i]=obj;else demo.push(obj);if(window.__inspectionSaveCatalog)window.__inspectionSaveCatalog();selected=obj;if(window.__inspectionSaveAlternativeRefs)window.__inspectionSaveAlternativeRefs(obj.item,$("edit-alternative-est").value,obj.plant);showProduct();renderGlobal();closeModal();};};
+$("edit-btn").onclick=()=>{let x=selected||{item:"",brand:"",description:"",producer:"",plant:"",pack:"",size:""};modal('<h2>Edit product / request a change</h2><p>Only the administrator can edit official product data. Changes are saved to Supabase; interrupted submissions are retained for retry.</p><div class="edit-grid">'+[["item","Item number"],["plant",view==="dairy"?"Plant number":"EST"],["brand","Brand / Class"],["producer","Producer"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<div><div class="label">'+label+'</div><input class="input" id="edit-'+k+'" value="'+esc(x[k])+'"></div>').join("")+'</div><div class="edit-reference-field"><div class="label">Alternative EST / Plant references (comma-separated)</div><input class="input" id="edit-alternative-est" style="width:100%" placeholder="e.g. P-301, P-1029" value="'+esc(window.__inspectionGetAlternativeRefs?.(x.item)||"")+'"><div class="muted small" style="margin-top:4px">References are editable; percentages are calculated only from physical verifications.</div></div><div style="margin-top:18px"><button class="btn primary" id="save-demo">Save changes</button></div>');$("save-demo").onclick=()=>{let obj={...x,category:view==="dairy"?"Dairy":"Meat"};["item","plant","brand","producer","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value);if(!obj.item.trim()){alert("Item number required");return;}let i=demo.findIndex(p=>p.item===x.item&&p.category===x.category);if(i>=0)demo[i]=obj;else demo.push(obj);if(window.__inspectionSaveCatalog)window.__inspectionSaveCatalog();selected=obj;if(window.__inspectionSaveAlternativeRefs)window.__inspectionSaveAlternativeRefs(obj.item,$("edit-alternative-est").value,obj.plant);showProduct();renderGlobal();closeModal();};};
 ["demo-export","demo-backup","demo-sync"].forEach(id=>{const el=$(id);if(el)el.onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration.");});
 window.InspectionCloud.collect("inspection-data-hub-catalog-overrides-v1",()=>Object.fromEntries(demo.map(({item,...p})=>[item,p])),value=>{demo.splice(0,demo.length,...Object.entries(value).map(([item,p])=>({item,...p})));if(selected)selected=demo.find(x=>x.item===selected.item)||null;showProduct();});
 window.__inspectionFullProductRefresh=()=>showProduct();
@@ -426,7 +426,7 @@ $("brand-info").innerHTML='<div class="row" style="align-items:start;justify-con
 $("brand-info-choice").onchange=brandInfo;
 $("brand-edit-note").onclick=()=>{
 const b=$("brand-info-choice").value;
-modal('<h2>Edit brand note</h2><p>Shared reference note for all products of this brand. Visitor changes require administrator approval.</p><textarea class="input" id="brand-note-editor">'+safe(defaultNotes[b]||"")+'</textarea><div style="margin-top:15px"><button class="btn primary" id="save-brand-note">Save note</button></div>');
+modal('<h2>Edit brand note</h2><p>Shared reference note for all products of this brand. Only the administrator can edit official brand notes.</p><textarea class="input" id="brand-note-editor">'+safe(defaultNotes[b]||"")+'</textarea><div style="margin-top:15px"><button class="btn primary" id="save-brand-note">Save note</button></div>');
 $("save-brand-note").onclick=()=>{defaultNotes[b]=$("brand-note-editor").value;closeModal();brandInfo();updateProductExtras();};
 };
 brandInfo();
@@ -511,7 +511,7 @@ modal('<h2>Product photo gallery</h2><p>Add several photos for the same Item, se
 function refresh(){
 $("gallery-items").innerHTML=photos().map((x,i)=>'<div class="tile" data-gallery-index="'+i+'"><img src="'+safe(x.url)+'" style="width:100%;height:70px;object-fit:cover;border-radius:5px"><div>Photo '+(i+1)+'</div></div>').join("")+'<div class="tile" id="gallery-new">＋<br>Add photos</div>';
 $("gallery-items").querySelectorAll("[data-gallery-index]").forEach(el=>el.onclick=()=>{currentImage=Number(el.dataset.galleryIndex);closeModal();renderPhotos();showLightbox();});
-$("gallery-items").querySelectorAll("[data-gallery-index]").forEach(tile=>{const button=document.createElement("button");button.className="btn mini";button.textContent="Remove photo";button.onclick=async e=>{e.stopPropagation();if(!confirm("Remove this photo? Visitor removals require administrator approval."))return;try{await window.InspectionCloud.removePhoto(selected.item,Number(tile.dataset.galleryIndex));refresh();renderPhotos();}catch(error){alert(error.message)}};tile.appendChild(button);});
+$("gallery-items").querySelectorAll("[data-gallery-index]").forEach(tile=>{const button=document.createElement("button");button.className="btn mini";button.textContent="Remove photo";button.disabled=!window.InspectionCloud.isAdministrator();button.onclick=async e=>{e.stopPropagation();if(!confirm("Remove this photo? Only the administrator can remove official photos."))return;try{await window.InspectionCloud.removePhoto(selected.item,Number(tile.dataset.galleryIndex));refresh();renderPhotos();}catch(error){alert(error.message)}};tile.appendChild(button);});
 $("gallery-new").onclick=()=>$("upload-multi").click();
 }
 $("upload-multi").onchange=async e=>{
@@ -933,7 +933,7 @@ if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();
 }
 window.__inspectionReloadCloudWorkspace=()=>{const id=openPO;loadPOWorkspace();openPO=invoices.some(p=>p.id===id)?id:null;renderLog();renderPOArchive();window.__inspectionInvoiceRefresh?.();};
 renderLog();renderPOArchive();
-const loginPill=document.createElement("button");loginPill.className="pill login-pill";loginPill.textContent="♙ Guest · PO access";loginPill.title="Sign in as administrator";
+const loginPill=document.createElement("button");loginPill.className="pill login-pill";loginPill.textContent="♙ Cuenta de usuario";loginPill.title="Sign in as administrator";
 const topRight=document.querySelector(".topright");const oldPill=Array.from(topRight.children).find(x=>x.textContent.includes("Admin access"));if(oldPill)oldPill.replaceWith(loginPill);
 loginPill.onclick=()=>window.InspectionCloud.openLogin();
 function applyRole(){window.InspectionCloud.updateRole();}
@@ -1230,7 +1230,7 @@ const stableItems=new Set();
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const iso=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
 const wk=s=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()-(d.getDay()+6)%7);return iso(d);};
-const admin=()=>window.InspectionCloud.canEdit();
+const admin=()=>window.InspectionCloud.isAdministrator()&&window.InspectionCloud.canEdit();
 const today=()=>iso(new Date());
 function byDate(a){return [...a].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);}
 function summarize(a){
@@ -1388,7 +1388,7 @@ const overrides=new Map(Object.entries(window.InspectionCloud.record("inspection
 window.InspectionCloud.collect("inspection-data-hub-stability-overrides-v1",()=>Object.fromEntries(overrides),value=>{overrides.clear();for(const [k,v]of Object.entries(value))overrides.set(k,v);});
 const extraQueue=new Set();
 const checked=new Set();
-const admin=()=>window.InspectionCloud.canEdit();
+const admin=()=>window.InspectionCloud.isAdministrator()&&window.InspectionCloud.canEdit();
 const types=["Beef / Pork","Poultry","Dairy","Other"];
 function typeOf(x){
 const d=(x.description||"").toLowerCase();
@@ -2704,7 +2704,7 @@ count();draw();
  document.getElementById("skin-reset").addEventListener("click",()=>apply("executive"));
  apply(initial);
 })();
-</script><script id="inspection-online-runtime">/* Official online workspace. No catalog/PO/photo data is persisted on this device. */
+</script><script id="inspection-online-runtime">/* Online workspace with device-local session and a durable queue of submitted writes only. */
 (function(){
 'use strict';
 const BASE='https://kyhecrvsllableoymqfe.supabase.co',PUBLIC_KEY='sb_publishable_LYk0MYpAHUEAPUNtq0exqA_7-ylpmi9';
@@ -2717,42 +2717,100 @@ const collectors=new Map(),memory=new Map();
 let official={},revision=0,session=null,administrator=false,ready=false,started=false,saving=false,scheduled=false,offline=false,photoBusy=false,signingIn=false;
 let photoMetadata={},photoDisplay={},photoSignedAt=0;
 const nativeStorage=window.localStorage;
+try{session=JSON.parse(nativeStorage.getItem('inspection-data-hub-auth-session-v2')||'null')}catch{}
 try{sessionStorage.removeItem('inspection-data-hub-supabase-session-v1');sessionStorage.removeItem('inspection-data-hub-cloud-restored');nativeStorage.removeItem('inspection-data-hub-supabase-config-v1')}catch{}
+const SESSION_KEY='inspection-data-hub-auth-session-v2';
+let refreshPromise=null,queuePromise=null,profileNames=new Map(),queueCount=0;
+function persistSession(){if(session)nativeStorage.setItem(SESSION_KEY,JSON.stringify(session));else nativeStorage.removeItem(SESSION_KEY);}
+function setSession(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at||Math.floor(Date.now()/1000)+(data.expires_in||3600),user:{id:data.user.id,email:data.user.email||session?.user?.email||''}};persistSession();}
+async function refreshSession(){
+ if(refreshPromise)return refreshPromise;
+ refreshPromise=(async()=>{const work=async()=>{const saved=JSON.parse(nativeStorage.getItem(SESSION_KEY)||'null');if(saved?.user.id===session?.user.id&&saved.access_token!==session.access_token){session=saved;return}if(!session?.refresh_token)throw Error('Inicia sesión para continuar.');const response=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal:AbortSignal.timeout(20000)});if(!response.ok){if(response.status>=500){const e=Error('Supabase no está disponible.');e.network=true;throw e}session=null;administrator=false;persistSession();throw Error('La sesión expiró. Inicia sesión de nuevo.')}setSession(await response.json());};if(navigator.locks)await navigator.locks.request('inspection-auth-refresh',work);else await work();})();
+ try{return await refreshPromise}catch(error){if(error instanceof TypeError||error.name==='TimeoutError'||error.name==='AbortError')error.network=true;throw error}finally{refreshPromise=null}
+}
+const queueDB=new Promise((resolve,reject)=>{const req=indexedDB.open('inspection-pending-writes-v2',1);req.onupgradeneeded=()=>req.result.createObjectStore('jobs',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(Error('No se pudo abrir la cola de envíos.'))});
+async function queueStore(action,value){const db=await queueDB;return new Promise((resolve,reject)=>{const tx=db.transaction('jobs',action==='all'?'readonly':'readwrite'),store=tx.objectStore('jobs');let req=action==='all'?store.getAll():action==='put'?store.put(value):store.delete(value);let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('No se pudo guardar el envío en este dispositivo.'))})}
+async function ownJobs(){const all=await queueStore('all');return all.filter(j=>j.owner===session?.user.id).sort((a,b)=>a.created-b.created)}
+async function showQueueCount(){if(!session)return;const jobs=await ownJobs();queueCount=jobs.length;const btn=document.getElementById('pending-writes-button');btn.hidden=!queueCount;btn.textContent=queueCount+' envío(s) pendiente(s)';}
+function pendingPayload(changes){
+ const base={},next={};
+ for(const[k,value]of Object.entries(changes)){
+  if(k!==PO_KEY&&!dirtyDomains.has(k))continue;
+  const old=official[k];
+  if(k===PO_KEY){
+   const before=new Map((old?.invoices||[]).map(p=>[p.id,p])),after=new Map((value?.invoices||[]).map(p=>[p.id,p]));const b=[],n=[];
+   for(const id of new Set([...before.keys(),...after.keys()]))if(JSON.stringify(before.get(id))!==JSON.stringify(after.get(id))){if(before.has(id))b.push(before.get(id));if(after.has(id))n.push(after.get(id));}
+   base[k]={invoices:b};next[k]={invoices:n};if(JSON.stringify(old?.draft)!==JSON.stringify(value?.draft)){base[k].draft=old?.draft||[];next[k].draft=value?.draft||[];}
+  }else if(value&&typeof value==='object'&&!Array.isArray(value)){
+   const b={},n={};for(const entity of new Set([...Object.keys(old||{}),...Object.keys(value)]))if(JSON.stringify(old?.[entity])!==JSON.stringify(value[entity])){if(old&&entity in old)b[entity]=old[entity];if(entity in value)n[entity]=value[entity];}if(!Object.keys(b).length&&!Object.keys(n).length)continue;base[k]=b;next[k]=n;
+  }else{base[k]=old??null;next[k]=value;}
+ }
+ return{base_records:clone(base),changed_records:clone(next)};
+}
+async function sendQueuedJob(job){
+ if(job.type==='review')return request('/rest/v1/rpc/inspection_queued_review',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ if(job.type==='photos'){
+  if(!administrator)throw Error('Solo el administrador puede subir fotografías.');
+  for(const f of job.files)await request('/storage/v1/object/inspection-photos/'+f.path,{method:'POST',body:f.blob,raw:true,headers:{'Content-Type':f.type,'x-upsert':'true'}});
+  if(!job.payload){const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=records');const old=rows[0].records[PHOTO_KEY]?.[job.item]||[];const next=[...old,...job.files.filter(f=>!old.some(x=>x.path===f.path)).map(f=>({name:f.name,path:f.path}))];job.payload={base_records:{[PHOTO_KEY]:{[job.item]:old}},changed_records:{[PHOTO_KEY]:{[job.item]:next}}};await queueStore('put',job);}
+ }
+ return request('/rest/v1/rpc/inspection_queued_commit',{method:'POST',body:{operation_id:job.id,...job.payload}});
+}
+async function drainQueue(){
+ if(queuePromise)return queuePromise;if(!session||!navigator.onLine)return;
+ const run=async()=>{for(const job of await ownJobs()){
+  if(job.state==='conflict')continue;
+  try{await sendQueuedJob(job);await queueStore('delete',job.id)}catch(error){if(error.network||error.status>=500||(!session&&error.status===401))throw error;job.state='conflict';job.error=error.message;await queueStore('put',job);message('Hay un envío pendiente que requiere revisión. No se ha sobrescrito ningún dato.',true);}
+ }await showQueueCount();};queuePromise=navigator.locks?navigator.locks.request('inspection-pending-'+session.user.id,run):run();try{return await queuePromise}finally{queuePromise=null}
+}
+async function openPendingWrites(){
+ const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='review'?'Revisión de solicitud':'Cambio / PO')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
+ root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await drainQueue();await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
+ root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
+ const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
+}
+async function loadIdentity(){
+ const user=await request('/auth/v1/user');if(!user?.id)throw Error('Inicia sesión para continuar.');session.user={id:user.id,email:user.email||''};persistSession();
+ const rows=await request('/rest/v1/inspection_admins?select=user_id&user_id=eq.'+encodeURIComponent(user.id));administrator=rows.length>0;
+ const profiles=await request('/rest/v1/inspection_profiles?select=user_id,email,display_name');profileNames=new Map(profiles.map(p=>[p.user_id,p.display_name&&p.display_name!==p.email?p.display_name+' ('+p.email+')':p.email]));
+}
+function actorLabel(id){return id?(profileNames.get(id)||id):'Registro anterior sin cuenta identificada';}
+
 const isData=k=>String(k).startsWith('inspection-data-hub-')&&k!=='inspection-data-hub-appearance-v1';
-const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(!canEdit())throw Error('No tienes permisos para modificar la base de datos.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
+const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('No tienes permisos para modificar la base de datos.')}if(!ready&&!offline)throw Error('La base de datos no está disponible.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
 Object.defineProperty(window,'localStorage',{value:adapter,configurable:true});
-function canEdit(){return ready&&!offline&&!saving&&!photoBusy}
+function canEdit(){return !!session&&ready&&!offline&&!saving&&!photoBusy}
 function deny(){alert(!ready||offline?'No hay conexión con la base de datos.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
 function record(k){const v=memory.get(k);return v?JSON.parse(v):null}
 function collect(k,get,set){collectors.set(k,{get,set})}
-function overlay(text,busy=false){const el=document.getElementById('cloud-blocker');el.hidden=false;document.getElementById('cloud-blocker-text').textContent=text;document.getElementById('cloud-retry').hidden=busy;document.querySelector('.shell').inert=true;}
+function overlay(text,busy=false){const el=document.getElementById('cloud-blocker');el.hidden=false;document.getElementById('cloud-blocker-text').textContent=text;document.getElementById('cloud-retry').hidden=busy;document.querySelector('.shell').inert=true;document.getElementById('required-login-button').hidden=!!session;document.getElementById('blocker-pending-button').hidden=!session||!queueCount;document.getElementById('blocker-account-button').hidden=!session;}
 function unblock(){document.getElementById('cloud-blocker').hidden=true;document.querySelector('.shell').inert=false;}
 function message(text,error=false){const el=document.getElementById('cloud-message');if(el){el.textContent=text;el.classList.toggle('cloud-error',error)}const banner=document.getElementById('cloud-banner');banner.textContent=text;banner.classList.toggle('cloud-error',error)}
 function updateRole(){
- const editable=ready&&!offline,adminActive=editable&&administrator;
- const pill=document.querySelector('.login-pill');if(pill){const text=adminActive?'♙ Administrator':'♙ Guest · PO access';if(pill.textContent!==text)pill.textContent=text;pill.title=adminActive?'Administrator account':'Visitor: work with POs or sign in as administrator'}
- const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(adminActive?'AD':'GU'))avatar.textContent=adminActive?'AD':'GU';
- for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(adminActive?'Administrator · full access':'Visitor · POs; other changes require approval'))el.textContent=adminActive?'Administrator · full access':'Visitor · POs; other changes require approval'}
+ const editable=!!session&&ready&&!offline,adminActive=editable&&administrator;
+ const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ Usuario · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Iniciar sesión';if(pill.textContent!==text)pill.textContent=text;pill.title='Cuenta, cerrar sesión o cambiar de usuario'}
+ const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(administrator?'AD':'US'))avatar.textContent=administrator?'AD':'US';
+ for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(administrator?'Administrator · full access':'Usuario · Acceso a POs'))el.textContent=administrator?'Administrator · full access':'Usuario · Acceso a POs'}
  const label=document.getElementById('cloud-status');if(label){const text=!ready||offline?'DISCONNECTED':saving||photoBusy?'SAVING…':'CONNECTED';if(label.textContent!==text)label.textContent=text;}
- const login=document.getElementById('cloud-login');if(login)login.hidden=adminActive;
+ const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
+ for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
  const badge=document.getElementById('approval-nav-count');if(badge)badge.classList.toggle('hidden',!administrator);
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
  if(!administrator){for(const id of ['approval-list','approval-history-list','change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
- document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable;else if(el.matches('select'))el.disabled=!editable;});
+ document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell,[data-po-ref],[data-po-est]'));else if(el.matches('select'))el.disabled=!editable||(!administrator&&el.matches('.iq-cell'));});
+ document.querySelectorAll(ADMIN_MUTATING).forEach(el=>{if(el.matches('button,input,select,textarea'))el.disabled=!administrator;});
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
 }
 async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={}){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
+ if(auth&&session?.expires_at&&session.expires_at*1000<Date.now()+60000)await refreshSession();
  const bearer=auth&&session?session.access_token:ANON_KEY;
  try{
  let response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+bearer,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});
- if(response.status===401&&auth&&session?.refresh_token){
-  const refresh=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal:controller.signal});
-  if(refresh.ok){const d=await refresh.json();session={access_token:d.access_token,refresh_token:d.refresh_token,user:{id:d.user.id}};response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+session.access_token,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});}
-  else{session=null;administrator=false;updateRole()}
- }
- if(!response.ok){let data={};try{data=await response.json()}catch{};const error=new Error(response.status===409||data.code==='40001'?'Otro equipo cambió la base de datos. Tus cambios no se guardaron; los datos se actualizarán.':response.status===401||response.status===403?'No tienes permisos para modificar la base de datos o tu sesión expiró.':'Supabase HTTP '+response.status+': '+(data.message||data.error||'Request failed'));error.status=response.status;throw error}
+ if(response.status===401&&auth&&session?.refresh_token){await refreshSession();response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+session.access_token,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});}
+ if(!response.ok){let data={};try{data=await response.json()}catch{};const error=new Error(response.status===409||data.code==='40001'?'Otro equipo cambió la base de datos. Tus cambios no se guardaron; los datos se actualizarán.':response.status===401||response.status===403?'No tienes permisos para modificar la base de datos o tu sesión expiró.':'Supabase HTTP '+response.status+': '+(data.message||data.error||'Request failed'));error.status=response.status;if(response.status>=500)error.network=true;throw error}
  if(response.status===204)return null;
  return await response.json();
  }catch(error){if(error.name==='AbortError'||error instanceof TypeError)error.network=true;throw error}finally{clearTimeout(timeout)}
@@ -2801,79 +2859,77 @@ function makeProposals(changes,extra){
  return [...grouped.values()];
 }
 async function commit(extra=null){
- if(!ready||offline){deny();throw Error('No connection to the official database')}
- if(saving)throw Error('A save is already in progress. Try again after it completes.');
- const changes=extra||differences();if(!Object.keys(changes).length){dirtyDomains.clear();return}
- const proposals=administrator?[]:makeProposals(changes,extra);
- const workspace=!administrator&&(PO_KEY in changes)?changes[PO_KEY]:null;
- if(!administrator&&!workspace&&!proposals.length){dirtyDomains.clear();return}
- saving=true;overlay(administrator?'Guardando cambios en Supabase…':proposals.length?'Enviando solicitudes pendientes de aprobación…':'Guardando PO en Supabase…',true);updateRole();
- try{
-  if(administrator){const result=await request('/rest/v1/rpc/inspection_commit',{method:'POST',body:{expected_revision:revision,changes}});if(!result?.length)throw Error('Save was not confirmed by Supabase.');revision=result[0].revision;Object.assign(official,clone(changes));for(const[k,v]of Object.entries(changes))memory.set(k,JSON.stringify(v));message('Saved to the official database · '+new Date().toLocaleTimeString());}
-  else{
-   const result=await request('/rest/v1/rpc/inspection_visitor_commit',{method:'POST',body:{expected_revision:revision,workspace,proposals}});
-   const count=result?.request_ids?.length||0;await loadState();
-   const text=count?'Se notificó '+count+' solicitud'+(count===1?'':'es')+'. Queda pendiente de aprobación; los datos oficiales no han cambiado.':'PO guardado directamente en Supabase. Los datos del catálogo no se modificaron.';
-   message(text);if(count)alert(text);
-  }
- }catch(error){try{await loadState();message(error.message+' Los cambios no confirmados se descartaron.',true)}catch{ready=false;offline=true;message('Sin conexión. Ningún cambio pendiente se guardará localmente.',true)}alert(error.message);throw error}
- finally{dirtyDomains.clear();saving=false;window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();updateRole();if(ready&&!offline&&!photoBusy)unblock();else if(!ready||offline)overlay('Sin conexión con la base de datos. Comprueba internet y vuelve a intentar.');}
+ if(!session||!started)throw Error('Inicia sesión para continuar.');if(saving)throw Error('Hay un envío en curso.');
+ const changes=extra||differences();if(!administrator&&Object.keys(changes).some(k=>k!==PO_KEY&&dirtyDomains.has(k))){deny();throw Error('Solo el administrador puede modificar datos oficiales.');}
+ if(extra)for(const k of Object.keys(extra))dirtyDomains.add(k);
+ const payload=pendingPayload(changes);if(!Object.keys(payload.changed_records).length){dirtyDomains.clear();return;}
+ const job={id:crypto.randomUUID(),owner:session.user.id,created:Date.now(),type:'records',payload};
+ try{await queueStore('put',job)}catch(error){alert('No se pudo guardar el envío en este dispositivo. Mantén esta ventana abierta y vuelve a intentar. '+error.message);throw error;}
+ saving=true;overlay('Enviando cambios…',true);await showQueueCount();updateRole();
+ try{if(!navigator.onLine){const e=Error('Sin conexión');e.network=true;throw e}await drainQueue();await loadState();message(queueCount?'Hay envíos pendientes que requieren revisión.':'Guardado en la base oficial · '+new Date().toLocaleTimeString());}
+ catch(error){if(error.network||error.name==='TimeoutError'){offline=true;ready=false;message(queueCount?'El envío está guardado en este dispositivo. Se enviará al recuperar la conexión.':'El envío fue confirmado; no se pudo refrescar la vista por falta de conexión.',true);}else{message(error.message,true);if(!session)openLogin();}}
+ finally{dirtyDomains.clear();saving=false;await showQueueCount();updateRole();if(session&&ready&&!offline&&!photoBusy)unblock();else overlay('Sin conexión. Los envíos pendientes están guardados; se reenviarán al reconectar.');}
 }
-async function removePhoto(item,index){if(!canEdit()){deny();return}const next=clone(photoMetadata);if(!next[item]?.[index])return;next[item].splice(index,1);await commit({[PHOTO_KEY]:next});if(administrator)await loadState();}
+async function removePhoto(item,index){if(!administrator||!canEdit()){deny();return}const next=clone(photoMetadata);if(!next[item]?.[index])return;next[item].splice(index,1);await commit({[PHOTO_KEY]:next});if(administrator)await loadState();}
 
-function openLogin(){if(administrator){openAccount();return}document.getElementById('online-login-message').textContent='Use your existing Supabase Auth administrator account.';document.getElementById('online-login-dialog').showModal();document.getElementById('online-email').focus();}
+function openLogin(){if(session){openAccount();return}overlay('Inicia sesión para acceder a Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Introduce el correo y la contraseña de tu cuenta de la aplicación.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
 function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value=''}
-function openAccount(){document.getElementById('online-account-dialog').showModal()}
+function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'Usuario: crear, importar y organizar POs. Los datos oficiales solo puede modificarlos el administrador.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
  e.preventDefault();if(signingIn)return;signingIn=true;const button=document.getElementById('online-login-submit');button.disabled=true;
  const email=document.getElementById('online-email').value.trim(),password=document.getElementById('online-password').value;
- try{const response=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});if(!response.ok)throw Error('No se pudo iniciar sesión. Comprueba el correo y la contraseña.');const d=await response.json();session={access_token:d.access_token,refresh_token:d.refresh_token,user:{id:d.user.id}};
- const rows=await request('/rest/v1/inspection_admins?select=user_id&user_id=eq.'+encodeURIComponent(d.user.id));if(!rows.length){try{await request('/auth/v1/logout?scope=local',{method:'POST'})}catch{};session=null;throw Error('Esta cuenta no tiene permisos de administrador.');}
- administrator=true;await loadState();document.getElementById('online-login-dialog').close();message('Administrator session active. Direct editing and pending approvals are enabled.');updateRole();unblock();await loadRequests();
- }catch(error){session=null;administrator=false;document.getElementById('online-login-message').textContent=error.message;updateRole()}finally{clearLogin();signingIn=false;button.disabled=false;}
+ try{const response=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('No se pudo iniciar sesión. Comprueba el correo y la contraseña.');setSession(await response.json());await loadIdentity();document.getElementById('online-login-dialog').close();await connect();}
+ catch(error){if(!session)persistSession();document.getElementById('online-login-message').textContent=error.message;updateRole();}finally{clearLogin();signingIn=false;button.disabled=false;}
 }
-async function logout(){if(saving||photoBusy)return;try{if(session)await request('/auth/v1/logout?scope=local',{method:'POST'})}catch{}session=null;administrator=false;clearLogin();document.getElementById('online-account-dialog').close();updateRole();message('Visitor session · POs can be saved; product, EST, brand and photo changes require approval.');}
+async function logout(){
+ if(saving||photoBusy||queuePromise){alert('Espera a que termine el envío en curso.');return}
+ try{if(session)await request('/auth/v1/logout?scope=local',{method:'POST'})}catch{}
+ session=null;administrator=false;ready=false;persistSession();clearLogin();location.reload();
+}
 async function uploadPhotos(item,files){
- if(!canEdit()){deny();throw Error('No permission to upload photos')}
- if(!files.length)return;
+ if(!administrator||!session){deny();throw Error('Solo el administrador puede subir fotografías.')}if(!files.length)return;
  const allowed=['image/jpeg','image/png','image/webp','image/gif','image/avif'];for(const f of files)if(!allowed.includes(f.type)||f.size>10485760)throw Error('Usa fotos JPG, PNG, WebP, GIF o AVIF de hasta 10 MB.');
- const bucket=administrator?'inspection-photos':'inspection-photo-requests';
- photoBusy=true;overlay(administrator?'Subiendo fotografías a Supabase…':'Enviando fotografías para aprobación…',true);updateRole();const added=[],paths=[];let committed=false;
- try{for(const f of files){const name=String(item).replace(/[^a-zA-Z0-9_-]/g,'_')+'/'+crypto.randomUUID()+'.'+({ 'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'}[f.type]);await request('/storage/v1/object/'+bucket+'/'+name,{method:'POST',body:f,raw:true,headers:{'Content-Type':f.type,'x-upsert':'false'}});paths.push(name);added.push({name:f.name,path:name,...(!administrator?{bucket}: {})})}
- const next=clone(photoMetadata);next[item]=[...(next[item]||[]),...added];await commit({[PHOTO_KEY]:next});committed=true;if(administrator){photoMetadata=next;photoDisplay[item]=await Promise.all(next[item].map(signPhoto));message('Photos saved permanently in Supabase.');}
- }catch(error){if(paths.length&&!committed&&administrator)try{await request('/storage/v1/object/inspection-photos',{method:'DELETE',body:{prefixes:paths}})}catch{}throw error}
- finally{photoBusy=false;window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();updateRole();if(ready&&!offline)unblock();}
+ const job={id:crypto.randomUUID(),owner:session.user.id,created:Date.now(),type:'photos',item,files:[...files].map(f=>({blob:f,name:f.name,type:f.type,path:String(item).replace(/[^a-zA-Z0-9_-]/g,'_')+'/'+crypto.randomUUID()+'.'+({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'}[f.type])}))};
+ await queueStore('put',job);photoBusy=true;overlay('Enviando fotografías…',true);
+ try{await drainQueue();await loadState();message(queueCount?'Fotografías guardadas en la cola de envíos pendientes.':'Fotografías guardadas en Supabase.');}
+ catch(error){offline=true;ready=false;message(queueCount?'Fotografías guardadas en este dispositivo. Se reenviarán al recuperar la conexión.':'Fotografías confirmadas; no se pudo refrescar la vista.',true);}
+ finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
 }
+
+const ADMIN_MUTATING='.iq-cell,.iq-save,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
 const MUTATING='.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
-for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;if(e.type==='click'&&e.target.closest('[data-po-delete]')&&!administrator){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
+for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;if(!administrator&&e.target.closest(ADMIN_MUTATING)){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='click'&&e.target.closest('[data-po-delete]')&&!administrator){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
 // All actual mutation entry points also persist through the server-enforced commit function.
 for(const event of ['click','change'])document.addEventListener(event,e=>{if(canEdit()&&e.target instanceof Element&&e.target.closest(MUTATING))scheduleSave()},false);
 window.addEventListener('inspection:local-change',scheduleSave);
-window.addEventListener('offline',()=>{offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible.');});
+window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
 window.InspectionCloud={record,collect,canEdit,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay};
 async function connect(){
- overlay('Conectando con la base de datos oficial…',true);
- try{await loadState();if(!started){
+ if(!session){ready=false;administrator=false;updateRole();openLogin();return}
+ await showQueueCount();overlay('Conectando con la base de datos oficial…',true);
+ try{await loadIdentity();await drainQueue();await loadState();if(!started){
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
  let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
  try{for(const original of scripts){const node=document.createElement('script');node.textContent=original.textContent;document.body.appendChild(node);node.remove();if(startupError)throw startupError;}}finally{window.removeEventListener('error',onStartupError)}
  started=true;
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
- ready=true;offline=false;updateRole();message(administrator?'Administrator · official database connected.':'Visitor · POs enabled · product, EST, brand and photo changes require administrator approval.');unblock();
- }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay('No hay conexión con la base de datos oficial. '+error.message)}
+ ready=true;offline=false;updateRole();message(queueCount?'Hay '+queueCount+' envíos pendientes que requieren revisión.':administrator?'Administrador · Base oficial conectada.':'Usuario · POs habilitados; catálogo y EST protegidos.');unblock();if(administrator)await loadRequests();
+ }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay('No hay conexión con la base de datos oficial. '+error.message);if(!session)openLogin()}
 }
 document.getElementById('cloud-retry').onclick=connect;
 document.getElementById('cloud-login').onclick=openLogin;document.getElementById('cloud-logout').onclick=logout;
 document.getElementById('cloud-refresh').onclick=async()=>{if(saving||photoBusy)return;await connect()};
 document.getElementById('online-login-form').onsubmit=login;
-document.getElementById('online-login-close').onclick=()=>{if(!signingIn)document.getElementById('online-login-dialog').close()};
-document.getElementById('online-login-dialog').addEventListener('cancel',e=>{if(signingIn)e.preventDefault()});
+document.getElementById('online-login-close').hidden=true;document.getElementById('online-login-close').onclick=()=>{};
+document.getElementById('online-login-dialog').addEventListener('cancel',e=>{e.preventDefault()});
 document.getElementById('online-login-dialog').addEventListener('close',clearLogin);
-document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
+document.getElementById('required-login-button').onclick=openLogin;document.getElementById('blocker-account-button').onclick=openAccount;document.getElementById('pending-writes-button').onclick=openPendingWrites;document.getElementById('blocker-pending-button').onclick=openPendingWrites;document.getElementById('pending-writes-close').onclick=()=>document.getElementById('pending-writes-dialog').close();
+window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
+ document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(!started||saving||photoBusy||signingIn||!navigator.onLine)return;try{if(administrator)await loadRequests();const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=revision');if(!ready||offline||rows[0]?.revision!==revision){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{await drainQueue();if(administrator)await loadRequests();const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=revision');if(!ready||offline||rows[0]?.revision!==revision){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
 let requests=[],changeHistory=[],requestsLoading=false,reviewing=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
@@ -2887,7 +2943,7 @@ function renderRequests(){
  document.getElementById('approval-nav-count').textContent=pendingRows.length?'('+pendingRows.length+')':'';
  for(const [rootId,rows,empty] of [['approval-list',pendingRows,'No hay solicitudes pendientes.'],['approval-history-list',historyRows,'No hay solicitudes revisadas en este estado.']]){
  const root=document.getElementById(rootId);
- root.innerHTML=rows.map(r=>'<article class="approval-card" data-request-id="'+escapeHTML(r.id)+'"><div class="section-head"><strong>'+escapeHTML(r.payload.summary||'Solicitud de cambio')+'</strong><span class="pill">'+escapeHTML(r.status)+'</span></div><p class="muted small">'+escapeHTML(new Date(r.submitted_at).toLocaleString())+' · Visitante · '+escapeHTML(r.id.slice(0,8))+'</p><div class="tablewrap"><table><thead><tr><th>Cambio</th><th>Valor oficial al solicitar</th><th>Valor propuesto</th></tr></thead><tbody>'+r.payload.operations.map(op=>{const code=op.path[0].replace('inspection-data-hub-','').replace(/-v1$/,'');const current=official[op.path[0]]?.[op.path[1]]??null;const conflict=JSON.stringify(current)!==JSON.stringify(op.before);return '<tr><td>'+escapeHTML(domainNames[code]||code)+'<br><strong>'+escapeHTML(op.path[1])+'</strong>'+(conflict&&r.status==='pending'?'<p class="cloud-error">El valor oficial cambió. Revisa y solicita nuevamente antes de aprobar.</p><pre>Actual: '+escapeHTML(JSON.stringify(current,null,2))+'</pre>':'')+'</td><td><pre>'+escapeHTML(JSON.stringify(op.before,null,2))+'</pre></td><td><pre>'+escapeHTML(JSON.stringify(op.after,null,2))+'</pre>'+(code==='photos'?'<div data-pending-previews></div>':'')+'</td></tr>'}).join('')+'</tbody></table></div>'+((r.payload.po_verifications||[]).length?'<p class="muted small">Incluye '+r.payload.po_verifications.length+' confirmación(es) física(s) de líneas de PO.</p>':'')+(r.status==='pending'?'<div class="approval-actions"><button class="btn primary" data-review-approve="'+escapeHTML(r.id)+'">Aprobar cambio</button><button class="btn" data-review-reject="'+escapeHTML(r.id)+'">Denegar cambio</button></div>':'<p class="muted small">Revisado: '+escapeHTML(new Date(r.reviewed_at).toLocaleString())+(r.review_note?' · '+escapeHTML(r.review_note):'')+'</p>')+'</article>').join('')||'<p class="muted">'+empty+'</p>';
+ root.innerHTML=rows.map(r=>'<article class="approval-card" data-request-id="'+escapeHTML(r.id)+'"><div class="section-head"><strong>'+escapeHTML(r.payload.summary||'Solicitud de cambio')+'</strong><span class="pill">'+escapeHTML(r.status)+'</span></div><p class="muted small">'+escapeHTML(new Date(r.submitted_at).toLocaleString())+' · '+escapeHTML(actorLabel(r.submitted_by))+' · '+escapeHTML(r.id.slice(0,8))+'</p><div class="tablewrap"><table><thead><tr><th>Cambio</th><th>Valor oficial al solicitar</th><th>Valor propuesto</th></tr></thead><tbody>'+r.payload.operations.map(op=>{const code=op.path[0].replace('inspection-data-hub-','').replace(/-v1$/,'');const current=official[op.path[0]]?.[op.path[1]]??null;const conflict=JSON.stringify(current)!==JSON.stringify(op.before);return '<tr><td>'+escapeHTML(domainNames[code]||code)+'<br><strong>'+escapeHTML(op.path[1])+'</strong>'+(conflict&&r.status==='pending'?'<p class="cloud-error">El valor oficial cambió. Revisa y solicita nuevamente antes de aprobar.</p><pre>Actual: '+escapeHTML(JSON.stringify(current,null,2))+'</pre>':'')+'</td><td><pre>'+escapeHTML(JSON.stringify(op.before,null,2))+'</pre></td><td><pre>'+escapeHTML(JSON.stringify(op.after,null,2))+'</pre>'+(code==='photos'?'<div data-pending-previews></div>':'')+'</td></tr>'}).join('')+'</tbody></table></div>'+((r.payload.po_verifications||[]).length?'<p class="muted small">Incluye '+r.payload.po_verifications.length+' confirmación(es) física(s) de líneas de PO.</p>':'')+(r.status==='pending'?'<div class="approval-actions"><button class="btn primary" data-review-approve="'+escapeHTML(r.id)+'">Aprobar cambio</button><button class="btn" data-review-reject="'+escapeHTML(r.id)+'">Denegar cambio</button></div>':'<p class="muted small">Revisado: '+escapeHTML(new Date(r.reviewed_at).toLocaleString())+(r.review_note?' · '+escapeHTML(r.review_note):'')+'</p>')+'</article>').join('')||'<p class="muted">'+empty+'</p>';
  root.querySelectorAll('[data-review-approve]').forEach(button=>button.onclick=()=>reviewRequest(button.dataset.reviewApprove,'approve'));
  root.querySelectorAll('[data-review-reject]').forEach(button=>button.onclick=()=>reviewRequest(button.dataset.reviewReject,'reject'));
  for(const r of rows){const card=root.querySelector('[data-request-id="'+r.id+'"]');const holders=[...card.querySelectorAll('[data-pending-previews]')];let index=0;for(const op of r.payload.operations)if(op.path[0]===PHOTO_KEY){const holder=holders[index++];for(const metadata of op.after||[])signPhoto(metadata).then(photo=>{if(!administrator||!holder.isConnected)return;const img=document.createElement('img');img.src=photo.url;img.alt=photo.name||'Fotografía propuesta';holder.appendChild(img)}).catch(()=>{if(holder.isConnected)holder.append('No se pudo cargar esta fotografía.')});}}
@@ -2900,7 +2956,7 @@ function renderChangeHistory(){
  const term=document.getElementById('change-history-search').value.trim().toLocaleLowerCase(),domain=document.getElementById('change-history-domain').value;
  const rows=changeHistory.filter(row=>(!domain||(domain==='brand'?row.domain.startsWith('brand-'):row.domain===domain))&&(!term||[row.entity,row.field_name,historyFieldNames[row.field_name],historyValue(row.before_value),historyValue(row.after_value)].join(' ').toLocaleLowerCase().includes(term)));
  document.getElementById('change-history-count').textContent=rows.length+' cambios';
- document.getElementById('change-history-rows').innerHTML=rows.map(row=>'<tr><td>'+escapeHTML(new Date(row.changed_at).toLocaleString())+'</td><td><strong>'+escapeHTML(row.entity)+'</strong></td><td><strong>'+escapeHTML(historyFieldNames[row.field_name]||row.field_name)+'</strong><div class="muted small">'+escapeHTML(domainNames[row.domain]||row.domain)+' · '+({created:'Añadido',updated:'Modificado',removed:'Eliminado'}[row.event_type]||'Modificado')+'</div></td><td><pre class="history-change-value">'+escapeHTML(historyValue(row.before_value))+'</pre></td><td><pre class="history-change-value">'+escapeHTML(historyValue(row.after_value))+'</pre></td></tr>').join('')||'<tr><td colspan="5" class="empty">No hay cambios registrados que coincidan con estos filtros.</td></tr>';
+ document.getElementById('change-history-rows').innerHTML=rows.map(row=>'<tr><td>'+escapeHTML(new Date(row.changed_at).toLocaleString())+'</td><td><strong>'+escapeHTML(row.entity)+'</strong></td><td>'+escapeHTML(actorLabel(row.actor_id))+'</td><td><strong>'+escapeHTML(historyFieldNames[row.field_name]||row.field_name)+'</strong><div class="muted small">'+escapeHTML(domainNames[row.domain]||row.domain)+' · '+({created:'Añadido',updated:'Modificado',removed:'Eliminado'}[row.event_type]||'Modificado')+'</div></td><td><pre class="history-change-value">'+escapeHTML(historyValue(row.before_value))+'</pre></td><td><pre class="history-change-value">'+escapeHTML(historyValue(row.after_value))+'</pre></td></tr>').join('')||'<tr><td colspan="6" class="empty">No hay cambios registrados que coincidan con estos filtros.</td></tr>';
 }
 async function loadRequests(){
  if(!administrator||requestsLoading||reviewing)return;requestsLoading=true;
@@ -2910,11 +2966,14 @@ async function loadRequests(){
 async function reviewRequest(id,decision){
  if(!administrator){deny();return}if(reviewing||saving||photoBusy)return;
  if(!confirm(decision==='approve'?'¿Aprobar esta solicitud y aplicar sus cambios a los datos oficiales?':'¿Denegar esta solicitud? Los datos oficiales conservarán sus valores.'))return;
+ const job={id:crypto.randomUUID(),owner:session.user.id,created:Date.now(),type:'review',payload:{request_id:id,decision,expected_revision:revision}};
+ try{await queueStore('put',job)}catch(error){alert('No se pudo guardar esta revisión. '+error.message);return}
  reviewing=true;saving=true;overlay('Procesando revisión en Supabase…',true);
- try{await request('/rest/v1/rpc/inspection_review_request',{method:'POST',body:{request_id:id,decision,expected_revision:revision,review_note:''}});await loadState();message(decision==='approve'?'Solicitud aprobada. Cambios aplicados a la base oficial.':'Solicitud denegada. Los datos oficiales no cambiaron.');}
- catch(error){message(error.message,true);alert(error.message);try{await loadState()}catch{ready=false;offline=true}}
- finally{reviewing=false;saving=false;window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();await loadRequests();updateRole();if(ready&&!offline)unblock();else overlay('No hay conexión con la base de datos.');}
+ try{await drainQueue();await loadState();message(queueCount?'La revisión quedó pendiente.':decision==='approve'?'Solicitud aprobada. Cambios aplicados a la base oficial.':'Solicitud denegada. Los datos oficiales no cambiaron.');}
+ catch(error){if(error.network){ready=false;offline=true;message('Revisión guardada en este dispositivo; se enviará al reconectar.',true)}else{message(error.message,true);}}
+ finally{reviewing=false;saving=false;await showQueueCount();window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();if(ready&&!offline)await loadRequests();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. La revisión pendiente se conserva en este dispositivo.');}
 }
+
 document.getElementById('approval-refresh').onclick=loadRequests;
 document.getElementById('approval-filter').onchange=renderRequests;
 document.getElementById('change-history-search').oninput=renderChangeHistory;
@@ -2924,6 +2983,7 @@ document.querySelector('[data-view="history"]').addEventListener('click',loadReq
 connect();
 })();
 </script></body></html>
+
 
 
 
