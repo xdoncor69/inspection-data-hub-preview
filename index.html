@@ -76,6 +76,28 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 #lookup-view :is(#approved-po-panel,.po-archive) .section-head>.row{flex-wrap:wrap}
 </style>
 <style id="settings-sections-layout">#settings-view .settings-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}#settings-view>.skin-settings,#settings-view>#import-view,#settings-view>#sync-view{min-width:0}</style>
+<script>
+/* Query sorting only: never reorder a saved PO's source rows. */
+window.InspectionTableTools={
+ collator:new Intl.Collator("en",{numeric:true,sensitivity:"base"}),
+ sort(rows,key,direction=1,read=(row,key)=>row[key]){
+  return rows.map((row,index)=>({row,index})).sort((a,b)=>{
+   const av=read(a.row,key),bv=read(b.row,key),blank=v=>v==null||String(v).trim()===""||v==="—";
+   if(blank(av)||blank(bv))return blank(av)===blank(bv)?a.index-b.index:blank(av)?1:-1;
+   return direction*this.collator.compare(String(av),String(bv))||a.index-b.index;
+  }).map(x=>x.row);
+ },
+ headers(table,key,direction){
+  table.querySelectorAll("th[data-sort]").forEach(th=>{
+   const active=th.dataset.sort===key;
+   th.setAttribute("aria-sort",active?(direction===1?"ascending":"descending"):"none");
+   const button=th.querySelector("button");
+   button.querySelector(".sort-arrow").textContent=active?(direction===1?" ↑":" ↓"):" ↕";
+   button.title="Sort by "+button.dataset.label+(active&&direction===1?" descending":" ascending");
+  });
+ }
+};
+</script>
 </head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
@@ -114,7 +136,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Edit any cell directly and click Save, or select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
-<div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Type</th><th>Brand</th><th>Product family</th><th>Description</th><th>Case / Pack</th><th>Size</th><th>EST / Plant</th><th>Photo</th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
+<p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:64px"><col style="width:104px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:64px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST / Plant">EST / Plant<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Case / Pack">Case / Pack<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="size"><button type="button" class="query-sort" data-label="Size">Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Save</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
 <input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
 <button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
@@ -151,9 +173,9 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn mini" id="invoice-export" type="button">↓ Excel / CSV</button><button class="btn mini primary" id="invoice-print" type="button">⎙ Print invoice</button></div></div>
 <div class="row" style="flex-wrap:wrap;gap:10px;margin-bottom:12px"><label class="label" for="invoice-select">Saved PO</label><select class="input" id="invoice-select" style="min-width:180px;max-width:100%;flex:1"><option value="">Preview imported file / choose saved PO</option></select></div>
 <div class="po-import-summary" id="invoice-overview-summary">Import an Excel/CSV file to preview the invoice, or choose a saved PO.</div>
-<div class="tablewrap"><table class="invoice-overview-table"><thead><tr>
-<th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>EST / Plant</th><th>Last confirmed</th><th>Last 10 verified weeks</th><th>Most common (all time)</th><th>Known EST variants</th><th>Weeks since check</th><th>Review priority</th>
-</tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="11" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
+<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:64px"><col style="width:104px"><col style="width:128px"><col style="width:130px"><col style="width:132px"><col style="width:170px"><col style="width:92px"><col style="width:100px"></colgroup><thead><tr>
+<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST / Plant">EST / Plant<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Case / Pack">Case / Pack<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="size"><button type="button" class="query-sort" data-label="Size / Unit">Size / Unit<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="latest"><button type="button" class="query-sort" data-label="Last confirmed">Last confirmed<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="recent"><button type="button" class="query-sort" data-label="Last 10 verified weeks">Last 10 verified weeks<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="common"><button type="button" class="query-sort" data-label="Most common (all time)">Most common (all time)<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="variants"><button type="button" class="query-sort" data-label="Known EST variants">Known EST variants<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="weeks"><button type="button" class="query-sort" data-label="Weeks since check">Weeks since check<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
+</tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="12" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
 <div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current plant numbers. Printing includes only Item, Description, Case / Pack, Size / Unit and EST / Plant.</div>
 </div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Supplier / Source Group</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div><div><div class="label">Sales unit</div><div class="value" id="d-salesUnit">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
@@ -792,6 +814,7 @@ function getInvoiceRows(){
  for(const r of preview)if(r.product&&!items.has(r.item))items.set(r.item,r);
  return {po:el("po-import-number").value.trim()||"Invoice preview",customer:el("po-import-customer").value.trim(),rows:[...items.values()].map(r=>({item:r.item,description:r.description||r.product.description,plant:initialEST(r.product),product:r.product})),saved:false};
 }
+let invoiceSortKey="",invoiceSortDirection=1;
 function invoiceData(){
  const inv=getInvoiceRows();
  return {...inv,rows:inv.rows.map(r=>{
@@ -799,7 +822,7 @@ function invoiceData(){
   const level=fixed?"stable":p?.level||"high";
   const label=fixed?"Stable":({low:"Low",medium:"Medium",high:"High"}[level]||"High");
   const pct=(pair,weeks)=>pair?pair[0]+" · "+Math.round(100*pair[1]/Math.max(1,weeks))+"%":"—";
-  return {...r,pack:product?.pack||"—",size:product?.size||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
+  return {...r,brand:product?.brand||"—",pack:product?.pack||"—",size:product?.size||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
  })};
 }
 function renderInvoiceOverview(){
@@ -807,9 +830,15 @@ function renderInvoiceOverview(){
  select.innerHTML='<option value="">Current imported file / preview</option>'+invoices.map(p=>'<option value="'+escHtml(p.id)+'">PO '+escHtml(p.po)+" · "+escHtml(p.customer||"No customer")+'</option>').join("");
  select.value=invoices.some(p=>p.id===chosen)?chosen:"";
  const data=invoiceData();
+ const displayRows=invoiceSortKey?window.InspectionTableTools.sort(data.rows,invoiceSortKey,invoiceSortDirection,(r,k)=>k==="latest"?r.s.latest:k==="priority"?({low:0,stable:0,medium:1,high:2}[r.level]):r[k]):data.rows;
+ window.InspectionTableTools.headers(el("invoice-query-table"),invoiceSortKey,invoiceSortDirection);
  el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items · EST history from physically verified observations";
- el("invoice-overview-rows").innerHTML=data.rows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td></tr>').join("")||'<tr><td colspan="11" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
+ el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td></tr>').join("")||'<tr><td colspan="12" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
 }
+el("invoice-query-table").querySelector("thead").addEventListener("click",e=>{
+ const button=e.target.closest(".query-sort");if(!button)return;
+ const key=button.closest("th").dataset.sort;invoiceSortDirection=key===invoiceSortKey?-invoiceSortDirection:1;invoiceSortKey=key;renderInvoiceOverview();
+});
 window.__inspectionInvoiceRefresh=renderInvoiceOverview;
 el("invoice-select").addEventListener("change",renderInvoiceOverview);
 el("po-import-number").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
@@ -817,8 +846,8 @@ el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").
 el("invoice-export").onclick=()=>{
  const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
  saveCSV("PO_Inspection_Overview_"+String(data.po).replace(/[^a-z0-9_-]/gi,"_")+".csv",[
- ["PO","Customer","Item","Description","Case / Pack","Size / Unit","EST / Plant","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
- ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.description,r.pack,r.size,r.plant,r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
+ ["PO","Customer","Item","Brand","EST / Plant","Description","Case / Pack","Size / Unit","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
+ ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.size,r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
  ]);
 };
 el("invoice-print").onclick=()=>{
@@ -1971,8 +2000,6 @@ html,body{width:100%;max-width:100%;margin:0}
 .inspection-query-results-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px}
 #iq-count{margin-left:9px}
 #iq-rows tr{cursor:default}
-#iq-rows td{white-space:normal;min-width:80px}
-#iq-rows td:nth-child(4){min-width:190px}
 @media(max-width:620px){.inspection-mode-bar{gap:6px}.inspection-mode-switch{max-width:100%}.inspection-mode-button{padding:7px 9px}.inspection-query-search .btn{flex:1}.inspection-query-results-head{flex-wrap:wrap}}
 </style>
 
@@ -1984,18 +2011,34 @@ const $=id=>document.getElementById(id);
 const fields=["brand","family","pack","size","plant"];
 const BLANK_FILTER="__inspection_blank__";
 const isBlankCatalogField=value=>String(value??"").trim()==="";
-const editable=["category","brand","family","description","pack","size","plant"];
+const editable=["brand","plant","description","pack","size","family","category"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let matched=[],selectedIds=new Set();
+let matched=[],selectedIds=new Set(),sortKey="item",sortDirection=1;
+const table=$("iq-table"),tableTools=window.InspectionTableTools;
+const facets=[...fields,"category","photo","description-state"];
+const facetOptions={category:[["Meat","Meat"],["Poultry","Poultry"],["Dairy","Dairy"],[BLANK_FILTER,"Blank field"]],photo:[["with","With photos"],["without","Without photos"]],"description-state":[["blank","Blank field"],["filled","Filled field"]]};
+const facetLabels={brand:"brands",family:"families",pack:"packs",size:"sizes",plant:"EST / Plant values",category:"groups",photo:"products","description-state":"descriptions"};
 // Initialize the visible filter choices before attaching any optional table handlers.
 function populate(){
- for(const field of fields){
+ const choices=facets.map(field=>{
+  const candidates=demo.filter(x=>match(x,field));
+  const options=fields.includes(field)?[[BLANK_FILTER,"Blank field"],...[...new Set(candidates.map(x=>String(x[field]??"")).filter(v=>!isBlankCatalogField(v)))].sort(tableTools.collator.compare).map(v=>[v,v])]:facetOptions[field];
+  return {field,options:options.filter(([value])=>candidates.some(x=>matchesFacet(x,field,value)))};
+ });
+ for(const {field,options} of choices){
   const el=$("iq-"+field),current=el.value;
-  const options=[...new Set(demo.map(x=>String(x[field]??"")).filter(v=>!isBlankCatalogField(v)))].sort((a,b)=>a.localeCompare(b));
-  const label={brand:"brands",family:"families",pack:"packs",size:"sizes",plant:"EST / Plant values"}[field];
-  el.innerHTML='<option value="">All '+label+'</option><option value="__inspection_blank__">Blank field</option>'+options.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("");
-  if(current===BLANK_FILTER||options.includes(current))el.value=current;
+  // Keep a selected unavailable value visible so it can be cleared after a text query.
+  if(current&&!options.some(([v])=>v===current))options.push([current,el.selectedOptions?.[0]?.textContent||current]);
+  el.innerHTML='<option value="">All '+facetLabels[field]+'</option>'+options.map(([v,label])=>'<option value="'+safe(v)+'">'+safe(label)+'</option>').join("");
+  el.value=current;
  }
+}
+function matchesFacet(x,field,value){
+ if(!value)return true;
+ if(fields.includes(field))return value===BLANK_FILTER?isBlankCatalogField(x[field]):String(x[field]??"")===value;
+ if(field==="category")return value===BLANK_FILTER?isBlankCatalogField(x.category):value==="Poultry"?groupOf(x)==="Poultry":value==="Meat"?x.category!=="Dairy":x.category===value;
+ if(field==="photo")return value==="with"?(imagesByItem[x.item]||[]).length>0:!(imagesByItem[x.item]||[]).length;
+ return value==="blank"?isBlankCatalogField(x.description):!isBlankCatalogField(x.description);
 }
 function groupOf(x){
  // Dairy remains distinct; poultry is identified using the existing product type logic.
@@ -2004,19 +2047,14 @@ function groupOf(x){
  if(/\b(chicken|turkey|poultry|duck|hen|goose)\b/i.test(String(x.description||"")))return "Poultry";
  return "Meat";
 }
-function match(x){
- for(const field of fields){const value=$("iq-"+field).value;if(value===BLANK_FILTER){if(!isBlankCatalogField(x[field]))return false;}else if(value&&String(x[field]??"")!==value)return false;}
- const group=$("iq-category").value;
- if(group===BLANK_FILTER){if(!isBlankCatalogField(x.category))return false;}else if(group==="Poultry"){if(groupOf(x)!=="Poultry")return false;}else if(group==="Meat"){if(x.category==="Dairy")return false;}else if(group&&x.category!==group)return false;
- const descriptionState=$("iq-description-state").value;
- if(descriptionState==="blank"&&!isBlankCatalogField(x.description))return false;
- if(descriptionState==="filled"&&isBlankCatalogField(x.description))return false;
+function match(x,skip=""){
+ for(const field of facets)if(field!==skip&&!matchesFacet(x,field,$("iq-"+field).value))return false;
  const description=$("iq-description").value.trim().toLocaleLowerCase();
- if(description&&!String(x.description||"").toLocaleLowerCase().includes(description))return false;
- const photo=$("iq-photo").value,hasPhoto=(imagesByItem[x.item]||[]).length>0;
- if(photo==="with"&&!hasPhoto)return false;
- if(photo==="without"&&hasPhoto)return false;
- return true;
+ return !description||String(x.description||"").toLocaleLowerCase().includes(description);
+}
+function sortResults(){
+ matched=tableTools.sort(matched,sortKey,sortDirection,(x,k)=>k==="__photo"?(imagesByItem[x.item]||[]).length:x[k]);
+ tableTools.headers(table,sortKey,sortDirection);
 }
 function selectionLabel(){
  $("iq-selected-count").textContent=selectedIds.size+" selected";
@@ -2027,17 +2065,40 @@ function selectionLabel(){
 function draw(){
  $("iq-results").classList.remove("hidden");
  $("iq-count").textContent=matched.length+" of "+demo.length+" products";
+ sortResults();
  $("iq-rows").innerHTML=matched.map(x=>{
-  const cells=editable.map(k=>'<td><input class="input iq-cell" data-field="'+k+'" value="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'"></td>').join("");
-  // Place editable category before brand and keep Item number immutable in query results.
-  return '<tr data-iq-item="'+safe(x.item)+'"><td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><button type="button" class="btn mini iq-save">Save</button></td></tr>';
+  const cells=editable.map(k=>'<td>'+(k==="description"?'<textarea rows="2" class="input iq-cell iq-description-cell" data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
+  // Item remains immutable; editable cells are identified by field, not position.
+  return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><button type="button" class="btn mini iq-save">Save</button></td></tr>';
  }).join("")||'<tr><td colspan="11" class="empty">No matching products. Try removing a condition.</td></tr>';
+ $("iq-rows").querySelectorAll(".iq-description-cell").forEach(el=>{el.style.height="auto";el.style.height=Math.max(46,el.scrollHeight)+"px";});
  $("iq-export").disabled=matched.length===0;
  selectionLabel();
 }
 function run(){
- matched=demo.filter(match);selectedIds=new Set();draw();
+ populate();matched=demo.filter(x=>match(x));selectedIds=new Set();draw();
 }
+function changeFacet(field){
+ const cleared=[];
+ // A newly chosen facet takes precedence over incompatible older selections.
+ if(!demo.some(x=>match(x))){
+  for(const other of facets){
+   if(other===field||!$("iq-"+other).value)continue;
+   $("iq-"+other).value="";cleared.push(facetLabels[other]);
+   if(demo.some(x=>match(x)))break;
+  }
+ }
+ $("iq-filter-status").textContent=cleared.length?"Cleared incompatible filters: "+cleared.join(", ")+".":"";
+ run();
+}
+table.querySelector("thead").addEventListener("click",e=>{
+ const button=e.target.closest(".query-sort");if(!button)return;
+ const key=button.closest("th").dataset.sort;
+ sortDirection=key===sortKey?-sortDirection:1;sortKey=key;sortResults();
+ // Move existing row nodes so unsaved cell edits and selection survive sorting.
+ const body=$("iq-rows"),nodes=new Map([...body.querySelectorAll("tr[data-iq-item]")].map(row=>[row.dataset.iqItem,row]));
+ for(const item of matched){const row=nodes.get(String(item.item));if(row)body.appendChild(row);}
+});
 window.__inspectionGlobalRefresh=()=>{populate();run();};
 window.addEventListener("inspection:catalog-updated",window.__inspectionGlobalRefresh);
 // Show the catalog and its dropdown values before optional event bindings.
@@ -2052,12 +2113,11 @@ function refreshAfterEdit(){
 }
 // Filter controls drive the result list; there is no keyword bar or Search button.
 $("iq-run").onclick=run;
-for(const field of fields)$("iq-"+field).addEventListener("change",run);
-$("iq-category").addEventListener("change",run);
+for(const field of facets)$("iq-"+field).addEventListener("change",()=>changeFacet(field));
 $("iq-description").addEventListener("input",run);
-$("iq-description-state").addEventListener("change",run);
-$("iq-photo").addEventListener("change",run);
+
 $("iq-reset").onclick=()=>{
+ $("iq-filter-status").textContent="";
  for(const field of fields)$("iq-"+field).value="";
  $("iq-category").value="";
  $("iq-description").value="";
@@ -2071,6 +2131,7 @@ $("iq-select-all").onchange=e=>{
  selectedIds=e.target.checked?new Set(matched.map(x=>x.item)):new Set();
  draw();
 };
+$("iq-rows").addEventListener("input",e=>{if(e.target.matches(".iq-description-cell")){e.target.style.height="auto";e.target.style.height=Math.max(46,e.target.scrollHeight)+"px";}});
 $("iq-rows").onchange=async e=>{
  if(e.target.matches(".iq-photo-upload")){
   const tr=e.target.closest("[data-iq-item]");if(!tr)return;
@@ -2112,7 +2173,7 @@ $("iq-bulk-apply").onclick=()=>{
 };
 $("iq-print").onclick=()=>{
  if(!matched.length)return;
- const cols=[["Item","item"],["Type","category"],["Brand","brand"],["Product family","family"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Photo","__photo"]];
+ const cols=[["Item","item"],["Brand","brand"],["EST / Plant","plant"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["Product family","family"],["Type","category"],["Photo","__photo"]];
  let target=document.getElementById("iq-print-area");
  if(!target){target=document.createElement("section");target.id="iq-print-area";document.body.appendChild(target);}
  const values=x=>cols.map(c=>c[1]==="__photo"?((imagesByItem[x.item]||[]).length?"With photo":"Without photo"):x[c[1]]);
@@ -2125,7 +2186,7 @@ $("iq-print").onclick=()=>{
 function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
 $("iq-export").onclick=()=>{
  if(!matched.length)return;
- const columns=[["Item","item"],["Type","category"],["Brand","brand"],["Product family","family"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["EST / Plant","plant"],["Photo status","__photo"]];
+ const columns=[["Item","item"],["Brand","brand"],["EST / Plant","plant"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["Product family","family"],["Type","category"],["Photo status","__photo"]];
  const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(c[1]==="__photo"?(imagesByItem[x.item]||[]).length?"With photo":"Without photo":x[c[1]])).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
  const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
@@ -2151,14 +2212,7 @@ navigate("meat");
 .inspection-query-select{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;font-weight:650}
 .inspection-query-bulk-divider{flex:1 1 15px}
 .iq-edit-note{padding:8px 12px;background:#fbfcfe}
-#iq-rows .iq-cell{width:100%;min-width:90px;padding:6px 7px;font-size:11px}
-#iq-rows td{min-width:100px;padding:6px}
-#iq-rows td:nth-child(1){min-width:52px;text-align:center}
-#iq-rows td:nth-child(2){min-width:75px}
-#iq-rows td:nth-child(5){min-width:215px}
-#iq-rows td:nth-child(8){min-width:105px}
-#iq-rows td:nth-child(9){min-width:120px}
-#iq-rows td:last-child{min-width:70px}
+#iq-rows .iq-cell{width:100%;min-width:0;padding:6px 7px;font-size:12px}
 @media(max-width:620px){.inspection-query-bulk-divider{display:none}.inspection-query-bulk #iq-bulk-value{flex-basis:100%}}
 </style><style>
 /* Distinct PO Inspection and Global Search workspaces. */
@@ -2184,7 +2238,6 @@ navigate("meat");
 #global-view .iq-photo-no{font-size:10px;color:#8a6170}
 #global-view .iq-photo-add{position:relative;overflow:hidden;cursor:pointer;display:inline-flex;align-items:center}
 #global-view .iq-photo-upload{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-#global-view #iq-rows td:nth-last-child(2){min-width:150px}
 </style><style>
 #global-view .iq-result-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 #global-view .inspection-query-results-head{flex-wrap:wrap}
@@ -3091,7 +3144,23 @@ document.querySelector('[data-view="history"]').addEventListener('click',loadReq
 
 connect();
 })();
-</script></body></html>
+</script><style>
+.query-sort{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;display:inline-flex;align-items:center;gap:3px;line-height:1.3}
+.query-sort:focus-visible{outline:2px solid var(--sk-accent,#285b7e);outline-offset:4px;border-radius:2px}
+.sort-arrow{opacity:.65;white-space:nowrap}
+#iq-table{table-layout:fixed;width:100%;min-width:1410px}
+#iq-table th{white-space:normal}
+#lookup-view #invoice-query-table{table-layout:fixed;width:100%;min-width:1682px}
+#lookup-view #invoice-query-table th{white-space:normal}
+#lookup-view #invoice-query-table td{overflow-wrap:anywhere}
+#iq-rows td{min-width:0;padding:6px;white-space:normal;overflow-wrap:anywhere}
+#iq-table .iq-cell{box-sizing:border-box;width:100%;min-width:0}
+#iq-table .iq-description-cell{resize:vertical;line-height:1.4;min-height:46px;white-space:pre-wrap;overflow-wrap:anywhere}
+#iq-table td:nth-child(9){text-align:center}
+#iq-table .iq-photo-status{flex-wrap:wrap;gap:4px;font-size:11px}
+</style>
+</body></html>
+
 
 
 
