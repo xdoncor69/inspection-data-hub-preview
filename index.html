@@ -117,7 +117,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 </div>
 <div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
-<div class="section-head" style="margin-bottom:0"><div><h3>Import Purchase Order</h3><span class="hint">Build a PO from a SAP / SIPI Excel export or CSV — without scanning each Item</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
+<div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your private PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
 <div class="po-import-grid">
 <label><span class="label">PO Number</span><input class="input" id="po-import-number" maxlength="90" placeholder="e.g. PO-123456"></label>
@@ -152,7 +152,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="panel panel-pad guide-intro" id="guide-overview">
 <div class="section-head"><h3>How to use Inspection Data Hub</h3><span class="pill">REFERENCE GUIDE</span></div>
 <p>This application helps you consult past EST / Plant observations while preparing invoices and deciding what to review. It is a historical reference, not an official verification of today's shipment.</p>
-<div class="guide-steps"><div><strong>1 · Search Items for a PO</strong><span>Each successful Meat or Dairy Item lookup automatically adds it to the current PO worklog. Repeated lookups are not duplicated.</span></div><div><strong>2 · Save the PO</strong><span>Enter the Purchase Order number and save. The current worklog clears, and the saved invoice remains available below.</span></div><div><strong>3 · Inspect cases physically</strong><span>Reopen the saved PO after inspecting pallets. Editing an EST reference alone does not count as a verification.</span></div><div><strong>4 · Confirm or change EST</strong><span>Confirm matching ESTs or enter one or more different ESTs actually observed on the cases. Only these actions update physical verification statistics.</span></div></div>
+<div class="guide-steps"><div><strong>1 · Search Items for a PO</strong><span>Each successful Meat or Dairy Item lookup automatically adds it to the current PO worklog. Repeated lookups are not duplicated.</span></div><div><strong>2 · Save a private draft</strong><span>Enter the PO number and customer. Drafts are visible only to their owner. Users can import Excel / CSV or add Items one by one.</span></div><div><strong>3 · Inspect cases physically</strong><span>Reopen the saved PO after inspecting pallets. Editing an EST reference alone does not count as a verification.</span></div><div><strong>4 · Administrator approval</strong><span>The administrator reviews their own PO and selects Approve PO to publish a read-only copy for everyone. Matching PO-number drafts are replaced by the approved copy. Approval alone does not record physical EST verification.</span></div></div>
 </div>
 <div class="panel panel-pad">
 <div class="section-head" id="guide-products"><h3>Understanding the product card</h3></div>
@@ -323,7 +323,7 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 <div class="notice" id="cloud-message" role="status">Connecting to the official Supabase database. No local database is used.</div>
 <div class="settings-grid" style="margin-top:20px"><div><div class="label">Project</div><div class="value">InspectionDataHub</div></div><div><div class="label">Provider</div><div class="value">Supabase · PostgreSQL</div></div><div><div class="label">Data access</div><div class="value" id="cloud-role">User · PO access</div></div><div><div class="label">Connection</div><div class="value">Online only · official shared database</div></div></div>
 <div class="row" style="margin-top:18px;flex-wrap:wrap"><button class="btn primary" id="cloud-login" type="button">Account login</button><button class="btn" id="cloud-refresh" type="button">Refresh database</button><button class="btn" id="cloud-logout" type="button" hidden>Sign out</button></div>
-<p class="muted small">All users must sign in. Users can create and import POs and organize their lines. Only the administrator can modify products, EST, brands and photos or access Change History. Submitted writes interrupted by connection failures are retained on this device and retried online.</p>
+<p class="muted small">All users must sign in. Users can create and import private PO drafts and organize their lines. Only the administrator can publish Approved POs; drafts with the same number are replaced by the approved version. Only the administrator can modify products, EST, brands and photos or access Change History. Submitted writes interrupted by connection failures are retained on this device and retried online.</p>
 </div></section>
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
 <script type="application/inspection-script">
@@ -615,11 +615,12 @@ existingPOAccepted=true;
 p.rows.push(rowFor(x));persistPOWorkspace();renderPOArchive();
 }
 function createPOFlow(pendingItem=null){
-modal('<h2>Open or create Purchase Order</h2><p>Enter a PO number and customer. If the number already exists, that PO opens instead.</p><div class="label">PO number</div><input class="input" id="po-number" maxlength="90" placeholder="PO-123456" style="width:100%" autocomplete="off"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-customer" maxlength="120" placeholder="Customer / company name" style="width:100%" autocomplete="off"><div class="row" style="margin-top:15px;justify-content:flex-end"><button class="btn primary" id="po-confirm-save">Continue</button></div>');
+modal('<h2>Open or create a private PO draft</h2><p>Enter a PO number and customer. Only your account can see this draft. The administrator publishes Approved POs.</p><div class="label">PO number</div><input class="input" id="po-number" maxlength="90" placeholder="PO-123456" style="width:100%" autocomplete="off"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-customer" maxlength="120" placeholder="Customer / company name" style="width:100%" autocomplete="off"><div class="row" style="margin-top:15px;justify-content:flex-end"><button class="btn primary" id="po-confirm-save">Continue</button></div>');
 $("po-number").focus();$("po-number").onkeydown=e=>{if(e.key==="Enter")$("po-confirm-save").click();};
 $("po-confirm-save").onclick=()=>{
 const number=$("po-number").value.trim(),customer=$("po-customer").value.trim();
 if(!number){alert("Enter the PO number.");return;}
+if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an Approved PO. Open it in Approved POs above.");return;}
 const existing=invoices.find(p=>p.po.toLowerCase()===number.toLowerCase());
 if(existing){closeModal();activatePO(existing.id,true);alert("PO "+existing.po+" already exists for "+(existing.customer||"this customer")+". Opened existing PO; the entered customer name was ignored.");if(pendingItem)addItemToActivePO(pendingItem);return;}
 if(!customer){alert("Enter the customer name.");return;}
@@ -805,6 +806,7 @@ renderInvoiceOverview();
 el("po-import-create").onclick=()=>{
  const number=clean(el("po-import-number").value),customer=clean(el("po-import-customer").value);
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
+ if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an Approved PO. Open it in Approved POs above.");return;}
  const existing=invoices.find(p=>p.po.toLowerCase()===number.toLowerCase());
  if(!existing&&!customer){alert("Enter the customer name for the new PO.");el("po-import-customer").focus();return;}
  const unique=new Map();
@@ -813,7 +815,7 @@ el("po-import-create").onclick=()=>{
  const newItems=[...unique.values()].filter(x=>!existing?.rows.some(r=>r.item===x.item));
  const importRow=x=>{const row=rowFor(x),source=preview.find(r=>r.item===x.item&&r.description);if(source)row.description=source.description;return row;};
  const unknown=[...new Set(preview.filter(r=>!r.product).map(r=>r.item))];
- const info=(existing?"Update existing PO "+existing.po:"Create new PO "+number)+" with "+newItems.length+" matched Items?"+
+ const info=(existing?"Update private PO draft "+existing.po:"Create private PO draft "+number)+" with "+newItems.length+" matched Items?"+
  (unknown.length?"\n"+unknown.length+" unknown Item numbers will be skipped.":"")+
  "\nEST values are reference values, not physical verification.";
  if(!confirm(info))return;
@@ -828,7 +830,7 @@ el("po-import-create").onclick=()=>{
   activatePO(po.id,false);
  }
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unmatched Items were skipped.":"")+".";
- setStatus("PO "+number+" is ready for inspection. Reference ESTs have not been physically verified.");
+ setStatus("Private PO draft "+number+" saved. Only the administrator can publish an Approved PO.");
  el("po-import-body").classList.add("hidden");toggle.setAttribute("aria-expanded","false");toggle.textContent="↑ Import Excel / CSV";
  el("invoice-select").value=existing?existing.id:invoices[0]?.id||"";
  renderInvoiceOverview();
@@ -847,15 +849,15 @@ $("po-search-input").oninput=()=>renderPOArchive();
 $("po-search-clear").onclick=()=>{$("po-search-input").value="";renderPOArchive();$("po-search-input").focus();};
 function renderPOArchive(){
 const root=$("po-list"),active=invoices.find(p=>p.id===openPO);
-$("po-count").textContent=invoices.length+" saved";
-$("po-workspace-title").textContent=active?"Current Purchase Order":"Purchase Orders";
-$("po-workspace-hint").textContent=active?"Working on PO "+active.po+" · "+(active.customer||"Customer not specified"):"Select an existing PO or create a new one";
+$("po-count").textContent=invoices.length+" private";
+$("po-workspace-title").textContent=window.InspectionCloud.isAdministrator()?(active?"Current PO · awaiting approval":"My POs · awaiting approval"):(active?"Current PO Draft":"My PO Drafts");
+$("po-workspace-hint").textContent=active?"Private draft · "+active.po+" · "+(active.customer||"Customer not specified"):"Only you can see these drafts. Approved POs are published above by the administrator.";
 $("po-new").classList.toggle("hidden",!!active);
 root.classList.toggle("hidden",!!active);
 $("po-search-form").classList.toggle("hidden",!!active);
 const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
-root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer||"Customer not specified")+'</div><div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open PO</button><button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'">×</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No POs match this number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No POs yet. Click New PO or search an Item.</div>');
+root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+safe(p.po)+' <span class="pill">Draft</span></strong><div class="po-customer">'+safe(p.customer||"Customer not specified")+'</div><div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open draft</button><button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'">×</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No POs match this number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No private drafts yet. Click New draft or search an Item.</div>');
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[["PO","Customer","Item","Type","Description","EST / Plant","Verification date","Physically observed ESTs","Note"],...p.rows.map(x=>[p.po,p.customer||"",x.item,demo.find(d=>d.item===x.item)?.category||"",x.description,x.plant,x.verifiedAt||"",x.verifiedEsts?.join(", ")||"",x.note||""])]);});
 root.querySelectorAll("[data-po-delete]").forEach(b=>b.onclick=()=>{const p=invoices.find(x=>x.id===b.dataset.poDelete);if(!p||!confirm("Delete PO "+p.po+"? Physical observations already recorded will remain."))return;invoices=invoices.filter(x=>x.id!==p.id);if(openPO===p.id)openPO=null;persistPOWorkspace();renderPOArchive();});
@@ -864,11 +866,12 @@ renderPODetails();
 function renderPODetails(){
 const root=$("po-details"),p=invoices.find(x=>x.id===openPO);
 if(!p){root.innerHTML="";return;}
-root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">Customer: '+safe(p.customer||"Not specified")+'</div></div><div class="row"><button class="btn mini" id="po-edit-details">✎ Edit PO details</button><button class="btn mini primary" id="po-close-active">✓ Close PO</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number to add to this saved PO" autocomplete="off"><button class="btn mini primary" id="po-add-item-btn">＋ Add Item</button><span class="small muted">Edit the EST in the row and press Confirm only after physically checking the cases.</span></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Type</th><th>EST / Plant (editable)</th><th>Weeks Since Check</th><th>Verification Priority</th><th>Verify</th><th>Order / Remove</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
+root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">Customer: '+safe(p.customer||"Not specified")+'</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>✓ Approve PO</button><button class="btn mini" id="po-edit-details">✎ Edit draft details</button><button class="btn mini primary" id="po-close-active">✓ Close PO</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number to add to this saved PO" autocomplete="off"><button class="btn mini primary" id="po-add-item-btn">＋ Add Item</button><span class="small muted">Edit the EST in the row and press Confirm only after physically checking the cases.</span></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Type</th><th>EST / Plant (editable)</th><th>Weeks Since Check</th><th>Verification Priority</th><th>Verify</th><th>Order / Remove</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
 const verified=estStatus(x.item)+(x.verifiedAt?'<div class="po-verified">✓ This PO: '+safe(x.verifiedAt)+'</div>':'');
 return '<tr><td>'+(i+1)+'</td><td><input class="input" data-po-item="'+i+'" value="'+safe(x.item)+'" aria-label="Item number"></td><td><input class="input" data-po-desc="'+i+'" value="'+safe(x.description)+'" aria-label="Description"></td><td><span class="po-type '+safe((demo.find(d=>d.item===x.item)?.category||"").toLowerCase())+'">'+safe(demo.find(d=>d.item===x.item)?.category||"—")+'</span></td><td><input class="input" data-po-ref="'+i+'" value="'+safe(x.plant)+'" aria-label="EST reference"></td><td>'+verified+'</td><td>'+estPriorityCell(x.item)+'<div><button class="btn mini po-fixed-toggle" data-po-fixed="'+i+'" title="Switch fixed EST classification on or off">'+(fixedEST(x.item)?"Unmark fixed":"Mark fixed")+'</button></div></td><td class="po-actions"><button class="btn mini primary" data-po-confirm="'+i+'" title="Record physical EST verification">✓ Confirm</button></td><td><button class="btn mini" data-po-up="'+i+'" title="Move up">↑</button> <button class="btn mini" data-po-down="'+i+'" title="Move down">↓</button> <button class="btn mini" data-po-remove="'+i+'" title="Remove Item from this PO">×</button></td></tr>';
 }).join("")+'</tbody></table></div>';
 $("po-close-active").onclick=closeActivePO;
+$("po-approve").onclick=()=>window.InspectionCloud.approvePO(p.id);
 const poAdd=$("po-add-item"),poAddBtn=$("po-add-item-btn");
 poAddBtn.onclick=()=>{
 const item=poAdd.value.trim(),product=demo.find(x=>x.item===item);
@@ -879,10 +882,11 @@ addItemToActivePO(product);
 };
 poAdd.onkeydown=e=>{if(e.key==="Enter")poAddBtn.click();};
 $("po-edit-details").onclick=()=>{
-modal('<h2>Edit Purchase Order</h2><div class="label">PO number</div><input class="input" id="po-edit-number" maxlength="90" style="width:100%" value="'+safe(p.po)+'"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-edit-customer" maxlength="120" style="width:100%" value="'+safe(p.customer||"")+'"><div style="margin-top:15px;text-align:right"><button class="btn primary" id="po-edit-save">Save changes</button></div>');
+modal('<h2>Edit private PO draft</h2><div class="label">PO number</div><input class="input" id="po-edit-number" maxlength="90" style="width:100%" value="'+safe(p.po)+'"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-edit-customer" maxlength="120" style="width:100%" value="'+safe(p.customer||"")+'"><div style="margin-top:15px;text-align:right"><button class="btn primary" id="po-edit-save">Save changes</button></div>');
 $("po-edit-save").onclick=()=>{
 const number=$("po-edit-number").value.trim(),customer=$("po-edit-customer").value.trim();
 if(!number||!customer){alert("Enter the PO number and customer name.");return;}
+if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an Approved PO.");return;}
 if(invoices.some(x=>x.id!==p.id&&x.po.toLowerCase()===number.toLowerCase())){alert("Another saved PO already has that number.");return;}
 p.po=number;p.customer=customer;persistPOWorkspace();closeModal();renderPOArchive();
 };
@@ -2748,6 +2752,7 @@ function pendingPayload(changes){
  return{base_records:clone(base),changed_records:clone(next)};
 }
 async function sendQueuedJob(job){
+ if(job.type==='approve-po')return request('/rest/v1/rpc/inspection_approve_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='review')return request('/rest/v1/rpc/inspection_queued_review',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='photos'){
   if(!administrator)throw Error('Solo el administrador puede subir fotografías.');
@@ -2765,7 +2770,7 @@ async function drainQueue(){
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
- root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='review'?'Revisión de solicitud':'Cambio / PO')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='review'?'Revisión de solicitud':j.type==='approve-po'?'Approve PO':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
  root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await drainQueue();await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
  root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
@@ -2796,6 +2801,8 @@ function updateRole(){
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
+ for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current private draft'],['#po-search-form label','Search my private drafts'],['#po-import-create','Create / Update private draft from matched Items'],['#po-close-active','✓ Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
+ const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Private PO: review the selected EST / Plant values, then Approve PO to publish the final version. Physical verification is recorded separately.':'Private draft: only your account can see it. When the administrator publishes the same PO number, the approved version replaces your draft.';if(hint.textContent!==text)hint.textContent=text;}
  const badge=document.getElementById('approval-nav-count');if(badge)badge.classList.toggle('hidden',!administrator);
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
  if(!administrator){for(const id of ['approval-list','approval-history-list','change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
@@ -2822,9 +2829,46 @@ async function buildPhotos(){
  const result={};for(const [item,list] of Object.entries(photoMetadata))result[item]=await Promise.all(list.map(signPhoto));
  replaceObject(photoDisplay,result);photoSignedAt=Date.now();
 }
+let approvedPOs=[],workspaceStamp='',selectedApproved=null;
+function approvedPanel(){
+ let root=document.getElementById('approved-po-panel');if(root)return root;
+ const archive=document.querySelector('.po-archive');if(!archive)return null;
+ root=document.createElement('div');root.id='approved-po-panel';root.className='panel panel-pad';
+ root.innerHTML='<div class="section-head"><div><h3>Approved POs</h3><p class="hint">Read-only POs published by the administrator. The approved version replaces matching private drafts.</p></div><button class="btn mini" id="approved-po-refresh">Refresh</button></div><label class="label" for="approved-po-search">Search Approved POs</label><input class="input" id="approved-po-search" type="search" placeholder="PO number or customer name (full or partial)" style="width:100%"><div id="approved-po-list" style="margin-top:16px"></div><div id="approved-po-details"></div>';
+ archive.before(root);document.getElementById('approved-po-search').oninput=renderApprovedPOs;
+ document.getElementById('approved-po-refresh').onclick=async()=>{if(!canEdit())return;await connect()};return root;
+}
+function approvedRowsHTML(p){return '<div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>Selected EST / Plant</th><th>Note</th></tr></thead><tbody>'+p.rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.pack||'')+'</td><td>'+escapeHTML(r.size||'')+'</td><td><strong>'+escapeHTML(r.plant)+'</strong></td><td>'+escapeHTML(r.note||'')+'</td></tr>').join('')+'</tbody></table></div>';}
+function renderApprovedPOs(){
+ if(!started||!approvedPanel())return;
+ const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
+ const rows=approvedPOs.filter(a=>!term||normalize(a.snapshot.po).includes(term)||normalize(a.snapshot.customer).includes(term));
+ document.getElementById('approved-po-list').innerHTML=rows.map(a=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">View approved PO</button></div>').join('')||'<p class="muted">'+(term?'No matching Approved POs.':'No Approved POs published yet.')+'</p>';
+ document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
+ const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">Approved PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button></div></div>'+approvedRowsHTML(a.snapshot):'';
+ if(a){document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
+ document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const p=a.snapshot;const values=[['PO','Customer','Approved by','Approved at','Item','Description','Case / Pack','Size / Unit','EST / Plant','Note'],...p.rows.map(r=>[p.po,p.customer,a.approved_email,a.approved_at,r.item,r.description,r.pack||'',r.size||'',r.plant,r.note||''])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO_'+p.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>Approved PO</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>Approved PO '+escapeHTML(a.snapshot.po)+'</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
+}
+async function approvePO(poId){
+ if(!administrator||!canEdit()){deny();return}
+ if(!confirm('Approve this PO and publish the selected EST / Plant values for all users? Matching private drafts will be replaced by your approved version. This action does not record physical EST verification.'))return;
+ try{
+  await commit();if(!ready||offline||queueCount){alert('Save all pending changes before approving this PO.');return}
+  const po=official[PO_KEY]?.invoices?.find(p=>p.id===poId);if(!po){alert('PO not found. Refresh the workspace.');return}
+  const job={id:crypto.randomUUID(),owner:session.user.id,created:Date.now(),type:'approve-po',payload:{po_id:poId,expected_po:clone(po)}};
+  await queueStore('put',job);saving=true;overlay('Publishing Approved PO…',true);
+  await drainQueue();await loadState();selectedApproved=approvedPOs.find(a=>a.snapshot.id===poId)?.id||null;renderApprovedPOs();message(queueCount?'PO approval is pending. Review pending sends.':'PO approved and published. Matching drafts have been replaced.');
+ }catch(error){if(error.network){ready=false;offline=true;message('Approval saved on this device. It will retry when the connection returns.',true)}else{message(error.message,true)}}
+ finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending sends are saved on this device.');}
+}
+
 async function loadState({hydrate=true}={}){
  const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=records,revision,updated_at');if(!rows?.length)throw Error('Official database is not configured.');
- official=clone(rows[0].records);revision=rows[0].revision;
+ const workspaces=await request('/rest/v1/inspection_po_workspaces?select=workspace,updated_at&user_id=eq.'+encodeURIComponent(session.user.id));
+ official=clone(rows[0].records);official[PO_KEY]=clone(workspaces[0]?.workspace||{draft:[],invoices:[]});workspaceStamp=workspaces[0]?.updated_at||'';revision=rows[0].revision;
+ approvedPOs=await request('/rest/v1/inspection_approved_pos?select=*&order=approved_at.desc');renderApprovedPOs();
  memory.clear();for(const [k,v]of Object.entries(official))memory.set(k,JSON.stringify(v));
  await buildPhotos();
  if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionFullProductRefresh?.();window.__inspectionReloadCloudWorkspace?.();window.__inspectionGlobalRefresh?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
@@ -2874,7 +2918,7 @@ async function removePhoto(item,index){if(!administrator||!canEdit()){deny();ret
 
 function openLogin(){if(session){openAccount();return}overlay('Inicia sesión para acceder a Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Introduce el correo y la contraseña de tu cuenta de la aplicación.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
 function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value=''}
-function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'Usuario: crear, importar y organizar POs. Los datos oficiales solo puede modificarlos el administrador.';document.getElementById('online-account-dialog').showModal()}
+function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'User: create and import private PO drafts; view Approved POs. Only the administrator can approve POs or modify official product data.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
  e.preventDefault();if(signingIn)return;signingIn=true;const button=document.getElementById('online-login-submit');button.disabled=true;
  const email=document.getElementById('online-email').value.trim(),password=document.getElementById('online-password').value;
@@ -2896,15 +2940,15 @@ async function uploadPhotos(item,files){
  finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
 }
 
-const ADMIN_MUTATING='.iq-cell,.iq-save,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
-for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;if(!administrator&&e.target.closest(ADMIN_MUTATING)){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='click'&&e.target.closest('[data-po-delete]')&&!administrator){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
+const ADMIN_MUTATING='#po-approve,.iq-cell,.iq-save,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
+const MUTATING='#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;if(!administrator&&e.target.closest(ADMIN_MUTATING)){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
 // All actual mutation entry points also persist through the server-enforced commit function.
 for(const event of ['click','change'])document.addEventListener(event,e=>{if(canEdit()&&e.target instanceof Element&&e.target.closest(MUTATING))scheduleSave()},false);
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={record,collect,canEdit,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay};
+window.InspectionCloud={record,collect,canEdit,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,approvePO,hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 async function connect(){
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
  await showQueueCount();overlay('Conectando con la base de datos oficial…',true);
@@ -2912,10 +2956,10 @@ async function connect(){
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
  let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
  try{for(const original of scripts){const node=document.createElement('script');node.textContent=original.textContent;document.body.appendChild(node);node.remove();if(startupError)throw startupError;}}finally{window.removeEventListener('error',onStartupError)}
- started=true;
+ started=true;renderApprovedPOs();
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
- ready=true;offline=false;updateRole();message(queueCount?'Hay '+queueCount+' envíos pendientes que requieren revisión.':administrator?'Administrador · Base oficial conectada.':'Usuario · POs habilitados; catálogo y EST protegidos.');unblock();if(administrator)await loadRequests();
+ ready=true;offline=false;updateRole();message(queueCount?'Hay '+queueCount+' envíos pendientes que requieren revisión.':administrator?'Administrador · Base oficial conectada.':'User · private drafts and read-only Approved POs.');unblock();if(administrator)await loadRequests();
  }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay('No hay conexión con la base de datos oficial. '+error.message);if(!session)openLogin()}
 }
 document.getElementById('cloud-retry').onclick=connect;
@@ -2929,7 +2973,7 @@ document.getElementById('required-login-button').onclick=openLogin;document.getE
 window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{await drainQueue();if(administrator)await loadRequests();const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=revision');if(!ready||offline||rows[0]?.revision!==revision){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>x.id))!==JSON.stringify(approvedPOs.map(x=>x.id))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
 let requests=[],changeHistory=[],requestsLoading=false,reviewing=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
@@ -2983,6 +3027,7 @@ document.querySelector('[data-view="history"]').addEventListener('click',loadReq
 connect();
 })();
 </script></body></html>
+
 
 
 
