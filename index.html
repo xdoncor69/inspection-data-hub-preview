@@ -2727,7 +2727,27 @@ count();draw();
  document.getElementById("skin-reset").addEventListener("click",()=>apply("executive"));
  apply(initial);
 })();
-</script><script id="inspection-online-runtime">/* Online workspace with device-local session and a durable queue of submitted writes only. */
+</script><style id="content-heading-system">
+/* One type scale for equivalent content headings, including dynamic panels. */
+:root{--idh-page-title:22px;--idh-block-title:14px;--idh-subtitle:12px;--idh-dialog-title:18px;--idh-heading-font:inherit;--idh-heading-tracking:0}
+:root[data-skin="editorial"]{--idh-heading-font:Georgia,"Times New Roman",serif;--idh-heading-tracking:-.01em}
+@media screen{
+ body .main .title{font-size:var(--idh-page-title)!important;line-height:1.25!important;font-weight:700!important;font-family:var(--idh-heading-font)!important}
+ body .main :is(h2,h3),body .main :is(.inspection-query-intro,.inspection-query-results-head,.inspection-query-conditions-title) strong{
+  font-size:var(--idh-block-title)!important;line-height:1.35!important;font-weight:700!important;font-family:var(--idh-heading-font)!important;letter-spacing:var(--idh-heading-tracking)!important;color:var(--sk-ink,#233d55);margin:0
+ }
+ body .main :is(h4,h5,h6,.est-variants-title),body .main :is(.guide-term,.guide-rule,.guide-steps>div,.skin-choice-info,.skin-setting-footer) strong{
+  font-size:var(--idh-subtitle)!important;line-height:1.4!important;font-weight:700!important;letter-spacing:0!important
+ }
+ body :is(.modal,.online-dialog) :is(h2,h3),body #cloud-blocker h2{
+  font-size:var(--idh-dialog-title)!important;line-height:1.3!important;font-weight:700!important;font-family:var(--idh-heading-font)!important;letter-spacing:var(--idh-heading-tracking)!important;color:var(--sk-ink,#233d55)
+ }
+ body .main .section-head .hint{font-size:11px!important;line-height:1.45!important}
+ body .main .section-head>div>.hint{display:block;margin-top:3px;margin-bottom:0}
+}
+@media screen and (max-width:800px){:root{--idh-page-title:19px}}
+</style>
+<script id="inspection-online-runtime">/* Online workspace with device-local session and a durable queue of submitted writes only. */
 (function(){
 'use strict';
 const BASE='https://kyhecrvsllableoymqfe.supabase.co',PUBLIC_KEY='sb_publishable_LYk0MYpAHUEAPUNtq0exqA_7-ylpmi9';
