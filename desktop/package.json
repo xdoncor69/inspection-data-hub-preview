@@ -1,6 +1,6 @@
 {
   "name": "inspection-data-hub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Inspection Data Hub portable desktop application",
   "author": "Crecerget",
   "private": true,
@@ -37,8 +37,9 @@
       "requestedExecutionLevel": "asInvoker"
     },
     "portable": {
-      "artifactName": "InspectionDataHub-Portable-1.0.0-x64.exe",
+      "artifactName": "InspectionDataHub-Portable-1.0.1-x64.exe",
       "requestExecutionLevel": "user"
-    }
+    },
+    "compression": "normal"
   }
 }
