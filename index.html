@@ -2998,6 +2998,7 @@ async function submitItemChanges(item,changes={},extra={},creating=false){
 async function sendQueuedJob(job){
  if(catalogGeneration&&job.generation!==catalogGeneration)throw Error("This pending send belongs to the previous test catalog. It has not been applied. Discard it and prepare the change using the current catalog.");
  if(job.type==='item-proposal')return request('/rest/v1/rpc/inspection_queued_item_proposal',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ if(job.type==='save-delivery')return request('/rest/v1/rpc/inspection_save_delivery_v2',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='manage-approved-po')return request('/rest/v1/rpc/inspection_manage_approved_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='approve-po')return request('/rest/v1/rpc/inspection_approve_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='review')return request('/rest/v1/rpc/inspection_queued_review',{method:'POST',body:{operation_id:job.id,...job.payload}});
@@ -3019,7 +3020,7 @@ async function drainQueue(){
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
- root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='review'?'Revisión de solicitud':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='save-delivery'?'Delivery '+j.payload.delivery_number:j.type==='review'?'Revisión de solicitud':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
  root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
  root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
@@ -3114,8 +3115,13 @@ function approvedDeliveryRows(po){
   String(row.description??''),String(row.item??''),deliveryNumber(row.catchWeight),deliveryNumber(row.receivedQuantity),String(row.plant??'')
  ])];
 }
-async function exportApprovedDelivery(po,button){
+function deliveryFileName(po){
+ const clean=value=>String(value??'').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/[. ]+$/,'');
+ return 'PO '+clean(po.po)+' - D '+clean(po.deliveryNumber)+' '+clean(po.customerNumber)+'.xlsx';
+}
+async function exportDeliveryFile(po,button){
  if(!canConsult()){deny();return;}
+ if(!String(po.deliveryNumber||'').trim()||!String(po.customerNumber||'').trim()){alert('Delivery number and customer number are required before export. Update this delivery first.');return;}
  const values=approvedDeliveryRows(clone(po));
  if(values.length===1){alert('This approved PO has no Items to export.');return;}
  if(button){button.disabled=true;button.textContent='Exporting…';}
@@ -3126,10 +3132,106 @@ async function exportApprovedDelivery(po,button){
   // Plain worksheet: no fills, colors, extra metadata rows or conditional formatting.
   sheet['!cols']=[{wch:55},{wch:18},{wch:16},{wch:14},{wch:20}];
   XLSX.utils.book_append_sheet(workbook,sheet,'Delivery');
-  XLSX.writeFile(workbook,'Delivery_PO_'+String(po.po||'Approved').replace(/[^a-zA-Z0-9_-]/g,'_')+'.xlsx',{bookType:'xlsx',cellStyles:false});
+  XLSX.writeFile(workbook,deliveryFileName(po),{bookType:'xlsx',cellStyles:false});
  }catch(error){alert('Delivery export failed: '+error.message);}
  finally{if(button?.isConnected){button.disabled=false;button.textContent='↓ Export Delivery';}}
 }
+// SAP delivery imports retain only the requested columns; ESTs come exclusively from the approved PO.
+const poDeliveries=new Map(),deliveryLoads=new Map();
+function deliveryItemKey(value){return String(value??'').trim().toUpperCase();}
+function deliverySourceNumber(value,weight=false){
+ const text=String(value??'').trim().replace(weight?/\s*(?:lbs?\.?|pounds?)\s*$/i:/$^/,'').trim();
+ if(!text)return '';
+ return deliveryNumber(text);
+}
+function sapDeliveryTable(matrix){
+ const norm=value=>String(value??'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const find=(row,patterns)=>{for(const p of patterns){const i=row.findIndex(v=>p.test(norm(v)));if(i>=0)return i;}return -1;};
+ const itemPatterns=[/^item(no|number|code|id)?$/, /^material(number)?$/, /^sku$/],descPatterns=[/^itemdescription$/, /^description$/, /^productdescription$/],qtyPatterns=[/^quantity$/, /^qty$/, /^receivedquantity$/];
+ const index=matrix.findIndex(row=>find(row,itemPatterns)>=0&&find(row,descPatterns)>=0&&find(row,qtyPatterns)>=0);
+ if(index<0)throw Error('Could not find Item No., Item Description and Quantity columns in this worksheet.');
+ const headers=matrix[index].map(String),data=matrix.slice(index+1),item=find(headers,itemPatterns),description=find(headers,descPatterns),quantity=find(headers,qtyPatterns);
+ const cw=find(headers,[/^catchweight$/, /^catchwt$/]),wt=find(headers,[/^weight$/, /^netweight$/, /^actualweight$/]);
+ const positive=col=>col<0?0:data.filter(row=>typeof deliverySourceNumber(row[col],true)==='number'&&deliverySourceNumber(row[col],true)>0).length;
+ const weight=cw>=0&&positive(cw)>0?cw:wt>=0&&positive(wt)>0?wt:cw>=0?cw:wt;
+ return {headers,data,mapping:{item,description,quantity,weight}};
+}
+function matchSAPDelivery(table,mapping,po){
+ const lookup=new Map(po.rows.map(row=>[deliveryItemKey(row.item),row]));
+ return table.data.map((values,index)=>{
+  const item=String(values[mapping.item]??'').trim().replace(/\.0$/,''),reference=lookup.get(deliveryItemKey(item));
+  const quantity=deliverySourceNumber(values[mapping.quantity]),catchWeight=mapping.weight<0?'':deliverySourceNumber(values[mapping.weight],true);
+  const valid=value=>value===''||(typeof value==='number'&&Number.isFinite(value)&&value>=0);
+  return {item,description:String(values[mapping.description]??'').trim(),quantity,catchWeight,plant:reference?.plant||'',matched:!!reference,valid:valid(quantity)&&valid(catchWeight),sourceRow:index+2};
+ }).filter(row=>row.item&&deliveryItemKey(row.item)!=='ITEM NO.');
+}
+function deliveryCurrent(delivery,a){return JSON.stringify(delivery.po_snapshot)===JSON.stringify(a.snapshot);}
+async function loadPODeliveries(id,redraw=true){
+ if(!canConsult())return;if(deliveryLoads.has(id))return deliveryLoads.get(id);
+ const owner=session.user.id;
+ const task=(async()=>{try{const rows=await request('/rest/v1/inspection_deliveries?approved_po_id=eq.'+encodeURIComponent(id)+'&select=*&order=updated_at.desc');if(session?.user.id!==owner)return;poDeliveries.set(id,{rows});}catch(error){if(session?.user.id!==owner)return;poDeliveries.set(id,{rows:[],error:error.message});}finally{deliveryLoads.delete(id);if(redraw&&selectedApproved===id)renderApprovedPOs();}})();
+ deliveryLoads.set(id,task);return task;
+}
+function renderPODeliveries(a){
+ const root=document.getElementById('approved-po-deliveries');if(!root)return;
+ const cached=poDeliveries.get(a.id);
+ root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Upload the sales team’s SAP delivery after PO approval. SAP EST values are discarded; matching Items use this approved PO’s EST / Plant.</p></div><div class="row">'+(administrator?'<button class="btn primary" id="sap-delivery-upload">Create / Update Delivery</button>':'')+'<button class="btn" id="sap-delivery-refresh">Refresh deliveries</button></div></div>'+
+ (!cached?'<p class="muted">Loading deliveries…</p>':cached.error?'<p class="cloud-error">'+escapeHTML(cached.error)+'</p>':!cached.rows.length?'<p class="muted">No deliveries uploaded for this approved PO yet.</p>':cached.rows.map(d=>{
+  const current=deliveryCurrent(d,a),missing=d.rows.filter(r=>!r.matched).length;
+  return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Delivery '+escapeHTML(d.delivery_number)+'</strong><p class="small muted">'+escapeHTML(d.source_file)+' · Customer No. '+escapeHTML(d.customer_number||'Not set')+' · Uploaded by '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+escapeHTML(d.id)+'"'+(!current||!d.customer_number?' disabled':'')+'>Export Delivery</button>'+(administrator?'<button class="btn" data-delivery-update="'+escapeHTML(d.id)+'">Update Delivery</button>':'')+'</div></div>'+
+ (!current?'<p class="cloud-error">The approved PO changed after this delivery was created. Update the delivery to rematch its approved EST / Plant values before exporting.</p>':'')+(missing?'<p class="cloud-error">'+missing+' Item(s) are not in this approved PO. Their EST / Plant is blank.</p>':'')+
+ '<div class="tablewrap"><table><thead><tr><th>Item Description</th><th>Item No.</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th><th>PO match</th></tr></thead><tbody>'+d.rows.map(r=>'<tr><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(r.catchWeight??'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td><td>'+escapeHTML(r.matched?'Matched approved PO':'Not in approved PO')+'</td></tr>').join('')+'</tbody></table></div></article>';
+ }).join(''));
+ if(administrator)document.getElementById('sap-delivery-upload').onclick=()=>openSAPDelivery(a);
+ document.getElementById('sap-delivery-refresh').onclick=()=>loadPODeliveries(a.id);
+ root.querySelectorAll('[data-delivery-update]').forEach(button=>button.onclick=()=>openSAPDelivery(a,cached.rows.find(d=>d.id===button.dataset.deliveryUpdate)));
+ root.querySelectorAll('[data-delivery-export]').forEach(button=>button.onclick=()=>{const delivery=cached.rows.find(d=>d.id===button.dataset.deliveryExport);if(!deliveryCurrent(delivery,a)){alert('Update the delivery to match the latest approved PO first.');return;}const missing=delivery.rows.filter(r=>!r.matched).length;if(missing&&!confirm(missing+' Items have no match in this approved PO. Export with their EST / Plant blank?'))return;exportDeliveryFile({po:a.snapshot.po,deliveryNumber:delivery.delivery_number,customerNumber:delivery.customer_number,rows:delivery.rows},button);});
+ if(!cached&&!deliveryLoads.has(a.id))loadPODeliveries(a.id);
+}
+function openSAPDelivery(a,existing=null){
+ if(!administrator||!canEdit()){deny();return;}
+ let dialog=document.getElementById('sap-delivery-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='sap-delivery-dialog';dialog.className='online-dialog';dialog.style.maxWidth='1100px';document.body.appendChild(dialog);}
+ let table=null,preview=[],fileName=existing?.source_file||'',selection=null;
+ dialog.innerHTML='<div class="section-head"><h3>Create / Update Delivery</h3><button class="btn" id="sap-delivery-cancel">Cancel</button></div><p>PO '+escapeHTML(a.snapshot.po)+' · '+escapeHTML(a.snapshot.customer)+'. The source file cannot change this approved PO. Source ESTs are never imported.</p><label class="label">Delivery number</label><input class="input" id="sap-delivery-number" maxlength="90" value="'+escapeHTML(existing?.delivery_number||'')+'"><label class="label" style="margin-top:12px">Customer number</label><input class="input" id="sap-delivery-customer-number" maxlength="90" value="'+escapeHTML(existing?.customer_number||'')+'"><label class="label" style="margin-top:12px">Raw SAP delivery (.xls / .xlsx)</label><input class="input" type="file" id="sap-delivery-file" accept=".xls,.xlsx"><div class="po-import-grid hidden" id="sap-delivery-mapping">'+[['item','Item number'],['description','Description'],['quantity','Quantity'],['weight','Catch Weight / Weight']].map(([key,label])=>'<label><span class="label">'+label+' source column</span><select class="input" id="sap-delivery-map-'+key+'"></select></label>').join('')+'</div><p class="small muted" id="sap-delivery-status">Choose the SAP file. Enter the delivery number and customer number. Export name: PO [PO number] - D [delivery number] [customer number].xlsx.</p><div class="tablewrap"><table><thead><tr><th>Item Description</th><th>Item No.</th><th>Catch Weight</th><th>Quantity</th><th>EST No. from approved PO</th><th>Status</th></tr></thead><tbody id="sap-delivery-preview"></tbody></table></div><button class="btn primary" id="sap-delivery-save" disabled style="margin-top:16px">Save Delivery</button>';
+ const el=id=>dialog.querySelector('#'+id),status=(text,error=false)=>{el('sap-delivery-status').textContent=text;el('sap-delivery-status').classList.toggle('cloud-error',error);};
+ const draw=()=>{
+  if(!table)return;const mapping={};for(const key of ['item','description','quantity','weight'])mapping[key]=Number(el('sap-delivery-map-'+key).value);
+  preview=matchSAPDelivery(table,mapping,a.snapshot);
+  const unmatched=preview.filter(r=>!r.matched).length,invalid=preview.filter(r=>!r.valid).length,blanks=preview.filter(r=>r.quantity==='').length;
+  status(fileName+' · '+preview.length+' Items · '+unmatched+' not in approved PO · '+blanks+' with blank quantity'+(invalid?' · '+invalid+' invalid quantities / weights':'')+'. ESTs from SAP are discarded. Catch Weight uses '+(mapping.weight>=0?table.headers[mapping.weight]:'a blank value')+'.',!!unmatched||!!invalid);
+  el('sap-delivery-preview').innerHTML=preview.map(r=>'<tr><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(r.catchWeight)+'</td><td>'+escapeHTML(r.quantity)+'</td><td>'+escapeHTML(r.plant)+'</td><td>'+escapeHTML(!r.valid?'Invalid quantity / weight':r.matched?'Matched approved PO':'Not in approved PO')+'</td></tr>').join('');el('sap-delivery-save').disabled=!preview.length||!!invalid;
+ };
+ el('sap-delivery-cancel').onclick=()=>dialog.close();dialog.onclose=()=>{selection=null;};
+ el('sap-delivery-file').onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;table=null;preview=[];el('sap-delivery-save').disabled=true;status('Reading SAP delivery…');
+  const version=selection={};
+  try{
+   const XLSX=await window.__inspectionLoadXLSX(),book=XLSX.read(await file.arrayBuffer(),{type:'array'});if(selection!==version)return;
+   let chosen=null;for(const name of book.SheetNames){try{chosen=sapDeliveryTable(XLSX.utils.sheet_to_json(book.Sheets[name],{header:1,defval:'',raw:true}));break;}catch(error){}}
+   if(!chosen)throw Error('No worksheet contains Item No., Item Description and Quantity headers.');
+   table=chosen;fileName=file.name;
+   for(const key of ['item','description','quantity','weight']){el('sap-delivery-map-'+key).innerHTML=(key==='weight'?'<option value="-1">None / blank</option>':'')+table.headers.map((label,i)=>'<option value="'+i+'">'+escapeHTML(label||'Column '+(i+1))+'</option>').join('');el('sap-delivery-map-'+key).value=String(table.mapping[key]);el('sap-delivery-map-'+key).onchange=draw;}
+   el('sap-delivery-mapping').classList.remove('hidden');draw();
+  }catch(error){if(selection!==version)return;status('Could not read delivery: '+error.message,true);}
+ };
+ if(existing){table={headers:['Item No.','Item Description','Quantity','Catch Weight'],data:existing.rows.map(r=>[r.item,r.description,r.receivedQuantity??'',r.catchWeight??''])};for(const [key,col] of [['item',0],['description',1],['quantity',2],['weight',3]]){el('sap-delivery-map-'+key).innerHTML=table.headers.map((label,i)=>'<option value="'+i+'">'+escapeHTML(label)+'</option>').join('');el('sap-delivery-map-'+key).value=String(col);el('sap-delivery-map-'+key).onchange=draw;}el('sap-delivery-mapping').classList.remove('hidden');draw();}
+ el('sap-delivery-save').onclick=async()=>{
+  const customerNumber=el('sap-delivery-customer-number').value.trim();if(!customerNumber){status('Enter the customer number for the export file name.',true);el('sap-delivery-customer-number').focus();return;}const number=el('sap-delivery-number').value.trim();if(!number){status('Enter the delivery number.',true);el('sap-delivery-number').focus();return;}if(!preview.length||preview.some(r=>!r.valid))return;
+  const previous=poDeliveries.get(a.id)?.rows.find(d=>d.delivery_number===number)||null;
+  if(previous&&!confirm('Replace Delivery '+number+' with this newly matched delivery? The approved PO stays unchanged.'))return;
+  if(await saveSAPDelivery(a,number,fileName,preview,previous,customerNumber))dialog.close();
+ };
+ dialog.showModal();
+}
+async function saveSAPDelivery(a,number,fileName,rows,previous,customerNumber){
+ if(!administrator||!canEdit()){deny();return false;}
+ const payload={approved_id:a.id,expected_po:clone(a.snapshot),delivery_number:number,customer_number:customerNumber,source_file:fileName,source_rows:rows.map(r=>({item:r.item,description:r.description,catchWeight:r.catchWeight,quantity:r.quantity})),expected_delivery:previous?clone(previous):null};
+ const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'save-delivery',payload};
+ try{await queueStore('put',job);saving=true;overlay('Saving matched Delivery…',true);await drainQueue();const pending=(await ownJobs()).find(j=>j.id===job.id);if(pending?.state==='conflict')throw Error(pending.error);await loadPODeliveries(a.id,false);renderApprovedPOs();message(pending?'Delivery saved on this device for retry.':'Delivery saved. EST / Plant values were matched to the approved PO.');return true;}
+ catch(error){if(error.network){ready=false;offline=true;message('Delivery saved on this device for retry.',true);return true;}alert(error.message);return false;}
+ finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending Delivery is kept for retry.');}
+}
+
 function approvedRowsHTML(p){return '<div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>Selected EST / Plant</th><th>Received quantity</th><th>Catch Weight</th><th>Physical verification</th><th>Note</th></tr></thead><tbody>'+p.rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(window.__inspectionProductDescription?.(r.description,official["inspection-data-hub-catalog-overrides-v1"]?.[r.item]?.brand)||r.description)+'</td><td>'+escapeHTML(r.pack||'')+'</td><td>'+escapeHTML(r.size||'')+'</td><td><strong>'+escapeHTML(r.plant)+'</strong></td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.catchWeight??'')+'</td><td>'+(isPORowVerified(r)?'Verified · '+escapeHTML(r.verifiedAt)+' · '+escapeHTML(r.verifiedEsts.join(', ')):'Not individually verified')+'</td><td>'+escapeHTML(r.note||'')+'</td></tr>').join('')+'</tbody></table></div>';}
 function renderApprovedPOs(){
  if(!started||!approvedPanel())return;
@@ -3138,10 +3240,9 @@ function renderApprovedPOs(){
  document.getElementById('approved-po-list').innerHTML=rows.map(a=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">View PO approved for inspection</button></div>').join('')||'<p class="muted">'+(term?'No matching POs approved for inspection.':'No POs approved for inspection published yet.')+'</p>';
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
  const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
- detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version · individual verification shown per Item</p></div><div class="row"><button class="btn mini primary" id="approved-po-delivery">↓ Export Delivery</button><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot):'';
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version · individual verification shown per Item</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
- document.getElementById('approved-po-delivery').onclick=()=>exportApprovedDelivery(a.snapshot,document.getElementById('approved-po-delivery'));
  document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const p=a.snapshot;const values=[['PO','Customer','Approved by','Approved at','Item','Description','Case / Pack','Size / Unit','EST / Plant','Received quantity','Physical verification','Verified EST / Plant','Verification date','Note'],...p.rows.map(r=>[p.po,p.customer,a.approved_email,a.approved_at,r.item,window.__inspectionProductDescription?.(r.description,official["inspection-data-hub-catalog-overrides-v1"]?.[r.item]?.brand)||r.description,r.pack||'',r.size||'',r.plant,r.receivedQuantity||'',isPORowVerified(r)?'Verified':'Not individually verified',isPORowVerified(r)?r.verifiedEsts.join(', '):'',isPORowVerified(r)?r.verifiedAt:'',r.note||''])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO_'+p.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
  document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>PO Approved for Inspection</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
 }
@@ -3270,7 +3371,7 @@ async function logout(){
   if(jobs.length&&!confirm(jobs.length+' pending send(s) will stay on this device for '+(previous?.user.email||'this account')+'. They will retry only when this account signs in again. Sign out?')){signingOut=false;return;}
  }catch(error){signingOut=false;alert(error.message);return;}
  for(const controller of activeControllers)controller.abort();
- session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
+ poDeliveries.clear();session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
  // Best-effort server sign-out; local sign-out remains available without internet.
  if(previous?.access_token&&navigator.onLine){fetch(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+previous.access_token},keepalive:true,signal:AbortSignal.timeout(3000)}).catch(()=>{});}
  location.reload();
@@ -3286,8 +3387,8 @@ async function uploadPhotos(item,files){
  finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
 }
 
-const ADMIN_MUTATING='#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const ADMIN_MUTATING='#sap-delivery-upload,#sap-delivery-save,[data-delivery-update],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
+const MUTATING='#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');const item=input?.value;if(official["inspection-data-hub-catalog-overrides-v1"]?.[item])window.__inspectionEditProductItem?.(item);else if(item)window.__inspectionOfferMissing?.(item);}
@@ -3336,7 +3437,7 @@ document.getElementById('required-login-button').onclick=openLogin;document.getE
 window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
 let requests=[],changeHistory=[],requestsLoading=false,reviewing=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
@@ -3520,7 +3621,7 @@ window.InspectionTableLayout={refresh};refresh();
  function scan(){pending=false;document.querySelectorAll('textarea.iq-description-cell,textarea.auto-description').forEach(el=>{if(!watched.has(el)){watched.add(el);ro?.observe(el);}fit(el);});}
  function schedule(){if(!pending){pending=true;(window.requestAnimationFrame||window.setTimeout)(scan);}}
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});document.addEventListener('input',e=>{if(e.target.matches('textarea.iq-description-cell,textarea.auto-description'))fit(e.target);});window.addEventListener('resize',schedule);document.addEventListener('click',schedule);scan();
-})();</script></body></html>
+})();</script><style>.sap-delivery-card{border-top:1px solid var(--sk-border,#ddd);padding:16px 0}.delivery-description{white-space:normal;overflow-wrap:anywhere;min-width:220px}#sap-delivery-dialog .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}#sap-delivery-dialog .input{width:100%}#sap-delivery-dialog label{display:block}#sap-delivery-dialog .tablewrap{max-height:50vh;margin-top:16px}#sap-delivery-dialog th{white-space:normal}</style></body></html>
 
 
 
