@@ -121,18 +121,18 @@ window.InspectionTableTools={
 <section id="global-view" class="hidden"><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
 <div id="inspection-query-conditions" class="inspection-query-conditions">
-<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Select filters, then Search. The table below can be edited directly.</span></div><div class="inspection-query-grid">
-<label><span class="label">Brand</span><select class="input" id="iq-brand"></select></label>
-<label><span class="label">Product type</span><select class="input" id="iq-category"><option value="">All groups</option><option value="__inspection_blank__">Blank field</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
-<label><span class="label">Product family</span><select class="input" id="iq-family"></select></label>
-<label><span class="label">Case / Pack</span><select class="input" id="iq-pack"></select></label>
-<label><span class="label">Size / Unit</span><select class="input" id="iq-size"></select></label>
-<label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">All products</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
-<label><span class="label">EST / Plant</span><select class="input" id="iq-plant"></select></label>
-<label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">All descriptions</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
+<div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Choose a filter or enter a description to search. Use Edit on a result to change its fields.</span></div><div class="inspection-query-grid">
+<label><span class="label">Brand</span><select class="input" id="iq-brand"><option value="">Select brand…</option></select></label>
+<label><span class="label">Product type</span><select class="input" id="iq-category"><option value="">Select product type…</option><option value="__inspection_blank__">Blank field</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
+<label><span class="label">Product family</span><select class="input" id="iq-family"><option value="">Select product family…</option></select></label>
+<label><span class="label">Case / Pack</span><select class="input" id="iq-pack"><option value="">Select case / pack…</option></select></label>
+<label><span class="label">Size / Unit</span><select class="input" id="iq-size"><option value="">Select size / unit…</option></select></label>
+<label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">Select photo status…</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
+<label><span class="label">EST / Plant</span><select class="input" id="iq-plant"><option value="">Select EST / Plant…</option></select></label>
+<label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">Select description status…</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
-<p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results">
+<p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results hidden">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Select Edit to unlock an Item’s fields, then Save or Cancel. Select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
@@ -2026,6 +2026,7 @@ let matched=[],selectedIds=new Set(),sortKey="item",sortDirection=1,resultsDirty
 const table=$("iq-table"),tableTools=window.InspectionTableTools;
 const facets=[...fields,"category","photo","description-state"];
 const facetOptions={category:[["Meat","Meat"],["Poultry","Poultry"],["Dairy","Dairy"],[BLANK_FILTER,"Blank field"]],photo:[["with","With photos"],["without","Without photos"]],"description-state":[["blank","Blank field"],["filled","Filled field"]]};
+const facetPlaceholders={brand:"Select brand…",family:"Select product family…",pack:"Select case / pack…",size:"Select size / unit…",plant:"Select EST / Plant…",category:"Select product type…",photo:"Select photo status…","description-state":"Select description status…"};
 const facetLabels={brand:"brands",family:"families",pack:"packs",size:"sizes",plant:"EST / Plant values",category:"groups",photo:"products","description-state":"descriptions"};
 // Initialize the visible filter choices before attaching any optional table handlers.
 function populate(){
@@ -2038,7 +2039,7 @@ function populate(){
   const el=$("iq-"+field),current=el.value;
   // Keep a selected unavailable value visible so it can be cleared after a text query.
   if(current&&!options.some(([v])=>v===current))options.push([current,el.selectedOptions?.[0]?.textContent||current]);
-  el.innerHTML='<option value="">All '+facetLabels[field]+'</option>'+options.map(([v,label])=>'<option value="'+safe(v)+'">'+safe(label)+'</option>').join("");
+  el.innerHTML='<option value="">'+facetPlaceholders[field]+'</option>'+options.map(([v,label])=>'<option value="'+safe(v)+'">'+safe(label)+'</option>').join("");
   el.value=current;
  }
 }
@@ -2122,6 +2123,9 @@ table.querySelector("thead").addEventListener("click",e=>{
 });
 window.__inspectionGlobalRefresh=()=>{resultsDirty=true;populate();if(!hasConditions())showIdle();else if(!$("global-view").classList.contains("hidden"))run();};
 window.addEventListener("inspection:catalog-updated",window.__inspectionGlobalRefresh);
+// Start with no selected search conditions, including after browser form restoration.
+for(const field of facets)$("iq-"+field).value="";
+$("iq-description").value="";
 // Prepare filter choices without constructing a full catalog result table.
 populate();
 showIdle();
