@@ -91,8 +91,8 @@ window.InspectionTableTools={
   table.querySelectorAll("th[data-sort]").forEach(th=>{
    const active=th.dataset.sort===key;
    th.setAttribute("aria-sort",active?(direction===1?"ascending":"descending"):"none");
-   const button=th.querySelector("button");
-   button.querySelector(".sort-arrow").textContent=active?(direction===1?" ↑":" ↓"):" ↕";
+   const button=th.querySelector(".query-sort");if(!button)return;
+   const arrow=button.querySelector(".sort-arrow");if(arrow)arrow.textContent=active?(direction===1?" ↑":" ↓"):" ↕";
    button.title="Sort by "+button.dataset.label+(active&&direction===1?" descending":" ascending");
   });
  }
@@ -3151,13 +3151,25 @@ window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
 window.InspectionCloud={record,collect,canEdit,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
-async function connect(){
+let connectionPromise=null,applicationInitializationError=null;
+function connect(){
+ if(connectionPromise)return connectionPromise;
+ connectionPromise=connectOnce().finally(()=>{connectionPromise=null;});return connectionPromise;
+}
+async function connectOnce(){
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
  await showQueueCount();overlay('Conectando con la base de datos oficial…',true);
  try{await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
+ if(applicationInitializationError)throw applicationInitializationError;
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
  let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
- try{for(const original of scripts){const node=document.createElement('script');node.textContent=original.textContent;document.body.appendChild(node);node.remove();if(startupError)throw startupError;}}finally{window.removeEventListener('error',onStartupError)}
+ const node=document.createElement('script');node.id='inspection-application-bootstrap';
+ // Shared application bindings live in one private scope instead of the page's global scope.
+ // A connection retry never re-declares globals or re-runs a partially initialized application.
+ node.textContent='(function(){\n'+scripts.map(original=>original.textContent).join('\n;\n')+'\n})();';
+ try{document.body.appendChild(node);if(startupError)throw startupError;}
+ catch(error){applicationInitializationError=Error('Application initialization failed. Reload this page. '+error.message);throw applicationInitializationError;}
+ finally{node.remove();window.removeEventListener('error',onStartupError);}
  started=true;renderApprovedPOs();
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
