@@ -132,7 +132,7 @@ window.InspectionTableTools={
 <label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">All descriptions</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
-<div id="iq-results" class="inspection-query-results">
+<p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Select Edit to unlock an Item’s fields, then Save or Cancel. Select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
@@ -2022,7 +2022,7 @@ const BLANK_FILTER="__inspection_blank__";
 const isBlankCatalogField=value=>String(value??"").trim()==="";
 const editable=["brand","plant","description","pack","size","family","category"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let matched=[],selectedIds=new Set(),sortKey="item",sortDirection=1;
+let matched=[],selectedIds=new Set(),sortKey="item",sortDirection=1,resultsDirty=true,searchTimer=null,lastQuery="";
 const table=$("iq-table"),tableTools=window.InspectionTableTools;
 const facets=[...fields,"category","photo","description-state"];
 const facetOptions={category:[["Meat","Meat"],["Poultry","Poultry"],["Dairy","Dairy"],[BLANK_FILTER,"Blank field"]],photo:[["with","With photos"],["without","Without photos"]],"description-state":[["blank","Blank field"],["filled","Filled field"]]};
@@ -2081,11 +2081,23 @@ function draw(){
   return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><div class="iq-row-actions"><button type="button" class="btn mini iq-edit">Edit</button><button type="button" class="btn mini iq-save" hidden>Save</button><button type="button" class="btn mini iq-cancel" hidden>Cancel</button></div></td></tr>';
  }).join("")||'<tr><td colspan="11" class="empty">No matching products. Try removing a condition.</td></tr>';
  $("iq-rows").querySelectorAll(".iq-description-cell").forEach(el=>{el.style.height="auto";el.style.height=Math.max(46,el.scrollHeight)+"px";});
- $("iq-export").disabled=matched.length===0;
+ $("iq-export").disabled=matched.length===0;$("iq-print").disabled=matched.length===0;
  selectionLabel();
 }
+function hasConditions(){return facets.some(field=>$("iq-"+field).value)||!!$("iq-description").value.trim();}
+function showIdle(){
+ matched=[];selectedIds.clear();lastQuery="";resultsDirty=true;
+ $("iq-rows").replaceChildren();$("iq-results").classList.add("hidden");
+ $("iq-idle").hidden=false;$("iq-count").textContent="";
+ $("iq-export").disabled=true;$("iq-print").disabled=true;selectionLabel();
+}
 function run(){
- populate();matched=demo.filter(x=>match(x));selectedIds=new Set();draw();
+ clearTimeout(searchTimer);searchTimer=null;
+ if(!hasConditions()){showIdle();return;}
+ const query=JSON.stringify([...facets.map(field=>$("iq-"+field).value),$("iq-description").value.trim()]);
+ if(!resultsDirty&&query===lastQuery)return;
+ populate();matched=demo.filter(x=>match(x));selectedIds=new Set();lastQuery=query;resultsDirty=false;
+ $("iq-idle").hidden=true;draw();
 }
 function changeFacet(field){
  const cleared=[];
@@ -2108,11 +2120,11 @@ table.querySelector("thead").addEventListener("click",e=>{
  const body=$("iq-rows"),nodes=new Map([...body.querySelectorAll("tr[data-iq-item]")].map(row=>[row.dataset.iqItem,row]));
  for(const item of matched){const row=nodes.get(String(item.item));if(row)body.appendChild(row);}
 });
-window.__inspectionGlobalRefresh=()=>{populate();run();};
+window.__inspectionGlobalRefresh=()=>{resultsDirty=true;populate();if(!hasConditions())showIdle();else if(!$("global-view").classList.contains("hidden"))run();};
 window.addEventListener("inspection:catalog-updated",window.__inspectionGlobalRefresh);
-// Show the catalog and its dropdown values before optional event bindings.
+// Prepare filter choices without constructing a full catalog result table.
 populate();
-run();
+showIdle();
 function refreshAfterEdit(){
  if(typeof showProduct==="function")showProduct();
  if(typeof renderGlobal==="function")renderGlobal();
@@ -2123,7 +2135,7 @@ function refreshAfterEdit(){
 // Filter controls drive the result list; there is no keyword bar or Search button.
 $("iq-run").onclick=run;
 for(const field of facets)$("iq-"+field).addEventListener("change",()=>changeFacet(field));
-$("iq-description").addEventListener("input",run);
+$("iq-description").addEventListener("input",()=>{clearTimeout(searchTimer);if(!hasConditions()){showIdle();return;}searchTimer=setTimeout(run,180);});
 
 $("iq-reset").onclick=()=>{
  $("iq-filter-status").textContent="";
@@ -2132,10 +2144,10 @@ $("iq-reset").onclick=()=>{
  $("iq-description").value="";
  $("iq-description-state").value="";
  $("iq-photo").value="";
- run();
+ clearTimeout(searchTimer);searchTimer=null;populate();showIdle();
 };
 // Populate on entering Global Search, without interfering with PO Inspection initialization.
-document.querySelector('[data-view="global"]').addEventListener("click",run);
+document.querySelector('[data-view="global"]').addEventListener("click",()=>{if(!hasConditions())showIdle();else if(resultsDirty)run();});
 $("iq-select-all").onchange=e=>{
  selectedIds=e.target.checked?new Set(matched.map(x=>x.item)):new Set();
  draw();
