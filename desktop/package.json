@@ -1,0 +1,44 @@
+{
+  "name": "inspection-data-hub",
+  "version": "1.0.0",
+  "description": "Inspection Data Hub portable desktop application",
+  "author": "Crecerget",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "build:win": "node prepare.cjs && electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.crecerget.inspectiondatahub",
+    "productName": "Inspection Data Hub",
+    "asar": true,
+    "files": [
+      "main.cjs",
+      "index.html",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "portable": {
+      "artifactName": "InspectionDataHub-Portable-1.0.0-x64.exe",
+      "requestExecutionLevel": "user"
+    }
+  }
+}
