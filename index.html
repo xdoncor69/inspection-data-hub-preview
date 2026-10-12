@@ -2859,16 +2859,28 @@ const nativeStorage=window.localStorage;
 try{session=JSON.parse(nativeStorage.getItem('inspection-data-hub-auth-session-v2')||'null')}catch{}
 try{sessionStorage.removeItem('inspection-data-hub-supabase-session-v1');sessionStorage.removeItem('inspection-data-hub-cloud-restored');nativeStorage.removeItem('inspection-data-hub-supabase-config-v1')}catch{}
 const SESSION_KEY='inspection-data-hub-auth-session-v2';
-let refreshPromise=null,queuePromise=null,profileNames=new Map(),queueCount=0;
+let refreshPromise=null,queuePromise=null,profileNames=new Map(),queueCount=0,signingOut=false;
+const activeControllers=new Set(),pendingQueueWrites=new Set();
+async function withDeviceLock(name,work){
+ const controller=new AbortController();activeControllers.add(controller);
+ const timeout=setTimeout(()=>controller.abort(),20000);
+ try{return navigator.locks?await navigator.locks.request(name,{signal:controller.signal},()=>work(controller.signal)):await work(controller.signal);}
+ catch(error){if(error.name==='AbortError'||error.name==='TimeoutError')error.network=true;throw error;}
+ finally{clearTimeout(timeout);activeControllers.delete(controller);}
+}
 function persistSession(){if(session)nativeStorage.setItem(SESSION_KEY,JSON.stringify(session));else nativeStorage.removeItem(SESSION_KEY);}
 function setSession(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at||Math.floor(Date.now()/1000)+(data.expires_in||3600),user:{id:data.user.id,email:data.user.email||session?.user?.email||''}};persistSession();}
 async function refreshSession(){
  if(refreshPromise)return refreshPromise;
- refreshPromise=(async()=>{const work=async()=>{const saved=JSON.parse(nativeStorage.getItem(SESSION_KEY)||'null');if(saved?.user.id===session?.user.id&&saved.access_token!==session.access_token){session=saved;return}if(!session?.refresh_token)throw Error('Inicia sesión para continuar.');const response=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal:AbortSignal.timeout(20000)});if(!response.ok){if(response.status>=500){const e=Error('Supabase no está disponible.');e.network=true;throw e}session=null;administrator=false;persistSession();throw Error('La sesión expiró. Inicia sesión de nuevo.')}setSession(await response.json());};if(navigator.locks)await navigator.locks.request('inspection-auth-refresh',work);else await work();})();
+ refreshPromise=(async()=>{const work=async(signal)=>{const saved=JSON.parse(nativeStorage.getItem(SESSION_KEY)||'null');if(saved?.user.id===session?.user.id&&saved.access_token!==session.access_token){session=saved;return}if(!session?.refresh_token)throw Error('Inicia sesión para continuar.');const response=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal});if(!response.ok){if(response.status>=500){const e=Error('Supabase no está disponible.');e.network=true;throw e}session=null;administrator=false;persistSession();throw Error('La sesión expiró. Inicia sesión de nuevo.')}setSession(await response.json());};await withDeviceLock('inspection-auth-refresh',work);})();
  try{return await refreshPromise}catch(error){if(error instanceof TypeError||error.name==='TimeoutError'||error.name==='AbortError')error.network=true;throw error}finally{refreshPromise=null}
 }
 const queueDB=new Promise((resolve,reject)=>{const req=indexedDB.open('inspection-pending-writes-v2',1);req.onupgradeneeded=()=>req.result.createObjectStore('jobs',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(Error('No se pudo abrir la cola de envíos.'))});
-async function queueStore(action,value){const db=await queueDB;return new Promise((resolve,reject)=>{const tx=db.transaction('jobs',action==='all'?'readonly':'readwrite'),store=tx.objectStore('jobs');let req=action==='all'?store.getAll():action==='put'?store.put(value):store.delete(value);let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('No se pudo guardar el envío en este dispositivo.'))})}
+function queueStore(action,value){
+ const operation=(async()=>{const db=await queueDB;return new Promise((resolve,reject)=>{const tx=db.transaction('jobs',action==='all'?'readonly':'readwrite'),store=tx.objectStore('jobs');let req=action==='all'?store.getAll():action==='put'?store.put(value):store.delete(value);let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('No se pudo guardar el envío en este dispositivo.'))})})();
+ if(action==='put'){pendingQueueWrites.add(operation);operation.then(()=>pendingQueueWrites.delete(operation),()=>pendingQueueWrites.delete(operation));}
+ return operation;
+}
 async function ownJobs(){const all=await queueStore('all');return all.filter(j=>j.owner===session?.user.id).sort((a,b)=>a.created-b.created)}
 async function showQueueCount(){if(!session)return;const jobs=await ownJobs();queueCount=jobs.length;const btn=document.getElementById('pending-writes-button');btn.hidden=!queueCount;btn.textContent=queueCount+' envío(s) pendiente(s)';}
 function pendingPayload(changes){
@@ -2919,16 +2931,18 @@ async function sendQueuedJob(job){
  return request('/rest/v1/rpc/inspection_queued_commit',{method:'POST',body:{operation_id:job.id,...job.payload}});
 }
 async function drainQueue(){
- if(queuePromise)return queuePromise;if(!session||!navigator.onLine)return;
+ if(queuePromise)return queuePromise;if(signingOut||!session||!ready||offline||!navigator.onLine)return;
+ const owner=session.user.id;
  const run=async()=>{for(const job of await ownJobs()){
-  if(job.state==='conflict')continue;
+  if(signingOut||session?.user.id!==owner)break;
+  if(job.owner!==owner||job.state==='conflict')continue;
   try{await sendQueuedJob(job);await queueStore('delete',job.id)}catch(error){if(error.network||error.status>=500||(!session&&error.status===401))throw error;job.state='conflict';job.error=error.message;await queueStore('put',job);message('Hay un envío pendiente que requiere revisión. No se ha sobrescrito ningún dato.',true);}
- }await showQueueCount();};queuePromise=navigator.locks?navigator.locks.request('inspection-pending-'+session.user.id,run):run();try{return await queuePromise}finally{queuePromise=null}
+ }await showQueueCount();};queuePromise=withDeviceLock('inspection-pending-'+owner,run);try{return await queuePromise}finally{queuePromise=null}
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
  root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='review'?'Revisión de solicitud':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
- root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await drainQueue();await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
+ root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
  root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
 }
@@ -2942,7 +2956,7 @@ function actorLabel(id){return id?(profileNames.get(id)||id):'Registro anterior 
 const isData=k=>String(k).startsWith('inspection-data-hub-')&&k!=='inspection-data-hub-appearance-v1';
 const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('No tienes permisos para modificar la base de datos.')}if(!ready&&!offline)throw Error('La base de datos no está disponible.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
 Object.defineProperty(window,'localStorage',{value:adapter,configurable:true});
-function canEdit(){return !!session&&ready&&!offline&&!saving&&!photoBusy}
+function canEdit(){return !signingOut&&!!session&&ready&&!offline&&!saving&&!photoBusy}
 function deny(){alert(!ready||offline?'No hay conexión con la base de datos.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
 function record(k){const v=memory.get(k);return v?JSON.parse(v):null}
 function collect(k,get,set){collectors.set(k,{get,set})}
@@ -2975,16 +2989,18 @@ function updateRole(){
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
 }
 async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={}){
- const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
- if(auth&&session?.expires_at&&session.expires_at*1000<Date.now()+60000)await refreshSession();
- const bearer=auth&&session?session.access_token:ANON_KEY;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);activeControllers.add(controller);
  try{
+ if(signingOut){controller.abort();throw new DOMException('Signing out','AbortError');}
+ if(auth&&session?.expires_at&&session.expires_at*1000<Date.now()+60000)await refreshSession();
+ if(controller.signal.aborted||signingOut)throw new DOMException('Request cancelled','AbortError');
+ const bearer=auth&&session?session.access_token:ANON_KEY;
  let response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+bearer,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...(catalogGeneration?{'x-inspection-catalog-generation':catalogGeneration}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});
  if(response.status===401&&auth&&session?.refresh_token){await refreshSession();response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+session.access_token,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...(catalogGeneration?{'x-inspection-catalog-generation':catalogGeneration}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});}
  if(!response.ok){let data={};try{data=await response.json()}catch{};const error=new Error(response.status===409||data.code==='40001'?'Otro equipo cambió la base de datos. Tus cambios no se guardaron; los datos se actualizarán.':response.status===401||response.status===403?'No tienes permisos para modificar la base de datos o tu sesión expiró.':'Supabase HTTP '+response.status+': '+(data.message||data.error||'Request failed'));error.status=response.status;if(response.status>=500)error.network=true;throw error}
  if(response.status===204)return null;
  return await response.json();
- }catch(error){if(error.name==='AbortError'||error instanceof TypeError)error.network=true;throw error}finally{clearTimeout(timeout)}
+ }catch(error){if(error.name==='AbortError'||error instanceof TypeError)error.network=true;throw error}finally{clearTimeout(timeout);activeControllers.delete(controller)}
 }
 function replaceObject(target,source){if(Array.isArray(target)){target.splice(0,target.length,...clone(source||[]));return}for(const k of Object.keys(target))delete target[k];Object.assign(target,clone(source||{}))}
 async function signPhoto(metadata){const path=metadata.path.split('/').map(encodeURIComponent).join('/');const d=await request('/storage/v1/object/sign/'+encodeURIComponent(metadata.bucket||'inspection-photos')+'/'+path,{method:'POST',body:{expiresIn:3600}});return{...metadata,url:BASE+'/storage/v1'+d.signedURL}}
@@ -3073,7 +3089,7 @@ async function loadState({hydrate=true}={}){
  ready=true;offline=false;if(started&&hydrate){window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();}updateRole();return rows[0];
 }
 function differences(){const changes={};for(const [k,c]of collectors)memory.set(k,JSON.stringify(c.get()));for(const [k,v]of memory){const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(official[k]))changes[k]=d;}return changes}
-function scheduleSave(){if(scheduled||!started||saving||photoBusy)return;scheduled=true;queueMicrotask(()=>{scheduled=false;commit().catch(()=>{})})}
+function scheduleSave(){if(scheduled||!started||saving||photoBusy||signingOut)return;scheduled=true;queueMicrotask(()=>{scheduled=false;commit().catch(()=>{})})}
 function markDomains(event){
  if(!(event.target instanceof Element)||!['click','change'].includes(event.type))return;
  const selectors=[['#save-demo,.iq-save,#iq-bulk-apply,#ip-commit',['catalog-overrides','est-references']],['#save-refs',['est-references']],['#save-product-note',['product-notes']],['#save-brand-note',['brand-notes']],['#bp-save',['brand-profiles']],['#ob-save,#ob-edit-save,[data-ob-delete],#est-confirm-save,#q-save,#quick-confirm-selected,[data-po-confirm]',['observations','est-references']],['[data-po-fixed]',['fixed-est']],['#est-toggle-stable',['stability-overrides']]];
@@ -3101,6 +3117,7 @@ function makeProposals(changes,extra){
  return [...grouped.values()];
 }
 async function commit(extra=null){
+ if(signingOut)return;
  if(!session||!started)throw Error('Inicia sesión para continuar.');if(saving)throw Error('Hay un envío en curso.');
  const changes=extra||differences();if(!administrator&&Object.keys(changes).some(k=>k!==PO_KEY&&dirtyDomains.has(k))){deny();throw Error('Solo el administrador puede modificar datos oficiales.');}
  if(extra)for(const k of Object.keys(extra))dirtyDomains.add(k);
@@ -3124,9 +3141,24 @@ async function login(e){
  catch(error){if(!session)persistSession();document.getElementById('online-login-message').textContent=error.message;updateRole();}finally{clearLogin();signingIn=false;button.disabled=false;}
 }
 async function logout(){
- if(saving||photoBusy||queuePromise){alert('Espera a que termine el envío en curso.');return}
- try{if(session)await request('/auth/v1/logout?scope=local',{method:'POST'})}catch{}
- session=null;administrator=false;ready=false;persistSession();clearLogin();location.reload();
+ if(signingOut)return;signingOut=true;
+ const previous=session;
+ try{
+  // Finish durable device writes, never wait for a network request to complete.
+  const writes=[...pendingQueueWrites];
+  if(writes.length)await Promise.race([Promise.all(writes),new Promise((_,reject)=>setTimeout(()=>reject(Error('The pending send is still being saved on this device. Please try again.')),3000))]);
+  if(started&&!saving&&!photoBusy&&dirtyDomains.size){
+   const payload=pendingPayload(differences());
+   if(Object.keys(payload.changed_records).length)await queueStore('put',{id:crypto.randomUUID(),owner:previous.user.id,generation:catalogGeneration,created:Date.now(),type:'records',payload});
+  }
+  const jobs=await ownJobs();
+  if(jobs.length&&!confirm(jobs.length+' pending send(s) will stay on this device for '+(previous?.user.email||'this account')+'. They will retry only when this account signs in again. Sign out?')){signingOut=false;return;}
+ }catch(error){signingOut=false;alert(error.message);return;}
+ for(const controller of activeControllers)controller.abort();
+ session=null;administrator=false;ready=false;persistSession();clearLogin();
+ // Best-effort server sign-out; local sign-out remains available without internet.
+ if(previous?.access_token&&navigator.onLine){fetch(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+previous.access_token},keepalive:true,signal:AbortSignal.timeout(3000)}).catch(()=>{});}
+ location.reload();
 }
 async function uploadPhotos(item,files){
  if(!administrator||!session){deny();throw Error('Solo el administrador puede subir fotografías.')}if(!files.length)return;
@@ -3157,6 +3189,7 @@ function connect(){
  connectionPromise=connectOnce().finally(()=>{connectionPromise=null;});return connectionPromise;
 }
 async function connectOnce(){
+ if(signingOut)return;
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
  await showQueueCount();overlay('Conectando con la base de datos oficial…',true);
  try{await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
@@ -3187,7 +3220,7 @@ document.getElementById('required-login-button').onclick=openLogin;document.getE
 window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
 let requests=[],changeHistory=[],requestsLoading=false,reviewing=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
