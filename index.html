@@ -148,7 +148,7 @@ window.InspectionTableTools={
 <button type="button" class="inspection-workflow-btn active" id="inspection-item-mode" aria-pressed="true">⌕ Item by Item</button>
 <button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Invoice</button>
 </div>
-<div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
+<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po">Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
 <div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your private PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
@@ -186,7 +186,7 @@ window.InspectionTableTools={
 <div class="section-head"><h3>How to use Inspection Data Hub</h3><span class="pill">REFERENCE GUIDE</span></div>
 <p>The workflow is: prepare a private PO, inspect the cases, verify only the Items physically checked, and let the inspector publish the PO as Approved for Inspection. User drafts and inspector approval are separate; approval of the PO does not imply that every Item was physically verified.</p>
 <div class="guide-steps">
-<div><strong>1 · Prepare the invoice / PO</strong><span>Import an Excel / CSV invoice or look up Items one by one. Enter the PO number and customer, and keep Items in invoice order. The app suggests EST / Plant references from the product history; these suggestions are not physical verifications.</span></div>
+<div><strong>1 · Prepare the invoice / PO</strong><span>Use Search only to view Items without creating a PO or recording searches. Choose Work on a PO draft to add Items one by one, or import an Excel / CSV invoice after entering the PO number and customer. If a number exists, open its saved version without importing or adding the current Item, or enter a different number to create a new PO. The app suggests EST / Plant references from the product history; these suggestions are not physical verifications.</span></div>
 <div><strong>2 · Users: work with private drafts</strong><span>Each user can consult Items and create, import or organize their own PO drafts. Only that account can see its drafts — other users and the inspector cannot see them. Users can also consult read-only POs in Approved for Inspection.</span></div>
 <div><strong>3 · Inspector: verify individual Items</strong><span>The inspector / administrator reopens their own saved PO and checks the cases physically. For each Item actually checked, select Verify Item. If its EST / Plant differs, edit that row first and then verify the observed value. Checking 3 of 10 Items records only those 3; the other 7 remain unverified. Editing a verified EST makes that row pending again until its new value is verified.</span></div>
 <div><strong>4 · Inspector: approve for inspection</strong><span>When the inspector considers the PO ready, Approve for Inspection publishes their selected values, email and approval date for all users. This approval does not automatically verify any Item. Any private draft with the same PO number disappears and is replaced by the inspector-approved version — not the user's draft values. Other draft numbers remain private.</span></div>
@@ -407,7 +407,7 @@ document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("c
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||"Select or scan a product";$("product-chip").textContent=x?x.category.toUpperCase()+" PRODUCT":"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
-function lookup(){if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));selected=matches[0]||null;history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
+function lookup(){if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));selected=matches[0]||null;if(!window.__inspectionSearchOnly?.())history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup()};$("history-all").onclick=()=>navigate("history");
 function renderRecent(){if(!$("recent-rows"))return;$("recent-rows").innerHTML=history.slice(0,4).map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="5" class="empty">No searches in this preview session</td></tr>';}
 function renderHistory(){$("history-rows").innerHTML=history.map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No searches in this preview session</td></tr>';}
@@ -666,23 +666,33 @@ existingPOAccepted=true;
 }
 p.rows.push(rowFor(x));persistPOWorkspace();renderPOArchive();
 }
-function createPOFlow(pendingItem=null){
-modal('<h2>Open or create a private PO draft</h2><p>Enter a PO number and customer. Only your account can see this draft. The administrator publishes POs Approved for Inspection.</p><div class="label">PO number</div><input class="input" id="po-number" maxlength="90" placeholder="PO-123456" style="width:100%" autocomplete="off"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-customer" maxlength="120" placeholder="Customer / company name" style="width:100%" autocomplete="off"><div class="row" style="margin-top:15px;justify-content:flex-end"><button class="btn primary" id="po-confirm-save">Continue</button></div>');
+const purpose=$("item-lookup-purpose");
+window.__inspectionSearchOnly=()=>purpose.value==="search";
+function updateLookupPurpose(){const only=window.__inspectionSearchOnly();$("lookup-view").classList.toggle("search-only-mode",only);$("item-create-po").hidden=only;$("item-purpose-hint").textContent=only?"View Items without creating a PO or recording searches.":"Look up Items to add them to your private PO draft.";}
+purpose.onchange=updateLookupPurpose;updateLookupPurpose();
+$("item-create-po").onclick=()=>createPOFlow();
+function findExistingPO(number){return invoices.find(p=>p.po.trim().toLowerCase()===number.trim().toLowerCase())||null;}
+function offerExistingPO(number,onNew,onOpen=()=>{}){
+ const existing=findExistingPO(number),approved=window.InspectionCloud.hasApprovedPO(number);if(!existing&&!approved)return false;
+ modal('<h2>This PO already exists</h2><p>PO '+safe(number)+' already exists'+(existing?' in your private drafts.':' as a PO Approved for Inspection.')+' Open it to view its existing Items, or create a new PO using a different number. This lookup/import will not add Items to the existing PO.</p><div class="row" style="gap:10px;margin-top:15px"><button class="btn primary" id="po-existing-open">Open existing PO</button><button class="btn" id="po-existing-new">Create new PO</button></div>');
+ $("po-existing-open").onclick=()=>{closeModal();onOpen();purpose.value="po";updateLookupPurpose();window.__inspectionSetMode?.("item");if(existing)activatePO(existing.id,true);else window.InspectionCloud.openApprovedPO(number);};
+ $("po-existing-new").onclick=()=>{closeModal();onNew();};return true;
+}
+function createPOFlow(pendingItem=null,initial={}){
+modal('<h2>Open or create a private PO draft</h2><p>Enter a PO number and customer. Only your account can see this draft. The administrator publishes POs Approved for Inspection.</p><div class="label">PO number</div><input class="input" id="po-number" maxlength="90" placeholder="PO-123456" style="width:100%" autocomplete="off"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-customer" maxlength="120" value="'+safe(initial.customer||"" )+'" placeholder="Customer / company name" style="width:100%" autocomplete="off"><div class="row" style="margin-top:15px;justify-content:flex-end"><button class="btn primary" id="po-confirm-save">Continue</button></div>');
 $("po-number").focus();$("po-number").onkeydown=e=>{if(e.key==="Enter")$("po-confirm-save").click();};
 $("po-confirm-save").onclick=()=>{
 const number=$("po-number").value.trim(),customer=$("po-customer").value.trim();
 if(!number){alert("Enter the PO number.");return;}
-if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an PO Approved for Inspection. Open it in POs Approved for Inspection above.");return;}
-const existing=invoices.find(p=>p.po.toLowerCase()===number.toLowerCase());
-if(existing){closeModal();activatePO(existing.id,true);alert("PO "+existing.po+" already exists for "+(existing.customer||"this customer")+". Opened existing PO; the entered customer name was ignored.");if(pendingItem)addItemToActivePO(pendingItem);return;}
+if(offerExistingPO(number,()=>createPOFlow(pendingItem,{customer})))return;
 if(!customer){alert("Enter the customer name.");return;}
 const saved={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:log.map(x=>({...x,verifiedAt:"",verifiedEsts:[]}))};
 if(pendingItem&&!saved.rows.some(r=>r.item===pendingItem.item))saved.rows.push(rowFor(pendingItem));
 invoices.unshift(saved);if(!persistPOWorkspace()){invoices.shift();return;}
-log=[];persistPOWorkspace();closeModal();activatePO(saved.id,false);renderLog();
+log=[];persistPOWorkspace();closeModal();purpose.value="po";updateLookupPurpose();activatePO(saved.id,false);renderLog();
 };
 }
-window.__inspectionOnLookup=x=>{if(!window.InspectionCloud.canEdit()||!x?.item)return;if(!openPO){createPOFlow(x);return;}addItemToActivePO(x);};
+window.__inspectionOnLookup=x=>{if(window.__inspectionSearchOnly())return;if(!window.InspectionCloud.canEdit()||!x?.item)return;if(!openPO){createPOFlow(x);return;}addItemToActivePO(x);};
 
 /* Spreadsheet invoice importer: preview and map source columns, never auto-confirm EST. */
 (function initPOSpreadsheetImport(){
@@ -777,7 +787,7 @@ async function loadFile(file){
 }
 el("po-import-file").addEventListener("change",async e=>{
  el("po-import-preview").classList.add("hidden");sourceRows=[];preview=[];
- try{await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
+ try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
 });
 for(const id of ["po-import-item-col","po-import-desc-col"])el(id).addEventListener("change",currentPreview);
 el("po-import-cancel").onclick=()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
@@ -793,6 +803,7 @@ function setInspectionMode(mode){
 }
 itemMode.onclick=()=>setInspectionMode("item");
 invoiceMode.onclick=()=>setInspectionMode("invoice");
+window.__inspectionSetMode=setInspectionMode;
 function weekOf(date){
  const d=new Date(String(date)+"T12:00:00");
  if(!Number.isFinite(d.getTime()))return String(date);
@@ -866,9 +877,9 @@ renderInvoiceOverview();
 el("po-import-create").onclick=()=>{
  const number=clean(el("po-import-number").value),customer=clean(el("po-import-customer").value);
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
- if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an PO Approved for Inspection. Open it in POs Approved for Inspection above.");return;}
- const existing=invoices.find(p=>p.po.toLowerCase()===number.toLowerCase());
- if(!existing&&!customer){alert("Enter the customer name for the new PO.");el("po-import-customer").focus();return;}
+ if(offerExistingPO(number,()=>{el("po-import-number").value="";el("po-import-number").focus();setStatus("Enter a different PO number to create a new private draft. Your invoice preview is retained.");},()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");el("invoice-select").value="";setStatus("Opened existing PO. The selected invoice was not imported.");renderInvoiceOverview();}))return;
+ const existing=null;
+ if(!customer){alert("Enter the customer name for the new PO.");el("po-import-customer").focus();return;}
  const unique=new Map();
  for(const r of preview)if(r.product&&!unique.has(r.item))unique.set(r.item,r.product);
  if(!unique.size){alert("No matching catalog Items. Check the mapping or update the catalog first.");return;}
@@ -887,7 +898,7 @@ el("po-import-create").onclick=()=>{
   const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:[...unique.values()].map(importRow)};
   invoices.unshift(po);
   if(!persistPOWorkspace()){invoices.shift();return;}
-  activatePO(po.id,false);
+  purpose.value="po";updateLookupPurpose();activatePO(po.id,false);
  }
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unmatched Items were skipped.":"")+".";
  setStatus("Private PO draft "+number+" saved. Only the administrator can publish an PO Approved for Inspection.");
@@ -2999,7 +3010,7 @@ function updateRole(){
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
- for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current private draft'],['#po-search-form label','Search my private drafts'],['#po-import-create','Create / Update private draft from matched Items'],['#po-close-active','✓ Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
+ for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current private draft'],['#po-search-form label','Search my private drafts'],['#po-import-create','Create private draft from matched Items'],['#po-close-active','✓ Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
  const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Private PO: review the selected EST / Plant values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Private draft: only your account can see it. When the administrator publishes the same PO number, the approved version replaces your draft.';if(hint.textContent!==text)hint.textContent=text;}
  const badge=document.getElementById('approval-nav-count');if(badge)badge.classList.toggle('hidden',!administrator);
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
@@ -3194,7 +3205,7 @@ async function uploadPhotos(item,files){
 }
 
 const ADMIN_MUTATING='#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const MUTATING='#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');window.__inspectionEditProductItem?.(input?.value);}
@@ -3205,7 +3216,7 @@ for(const event of ['click','change'])document.addEventListener(event,e=>{if(can
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3398,7 +3409,10 @@ new MutationObserver(refresh).observe(document.body,{childList:true,subtree:true
 window.InspectionTableLayout={refresh};refresh();
 })();
 
-</script></body></html>
+</script><style>
+#lookup-view.search-only-mode:not(.invoice-mode)>.history,#lookup-view.search-only-mode:not(.invoice-mode)>.po-archive,#lookup-view.search-only-mode:not(.invoice-mode)>.worklog,#lookup-view.search-only-mode:not(.invoice-mode)>#approved-po-panel{display:none!important}
+#item-create-po[hidden]{display:none!important}
+</style></body></html>
 
 
 
