@@ -407,7 +407,7 @@ document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("c
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||"Select or scan a product";$("product-chip").textContent=x?x.category.toUpperCase()+" PRODUCT":"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
-function lookup(){let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));selected=matches[0]||null;history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
+function lookup(){if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}let q=$("item-input").value.trim();if(!q)return;let matches=demo.filter(x=>x.item.startsWith(q));selected=matches[0]||null;history.unshift({time:new Date().toLocaleString(),item:selected?.item||q,category:selected?.category||view,brand:selected?.brand||"—",description:selected?.description||"Not found",status:selected?"Found":"Not found"});showProduct();renderRecent();if(selected&&window.__inspectionOnLookup)window.__inspectionOnLookup(selected);$("item-input").select();}
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup()};$("history-all").onclick=()=>navigate("history");
 function renderRecent(){if(!$("recent-rows"))return;$("recent-rows").innerHTML=history.slice(0,4).map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="5" class="empty">No searches in this preview session</td></tr>';}
 function renderHistory(){$("history-rows").innerHTML=history.map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No searches in this preview session</td></tr>';}
@@ -2848,7 +2848,8 @@ count();draw();
 const BASE='https://kyhecrvsllableoymqfe.supabase.co',PUBLIC_KEY='sb_publishable_LYk0MYpAHUEAPUNtq0exqA_7-ylpmi9';
 const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5aGVjcnZzbGxhYmxlb3ltcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjYwMjgsImV4cCI6MjEwNzA0MjAyOH0.RIk_R8Dp71-WtCPpBlUopAzzWtg2pAYD4GsSWT9udqc';
 const PHOTO_KEY='inspection-data-hub-photos-v1',PO_KEY='inspection-data-hub-po-workspace-v1',IMPORT_KEY='inspection-data-hub-catalog-import-v1';
-let catalogGeneration='';
+let catalogGeneration='',verifiedIdentityUser='',connectedDatabaseUser='';
+const DATABASE_NOT_CONNECTED='La conexión con la base de datos todavía no se ha completado para tu cuenta. Primero pulsa Conectar / Reintentar conexión y espera la confirmación. Esta acción no se ha enviado ni guardado como pendiente.';
 const dirtyDomains=new Set();
 const PROTECTED=['catalog-overrides','product-notes','brand-notes','est-references','brand-profiles','stability-overrides','observations','fixed-est','photos','initial-review'].map(x=>'inspection-data-hub-'+x+'-v1');
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -2899,7 +2900,7 @@ function pendingPayload(changes){
  return{base_records:clone(base),changed_records:clone(next)};
 }
 async function submitItemChanges(item,changes={},extra={}){
- if(!canEdit())throw Error('Connect and sign in before editing.');
+ requireDatabaseConnection();if(!canEdit()){deny();return false;}
  const key='inspection-data-hub-catalog-overrides-v1',old=official[key]?.[item];
  if(!old)throw Error('Select an existing catalog Item first.');
  const next={...clone(old),...changes};delete next.item;
@@ -2931,7 +2932,7 @@ async function sendQueuedJob(job){
  return request('/rest/v1/rpc/inspection_queued_commit',{method:'POST',body:{operation_id:job.id,...job.payload}});
 }
 async function drainQueue(){
- if(queuePromise)return queuePromise;if(signingOut||!session||!ready||offline||!navigator.onLine)return;
+ if(queuePromise)return queuePromise;if(signingOut||!session||!hasDatabaseConnection()||!ready||offline||!navigator.onLine)return;
  const owner=session.user.id;
  const run=async()=>{for(const job of await ownJobs()){
   if(signingOut||session?.user.id!==owner)break;
@@ -2947,17 +2948,20 @@ async function openPendingWrites(){
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
 }
 async function loadIdentity(){
- const user=await request('/auth/v1/user');if(!user?.id)throw Error('Inicia sesión para continuar.');session.user={id:user.id,email:user.email||''};persistSession();
+ const user=await request('/auth/v1/user');if(!user?.id)throw Error('Inicia sesión para continuar.');session.user={id:user.id,email:user.email||''};persistSession();verifiedIdentityUser=user.id;
  const rows=await request('/rest/v1/inspection_admins?select=user_id&user_id=eq.'+encodeURIComponent(user.id));administrator=rows.length>0;
  const profiles=await request('/rest/v1/inspection_profiles?select=user_id,email,display_name');profileNames=new Map(profiles.map(p=>[p.user_id,p.display_name&&p.display_name!==p.email?p.display_name+' ('+p.email+')':p.email]));
 }
 function actorLabel(id){return id?(profileNames.get(id)||id):'Registro anterior sin cuenta identificada';}
 
 const isData=k=>String(k).startsWith('inspection-data-hub-')&&k!=='inspection-data-hub-appearance-v1';
-const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('No tienes permisos para modificar la base de datos.')}if(!ready&&!offline)throw Error('La base de datos no está disponible.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
+const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(session&&!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('No tienes permisos para modificar la base de datos.')}if(!ready&&!offline)throw Error('La base de datos no está disponible.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
 Object.defineProperty(window,'localStorage',{value:adapter,configurable:true});
-function canEdit(){return !signingOut&&!!session&&ready&&!offline&&!saving&&!photoBusy}
-function deny(){alert(!ready||offline?'No hay conexión con la base de datos.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
+function hasDatabaseConnection(){return !!session&&connectedDatabaseUser===session.user.id;}
+function canConsult(){return !signingOut&&hasDatabaseConnection()&&ready&&!offline;}
+function canEdit(){return canConsult()&&!saving&&!photoBusy}
+function requireDatabaseConnection(){if(!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);}
+function deny(){alert(!hasDatabaseConnection()?DATABASE_NOT_CONNECTED:!ready||offline?'Se perdió una conexión con la base de datos que ya estaba establecida. Reintenta la conexión; los envíos guardados se conservarán.':saving||photoBusy?'Hay un envío en curso. Espera a que termine.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
 function record(k){const v=memory.get(k);return v?JSON.parse(v):null}
 function collect(k,get,set){collectors.set(k,{get,set})}
 function overlay(text,busy=false){const el=document.getElementById('cloud-blocker');el.hidden=false;document.getElementById('cloud-blocker-text').textContent=text;document.getElementById('cloud-retry').hidden=busy;document.querySelector('.shell').inert=true;document.getElementById('required-login-button').hidden=!!session;document.getElementById('blocker-pending-button').hidden=!session||!queueCount;document.getElementById('blocker-account-button').hidden=!session;}
@@ -2971,11 +2975,11 @@ function updateRole(){
   const requestButton=document.createElement('button');requestButton.type='button';requestButton.className='btn mini';requestButton.dataset.catalogRequest='true';requestButton.textContent='Edit catalog Item';(row.querySelector('[data-po-up],[data-delete]')?.closest('td')||row.lastElementChild).appendChild(requestButton);
  });
 
- const editable=!!session&&ready&&!offline,adminActive=editable&&administrator;
+ const editable=canConsult(),adminActive=editable&&administrator;
  const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ Usuario · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Iniciar sesión';if(pill.textContent!==text)pill.textContent=text;pill.title='Cuenta, cerrar sesión o cambiar de usuario'}
  const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(administrator?'AD':'US'))avatar.textContent=administrator?'AD':'US';
  for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(administrator?'Administrator · full access':'Usuario · Acceso a POs'))el.textContent=administrator?'Administrator · full access':'Usuario · Acceso a POs'}
- const label=document.getElementById('cloud-status');if(label){const text=!ready||offline?'DISCONNECTED':saving||photoBusy?'SAVING…':'CONNECTED';if(label.textContent!==text)label.textContent=text;}
+ const label=document.getElementById('cloud-status');if(label){const text=!hasDatabaseConnection()?'NOT CONNECTED YET':!ready||offline?'CONNECTION LOST':saving||photoBusy?'SAVING…':'CONNECTED';if(label.textContent!==text)label.textContent=text;}
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
@@ -3086,6 +3090,7 @@ async function loadState({hydrate=true}={}){
  memory.clear();for(const [k,v]of Object.entries(official))memory.set(k,JSON.stringify(v));
  await buildPhotos();
  if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionFullProductRefresh?.();window.__inspectionReloadCloudWorkspace?.();window.__inspectionGlobalRefresh?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
+ if(verifiedIdentityUser===session?.user.id)connectedDatabaseUser=session.user.id;
  ready=true;offline=false;if(started&&hydrate){window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();}updateRole();return rows[0];
 }
 function differences(){const changes={};for(const [k,c]of collectors)memory.set(k,JSON.stringify(c.get()));for(const [k,v]of memory){const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(official[k]))changes[k]=d;}return changes}
@@ -3118,6 +3123,7 @@ function makeProposals(changes,extra){
 }
 async function commit(extra=null){
  if(signingOut)return;
+ requireDatabaseConnection();
  if(!session||!started)throw Error('Inicia sesión para continuar.');if(saving)throw Error('Hay un envío en curso.');
  const changes=extra||differences();if(!administrator&&Object.keys(changes).some(k=>k!==PO_KEY&&dirtyDomains.has(k))){deny();throw Error('Solo el administrador puede modificar datos oficiales.');}
  if(extra)for(const k of Object.keys(extra))dirtyDomains.add(k);
@@ -3155,12 +3161,13 @@ async function logout(){
   if(jobs.length&&!confirm(jobs.length+' pending send(s) will stay on this device for '+(previous?.user.email||'this account')+'. They will retry only when this account signs in again. Sign out?')){signingOut=false;return;}
  }catch(error){signingOut=false;alert(error.message);return;}
  for(const controller of activeControllers)controller.abort();
- session=null;administrator=false;ready=false;persistSession();clearLogin();
+ session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
  // Best-effort server sign-out; local sign-out remains available without internet.
  if(previous?.access_token&&navigator.onLine){fetch(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+previous.access_token},keepalive:true,signal:AbortSignal.timeout(3000)}).catch(()=>{});}
  location.reload();
 }
 async function uploadPhotos(item,files){
+ requireDatabaseConnection();if(!canConsult()){deny();return;}
  if(!administrator||!session){deny();throw Error('Solo el administrador puede subir fotografías.')}if(!files.length)return;
  const allowed=['image/jpeg','image/png','image/webp','image/gif','image/avif'];for(const f of files)if(!allowed.includes(f.type)||f.size>10485760)throw Error('Usa fotos JPG, PNG, WebP, GIF o AVIF de hasta 10 MB.');
  const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'photos',item,files:[...files].map(f=>({blob:f,name:f.name,type:f.type,path:String(item).replace(/[^a-zA-Z0-9_-]/g,'_')+'/'+crypto.randomUUID()+'.'+({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'}[f.type])}))};
@@ -3176,13 +3183,13 @@ document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');window.__inspectionEditProductItem?.(input?.value);}
 });
-for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;if(!administrator&&e.target.closest(ADMIN_MUTATING)){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
+for(const event of ['click','change','keydown'])document.addEventListener(event,e=>{if(!(e.target instanceof Element))return;const query=e.target.closest('#item-input,#lookup-btn,#global-search,#iq-run,[id^="iq-"]');const consulting=query&&(!query.id.startsWith('iq-')||['iq-brand','iq-family','iq-category','iq-pack','iq-size','iq-plant','iq-photo','iq-description','iq-description-state','iq-run'].includes(query.id));if(consulting&&!canConsult()&&(e.type!=='keydown'||e.key==='Enter')){e.preventDefault();e.stopImmediatePropagation();deny();return;}if(!administrator&&e.target.closest(ADMIN_MUTATING)){e.preventDefault();e.stopImmediatePropagation();deny();return}markDomains(e);const mutation=e.target.closest(MUTATING);if(mutation&&(!canEdit())){e.preventDefault();e.stopImmediatePropagation();deny();return}if(e.type==='change'&&e.target.matches('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-est],[data-po-note],[data-po-ref]')&&!canEdit()){e.preventDefault();e.stopImmediatePropagation();deny()}},true);
 // All actual mutation entry points also persist through the server-enforced commit function.
 for(const event of ['click','change'])document.addEventListener(event,e=>{if(canEdit()&&e.target instanceof Element&&e.target.closest(MUTATING))scheduleSave()},false);
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={record,collect,canEdit,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3191,7 +3198,7 @@ function connect(){
 async function connectOnce(){
  if(signingOut)return;
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
- await showQueueCount();overlay('Conectando con la base de datos oficial…',true);
+ await showQueueCount();overlay(hasDatabaseConnection()?'Restableciendo la conexión con la base de datos oficial…':'Tu sesión está iniciada. La conexión con la base de datos todavía se está estableciendo…',true);
  try{await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
  if(applicationInitializationError)throw applicationInitializationError;
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
@@ -3207,7 +3214,7 @@ async function connectOnce(){
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
  ready=true;offline=false;updateRole();message(queueCount?'Hay '+queueCount+' envíos pendientes que requieren revisión.':administrator?'Administrador · Base oficial conectada.':'User · private drafts and read-only POs Approved for Inspection.');unblock();if(administrator)await loadRequests();
- }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay('No hay conexión con la base de datos oficial. '+error.message);if(!session)openLogin()}
+ }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay(hasDatabaseConnection()?'Se perdió la conexión con la base de datos oficial. '+error.message:'Tu sesión puede estar iniciada, pero la conexión con la base de datos todavía no se ha completado. No se ha creado ningún envío nuevo. Los pendientes anteriores se conservan para esta cuenta. Pulsa Reintentar conexión. '+error.message);if(!session)openLogin()}
 }
 document.getElementById('cloud-retry').onclick=connect;
 document.getElementById('cloud-login').onclick=openLogin;document.getElementById('cloud-logout').onclick=logout;
