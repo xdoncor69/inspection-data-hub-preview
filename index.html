@@ -109,10 +109,10 @@ window.InspectionTableTools={
 @media print{#cloud-blocker,#cloud-banner,.online-dialog{display:none!important}}
 .approval-card{margin:14px 0;padding:16px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);background:var(--sk-surface2)}.approval-card pre{white-space:pre-wrap;word-break:break-word;font:11px/1.5 monospace;max-height:220px;overflow:auto}.approval-card td{vertical-align:top}.approval-card img{max-width:220px;max-height:180px;object-fit:contain;margin:8px}.approval-card .approval-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 </style>
-<button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Envíos pendientes</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Envíos pendientes de esta cuenta</h3><button class="btn" id="pending-writes-close" type="button">Cerrar</button></div><p class="muted small">Solo se guardan los cambios enviados, no una copia de la base de datos. Un conflicto requiere revisar los valores antes de volver a editar.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status">Connecting to the official database…</div>
-<div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Iniciar sesión</button><button class="btn" id="blocker-pending-button" type="button" hidden>Ver envíos pendientes</button><button class="btn" id="blocker-account-button" type="button" hidden>Cuenta / cerrar sesión</button></div></div>
-<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Introduce el correo y la contraseña de tu cuenta de la aplicación.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">La contraseña no se guarda. La sesión se conserva en este navegador hasta cerrar sesión o cambiar de usuario.</p></form></dialog>
-<dialog id="online-account-dialog" class="online-dialog"><h3>Cuenta de la aplicación</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
+<button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Pending sends</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Pending sends for this account</h3><button class="btn" id="pending-writes-close" type="button">Close</button></div><p class="muted small">Only pending submissions are stored on this device. A conflict requires reviewing the values before editing again.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status">Connecting to the official database…</div>
+<div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Sign in</button><button class="btn" id="blocker-pending-button" type="button" hidden>View pending sends</button><button class="btn" id="blocker-account-button" type="button" hidden>Account / sign out</button></div></div>
+<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
+<dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Clients</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
@@ -1192,7 +1192,7 @@ if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();
 }
 window.__inspectionReloadCloudWorkspace=()=>{const id=openPO;loadPOWorkspace();openPO=invoices.some(p=>p.id===id)?id:null;renderLog();renderPOArchive();window.__inspectionInvoiceRefresh?.();};
 renderLog();renderPOArchive();
-const loginPill=document.createElement("button");loginPill.className="pill login-pill";loginPill.textContent="♙ Cuenta de usuario";loginPill.title="Sign in as administrator";
+const loginPill=document.createElement("button");loginPill.className="pill login-pill";loginPill.textContent="♙ User account";loginPill.title="Sign in as administrator";
 const topRight=document.querySelector(".topright");const oldPill=Array.from(topRight.children).find(x=>x.textContent.includes("Admin access"));if(oldPill)oldPill.replaceWith(loginPill);
 loginPill.onclick=()=>window.InspectionCloud.openLogin();
 function applyRole(){window.InspectionCloud.updateRole();}
@@ -3059,7 +3059,7 @@ const BASE='https://kyhecrvsllableoymqfe.supabase.co',PUBLIC_KEY='sb_publishable
 const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5aGVjcnZzbGxhYmxlb3ltcWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjYwMjgsImV4cCI6MjEwNzA0MjAyOH0.RIk_R8Dp71-WtCPpBlUopAzzWtg2pAYD4GsSWT9udqc';
 const PHOTO_KEY='inspection-data-hub-photos-v1',PO_KEY='inspection-data-hub-po-workspace-v1',IMPORT_KEY='inspection-data-hub-catalog-import-v1';
 let catalogGeneration='',verifiedIdentityUser='',connectedDatabaseUser='';
-const DATABASE_NOT_CONNECTED='La conexión con la base de datos todavía no se ha completado para tu cuenta. Primero pulsa Conectar / Reintentar conexión y espera la confirmación. Esta acción no se ha enviado ni guardado como pendiente.';
+const DATABASE_NOT_CONNECTED='The database connection has not been established for your account. Select Retry connection and wait for confirmation. This action has not been sent or stored as pending.';
 const dirtyDomains=new Set();
 const PROTECTED=['catalog-overrides','product-notes','brand-notes','est-references','brand-profiles','stability-overrides','observations','fixed-est','photos','initial-review'].map(x=>'inspection-data-hub-'+x+'-v1');
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -3083,17 +3083,17 @@ function persistSession(){if(session)nativeStorage.setItem(SESSION_KEY,JSON.stri
 function setSession(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at||Math.floor(Date.now()/1000)+(data.expires_in||3600),user:{id:data.user.id,email:data.user.email||session?.user?.email||''}};persistSession();}
 async function refreshSession(){
  if(refreshPromise)return refreshPromise;
- refreshPromise=(async()=>{const work=async(signal)=>{const saved=JSON.parse(nativeStorage.getItem(SESSION_KEY)||'null');if(saved?.user.id===session?.user.id&&saved.access_token!==session.access_token){session=saved;return}if(!session?.refresh_token)throw Error('Inicia sesión para continuar.');const response=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal});if(!response.ok){if(response.status>=500){const e=Error('Supabase no está disponible.');e.network=true;throw e}session=null;administrator=false;persistSession();throw Error('La sesión expiró. Inicia sesión de nuevo.')}setSession(await response.json());};await withDeviceLock('inspection-auth-refresh',work);})();
+ refreshPromise=(async()=>{const work=async(signal)=>{const saved=JSON.parse(nativeStorage.getItem(SESSION_KEY)||'null');if(saved?.user.id===session?.user.id&&saved.access_token!==session.access_token){session=saved;return}if(!session?.refresh_token)throw Error('Sign in to continue.');const response=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token}),signal});if(!response.ok){if(response.status>=500){const e=Error('Supabase is unavailable.');e.network=true;throw e}session=null;administrator=false;persistSession();throw Error('Your session expired. Sign in again.')}setSession(await response.json());};await withDeviceLock('inspection-auth-refresh',work);})();
  try{return await refreshPromise}catch(error){if(error instanceof TypeError||error.name==='TimeoutError'||error.name==='AbortError')error.network=true;throw error}finally{refreshPromise=null}
 }
-const queueDB=new Promise((resolve,reject)=>{const req=indexedDB.open('inspection-pending-writes-v2',1);req.onupgradeneeded=()=>req.result.createObjectStore('jobs',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(Error('No se pudo abrir la cola de envíos.'))});
+const queueDB=new Promise((resolve,reject)=>{const req=indexedDB.open('inspection-pending-writes-v2',1);req.onupgradeneeded=()=>req.result.createObjectStore('jobs',{keyPath:'id'});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(Error('Could not open the pending sends queue.'))});
 function queueStore(action,value){
- const operation=(async()=>{const db=await queueDB;return new Promise((resolve,reject)=>{const tx=db.transaction('jobs',action==='all'?'readonly':'readwrite'),store=tx.objectStore('jobs');let req=action==='all'?store.getAll():action==='put'?store.put(value):store.delete(value);let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('No se pudo guardar el envío en este dispositivo.'))})})();
+ const operation=(async()=>{const db=await queueDB;return new Promise((resolve,reject)=>{const tx=db.transaction('jobs',action==='all'?'readonly':'readwrite'),store=tx.objectStore('jobs');let req=action==='all'?store.getAll():action==='put'?store.put(value):store.delete(value);let result;req.onsuccess=()=>result=req.result;tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Could not save the pending send on this device.'))})})();
  if(action==='put'){pendingQueueWrites.add(operation);operation.then(()=>pendingQueueWrites.delete(operation),()=>pendingQueueWrites.delete(operation));}
  return operation;
 }
 async function ownJobs(){const all=await queueStore('all');return all.filter(j=>j.owner===session?.user.id).sort((a,b)=>a.created-b.created)}
-async function showQueueCount(){if(!session)return;const jobs=await ownJobs();queueCount=jobs.length;const btn=document.getElementById('pending-writes-button');btn.hidden=!queueCount;btn.textContent=queueCount+' envío(s) pendiente(s)';}
+async function showQueueCount(){if(!session)return;const jobs=await ownJobs();queueCount=jobs.length;const btn=document.getElementById('pending-writes-button');btn.hidden=!queueCount;btn.textContent=queueCount+' pending send(s)';}
 function pendingPayload(changes){
  const base={},next={};
  for(const[k,value]of Object.entries(changes)){
@@ -3127,7 +3127,7 @@ async function sendQueuedJob(job){
  if(job.type==='approve-po')return request('/rest/v1/rpc/inspection_approve_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  
  if(job.type==='photos'){
-  if(!administrator)throw Error('Solo el administrador puede subir fotografías.');
+  if(!administrator)throw Error('Only the administrator can upload photos.');
   for(const f of job.files)await request('/storage/v1/object/inspection-photos/'+f.path,{method:'POST',body:f.blob,raw:true,headers:{'Content-Type':f.type,'x-upsert':'true'}});
   if(!job.payload){const rows=await request('/rest/v1/rpc/inspection_read_official_state',{method:'POST',body:{}});const old=rows[0].records[PHOTO_KEY]?.[job.item]||[];const next=[...old,...job.files.filter(f=>!old.some(x=>x.path===f.path)).map(f=>({name:f.name,path:f.path}))];job.payload={base_records:{[PHOTO_KEY]:{[job.item]:old}},changed_records:{[PHOTO_KEY]:{[job.item]:next}}};await queueStore('put',job);}
  }
@@ -3139,31 +3139,31 @@ async function drainQueue(){
  const run=async()=>{for(const job of await ownJobs()){
   if(signingOut||session?.user.id!==owner)break;
   if(job.owner!==owner||job.state==='conflict')continue;
-  try{await sendQueuedJob(job);await queueStore('delete',job.id)}catch(error){if(error.network||error.status>=500||(!session&&error.status===401))throw error;job.state='conflict';job.error=error.message;await queueStore('put',job);message('Hay un envío pendiente que requiere revisión. No se ha sobrescrito ningún dato.',true);}
+  try{await sendQueuedJob(job);await queueStore('delete',job.id)}catch(error){if(error.network||error.status>=500||(!session&&error.status===401))throw error;job.state='conflict';job.error=error.message;await queueStore('put',job);message('A pending send needs review. No data was overwritten.',true);}
  }await showQueueCount();};queuePromise=withDeviceLock('inspection-pending-'+owner,run);try{return await queuePromise}finally{queuePromise=null}
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
- root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:['save-delivery','delivery-v3'].includes(j.type)?'Delivery '+j.payload.delivery_number:j.type==='review'?'Retired legacy operation':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Photos for Item '+j.item:['save-delivery','delivery-v3'].includes(j.type)?'Delivery '+j.payload.delivery_number:j.type==='review'?'Retired legacy operation':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Waiting for connection')+'</p><details><summary>View pending data</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Retry</button><button class="btn" data-queue-discard="'+j.id+'">Discard send</button></div></article>').join('')||'<p>There are no pending sends for this account.</p>';
  root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
- root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
+ root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Discard this pending send? It will not be applied to the database.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
 }
 async function loadIdentity(){
- const user=await request('/auth/v1/user');if(!user?.id)throw Error('Inicia sesión para continuar.');session.user={id:user.id,email:user.email||''};persistSession();verifiedIdentityUser=user.id;
+ const user=await request('/auth/v1/user');if(!user?.id)throw Error('Sign in to continue.');session.user={id:user.id,email:user.email||''};persistSession();verifiedIdentityUser=user.id;
  const rows=await request('/rest/v1/inspection_admins?select=user_id&user_id=eq.'+encodeURIComponent(user.id));administrator=rows.length>0;
  const profiles=await request('/rest/v1/inspection_profiles?select=user_id,email,display_name');profileNames=new Map(profiles.map(p=>[p.user_id,p.display_name==='Invitados'?'Invitados':p.display_name&&p.display_name!==p.email?p.display_name+' ('+p.email+')':p.email]));
 }
 function actorLabel(id){return id?(profileNames.get(id)||id):'Registro anterior sin cuenta identificada';}
 
 const isData=k=>String(k).startsWith('inspection-data-hub-')&&k!=='inspection-data-hub-appearance-v1';
-const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(session&&!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('No tienes permisos para modificar la base de datos.')}if(!ready&&!offline)throw Error('La base de datos no está disponible.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
+const adapter={getItem(k){return isData(k)?memory.get(k)||null:nativeStorage.getItem(k)},setItem(k,v){if(!isData(k)){nativeStorage.setItem(k,v);return}if(session&&!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);if(!session||(!administrator&&k!==PO_KEY)){if(!started)return;throw Error('You do not have permission to change the database.')}if(!ready&&!offline)throw Error('The database is unavailable.');memory.set(k,String(v));dirtyDomains.add(k);scheduleSave()},removeItem(k){if(isData(k))throw Error('Direct record deletion is not supported.');nativeStorage.removeItem(k)}};
 Object.defineProperty(window,'localStorage',{value:adapter,configurable:true});
 function hasDatabaseConnection(){return !!session&&connectedDatabaseUser===session.user.id;}
 function canConsult(){return !signingOut&&hasDatabaseConnection()&&ready&&!offline;}
 function canEdit(){return canConsult()&&!saving&&!photoBusy}
 function requireDatabaseConnection(){if(!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);}
-function deny(){alert(!hasDatabaseConnection()?DATABASE_NOT_CONNECTED:!ready||offline?'Se perdió una conexión con la base de datos que ya estaba establecida. Reintenta la conexión; los envíos guardados se conservarán.':saving||photoBusy?'Hay un envío en curso. Espera a que termine.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
+function deny(){alert(!hasDatabaseConnection()?DATABASE_NOT_CONNECTED:!ready||offline?'The established database connection was interrupted. Retry the connection; saved pending sends will be retained.':saving||photoBusy?'A send is in progress. Wait for it to finish.':'You do not have permission to change the database. Sign in as administrator.');return false}
 let catalogRequestSequence=0,catalogReadRevision=-1,catalogMetadata={validations:[],deliveries:{}};
 function itemKey(value){return String(value??'').replace(/^[\s\u200B\u200C\u200D\u2060\uFEFF]+|[\s\u200B\u200C\u200D\u2060\uFEFF]+$/gu,'');}
 function exactCatalogItem(products,value){
@@ -3220,9 +3220,9 @@ function updateRole(){
  document.querySelectorAll('#edit-btn,#edit-est,#edit-product-note,#manage-gallery,.iq-edit,.iq-save,.iq-cancel,.iq-photo-add,[data-catalog-request],.inspection-query-bulk,#admin-clients-panel,[data-view="history"],[data-view="brands"],[data-view="clients"]').forEach(el=>el.hidden=!administrator);
  document.querySelectorAll('.iq-cell').forEach(el=>el.readOnly=!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true');
 
- const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ Usuario · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Iniciar sesión';if(pill.textContent!==text)pill.textContent=text;pill.title='Cuenta, cerrar sesión o cambiar de usuario'}
+ const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ User · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Sign in';if(pill.textContent!==text)pill.textContent=text;pill.title='Account, sign out or change user'}
  const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(administrator?'AD':'US'))avatar.textContent=administrator?'AD':'US';
- for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(administrator?'Administrator · full access':'Usuario · Acceso a POs'))el.textContent=administrator?'Administrator · full access':'Usuario · Acceso a POs'}
+ for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(administrator?'Administrator · full access':'User · PO access'))el.textContent=administrator?'Administrator · full access':'User · PO access'}
  const label=document.getElementById('cloud-status');if(label){const text=!hasDatabaseConnection()?'NOT CONNECTED YET':!ready||offline?'CONNECTION LOST':saving||photoBusy?'SAVING…':'CONNECTED';if(label.textContent!==text)label.textContent=text;}
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
@@ -3245,7 +3245,7 @@ async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={
  const bearer=auth&&session?session.access_token:ANON_KEY;
  let response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+bearer,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...(catalogGeneration?{'x-inspection-catalog-generation':catalogGeneration}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});
  if(response.status===401&&auth&&session?.refresh_token){await refreshSession();response=await fetch(BASE+path,{method,headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+session.access_token,...(body!==undefined&&!raw?{'Content-Type':'application/json'}:{}),...(catalogGeneration?{'x-inspection-catalog-generation':catalogGeneration}:{}),...headers},body:body===undefined?undefined:raw?body:JSON.stringify(body),signal:controller.signal});}
- if(!response.ok){let data={};try{data=await response.json()}catch{};const error=new Error(response.status===409||data.code==='40001'?'Otro equipo cambió la base de datos. Tus cambios no se guardaron; los datos se actualizarán.':response.status===401||response.status===403?'No tienes permisos para modificar la base de datos o tu sesión expiró.':'Supabase HTTP '+response.status+': '+(data.message||data.error||'Request failed'));error.status=response.status;if(response.status>=500)error.network=true;throw error}
+ if(!response.ok){let data={};try{data=await response.json()}catch{};const error=new Error(response.status===409||data.code==='40001'?'Another device changed the database. Your changes were not saved; the data will refresh.':response.status===401||response.status===403?'You do not have permission for this operation, or your session expired.':'Supabase HTTP '+response.status+': '+(data.message||data.error||'Request failed'));error.status=response.status;if(response.status>=500)error.network=true;throw error}
  if(response.status===204)return null;
  return await response.json();
  }catch(error){if(error.name==='AbortError'||error instanceof TypeError)error.network=true;throw error}finally{clearTimeout(timeout);activeControllers.delete(controller)}
@@ -3279,7 +3279,7 @@ function deliveryNumber(value){
 function deliveryNotReceived(row){return deliveryNumber(row.receivedQuantity??row.quantity)===0;}
 function approvedDeliveryRows(po){
  return [['Item Description','Item No.','Catch Weight','Quantity','EST No.'],...po.rows.filter(row=>!deliveryNotReceived(row)).map(row=>[
-  String(row.description??''),String(row.item??''),(row.catchWeight!==''&&row.catchWeight!=null&&row.weightUnit&&row.weightUnit!=='lb'?String(row.catchWeight)+' '+row.weightUnit:deliveryNumber(row.catchWeight)),deliveryNumber(row.receivedQuantity),String(row.plant??'')
+  String(row.description??''),String(row.item??''),(row.catchWeight!==''&&row.catchWeight!=null&&row.weightUnit?String(row.catchWeight)+' '+row.weightUnit:deliveryNumber(row.catchWeight)),deliveryNumber(row.receivedQuantity),String(row.plant??'')
  ])];
 }
 function deliveryFileName(po){
@@ -3623,16 +3623,16 @@ function markDomains(event){
 async function commit(extra=null){
  if(signingOut)return;
  requireDatabaseConnection();
- if(!session||!started)throw Error('Inicia sesión para continuar.');if(saving)throw Error('Hay un envío en curso.');
- const changes=extra||differences();if(!administrator&&Object.keys(changes).some(k=>k!==PO_KEY&&dirtyDomains.has(k))){deny();throw Error('Solo el administrador puede modificar datos oficiales.');}
+ if(!session||!started)throw Error('Sign in to continue.');if(saving)throw Error('A send is in progress.');
+ const changes=extra||differences();if(!administrator&&Object.keys(changes).some(k=>k!==PO_KEY&&dirtyDomains.has(k))){deny();throw Error('Only the administrator can change official data.');}
  if(extra)for(const k of Object.keys(extra))dirtyDomains.add(k);
  const payload=pendingPayload(changes);if(!Object.keys(payload.changed_records).length){dirtyDomains.clear();return;}
  const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'records',payload};
- try{await queueStore('put',job)}catch(error){alert('No se pudo guardar el envío en este dispositivo. Mantén esta ventana abierta y vuelve a intentar. '+error.message);throw error;}
- saving=true;overlay('Enviando cambios…',true);await showQueueCount();updateRole();
- try{if(!navigator.onLine){const e=Error('Sin conexión');e.network=true;throw e}await drainQueue();await loadState();message(queueCount?'Hay envíos pendientes que requieren revisión.':'Guardado en la base oficial · '+new Date().toLocaleTimeString());}
- catch(error){if(error.network||error.name==='TimeoutError'){offline=true;ready=false;message(queueCount?'El envío está guardado en este dispositivo. Se enviará al recuperar la conexión.':'El envío fue confirmado; no se pudo refrescar la vista por falta de conexión.',true);}else{message(error.message,true);if(!session)openLogin();}}
- finally{dirtyDomains.clear();saving=false;await showQueueCount();updateRole();if(session&&ready&&!offline&&!photoBusy)unblock();else overlay('Sin conexión. Los envíos pendientes están guardados; se reenviarán al reconectar.');}
+ try{await queueStore('put',job)}catch(error){alert('Could not save the pending send on this device. Keep this window open and try again. '+error.message);throw error;}
+ saving=true;overlay('Sending changes…',true);await showQueueCount();updateRole();
+ try{if(!navigator.onLine){const e=Error('Offline');e.network=true;throw e}await drainQueue();await loadState();message(queueCount?'Some pending sends need review.':'Saved to the official database · '+new Date().toLocaleTimeString());}
+ catch(error){if(error.network||error.name==='TimeoutError'){offline=true;ready=false;message(queueCount?'The pending send is saved on this device. It will retry when the connection returns.':'The send was confirmed, but the view could not refresh because the connection was interrupted.',true);}else{message(error.message,true);if(!session)openLogin();}}
+ finally{dirtyDomains.clear();saving=false;await showQueueCount();updateRole();if(session&&ready&&!offline&&!photoBusy)unblock();else overlay('Offline. Pending sends are saved and will retry when the connection returns.');}
 }
 async function addImportedCatalog(products){
  if(!administrator||!canEdit()){deny();throw Error('Administrator access and an active connection are required.');}
@@ -3657,13 +3657,13 @@ async function addImportedCatalog(products){
 
 async function removePhoto(item,index){if(!administrator||!canEdit()){deny();return}const next=clone(photoMetadata);if(!next[item]?.[index])return;next[item].splice(index,1);await commit({[PHOTO_KEY]:next});if(administrator)await loadState();}
 
-function openLogin(){if(session){openAccount();return}overlay('Inicia sesión para acceder a Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Introduce el correo y la contraseña de tu cuenta de la aplicación.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
+function openLogin(){if(session){openAccount();return}overlay('Sign in to access Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Enter the email and password for your application account.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
 function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value=''}
-function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'User: create and import private PO drafts; view POs Approved for Inspection. You can upload and update deliveries; catalog changes and official verification are administrator-only. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
+function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrator: full access.':'User: create and import private PO drafts; view POs Approved for Inspection. You can upload and update deliveries; catalog changes and official verification are administrator-only. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
  e.preventDefault();if(signingIn)return;signingIn=true;const button=document.getElementById('online-login-submit');button.disabled=true;
  const email=document.getElementById('online-email').value.trim(),password=document.getElementById('online-password').value;
- try{const response=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('No se pudo iniciar sesión. Comprueba el correo y la contraseña.');setSession(await response.json());await loadIdentity();document.getElementById('online-login-dialog').close();await connect();}
+ try{const response=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Could not sign in. Check your email and password.');setSession(await response.json());await loadIdentity();document.getElementById('online-login-dialog').close();await connect();}
  catch(error){if(!session)persistSession();document.getElementById('online-login-message').textContent=error.message;updateRole();}finally{clearLogin();signingIn=false;button.disabled=false;}
 }
 async function logout(){
@@ -3688,13 +3688,13 @@ async function logout(){
 }
 async function uploadPhotos(item,files){
  requireDatabaseConnection();if(!canConsult()){deny();return;}
- if(!administrator||!session){deny();throw Error('Solo el administrador puede subir fotografías.')}if(!files.length)return;
+ if(!administrator||!session){deny();throw Error('Only the administrator can upload photos.')}if(!files.length)return;
  const allowed=['image/jpeg','image/png','image/webp','image/gif','image/avif'];for(const f of files)if(!allowed.includes(f.type)||f.size>10485760)throw Error('Usa fotos JPG, PNG, WebP, GIF o AVIF de hasta 10 MB.');
  const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'photos',item,files:[...files].map(f=>({blob:f,name:f.name,type:f.type,path:String(item).replace(/[^a-zA-Z0-9_-]/g,'_')+'/'+crypto.randomUUID()+'.'+({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'}[f.type])}))};
- await queueStore('put',job);photoBusy=true;overlay('Enviando fotografías…',true);
- try{await drainQueue();await loadState();message(queueCount?'Fotografías guardadas en la cola de envíos pendientes.':'Fotografías guardadas en Supabase.');}
- catch(error){offline=true;ready=false;message(queueCount?'Fotografías guardadas en este dispositivo. Se reenviarán al recuperar la conexión.':'Fotografías confirmadas; no se pudo refrescar la vista.',true);}
- finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
+ await queueStore('put',job);photoBusy=true;overlay('Uploading photos…',true);
+ try{await drainQueue();await loadState();message(queueCount?'Photos saved in the pending sends queue.':'Photos saved to Supabase.');}
+ catch(error){offline=true;ready=false;message(queueCount?'Photos saved on this device. They will retry when the connection returns.':'Photo upload confirmed; the view could not refresh.',true);}
+ finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Offline. Your pending sends are saved on this device.');}
 }
 
 const ADMIN_MUTATING='#po-fill-missing-est,#po-missing-est-save,[data-missing-est],[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
@@ -3707,7 +3707,7 @@ for(const event of ['click','change','keydown'])document.addEventListener(event,
 // All actual mutation entry points also persist through the server-enforced commit function.
 for(const event of ['click','change'])document.addEventListener(event,e=>{if(canEdit()&&e.target instanceof Element&&e.target.closest(MUTATING))scheduleSave()},false);
 window.addEventListener('inspection:local-change',scheduleSave);
-window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
+window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Offline. The database is unavailable. Pending sends will be retained.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
 window.InspectionCloud={refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
@@ -3718,7 +3718,7 @@ function connect(){
 async function connectOnce(){
  if(signingOut)return;
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
- await showQueueCount();overlay(hasDatabaseConnection()?'Restableciendo la conexión con la base de datos oficial…':'Tu sesión está iniciada. La conexión con la base de datos todavía se está estableciendo…',true);
+ await showQueueCount();overlay(hasDatabaseConnection()?'Restoring the official database connection…':'You are signed in. The database connection is still being established…',true);
  try{await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
  if(applicationInitializationError)throw applicationInitializationError;
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
@@ -3733,8 +3733,8 @@ async function connectOnce(){
  started=true;renderApprovedPOs();
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
- ready=true;offline=false;updateRole();message(queueCount?'Hay '+queueCount+' envíos pendientes que requieren revisión.':administrator?'Administrador · Base oficial conectada.':'User · private drafts and read-only POs Approved for Inspection.');unblock();if(administrator)await loadRequests();
- }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay(hasDatabaseConnection()?'Se perdió la conexión con la base de datos oficial. '+error.message:'Tu sesión puede estar iniciada, pero la conexión con la base de datos todavía no se ha completado. No se ha creado ningún envío nuevo. Los pendientes anteriores se conservan para esta cuenta. Pulsa Reintentar conexión. '+error.message);if(!session)openLogin()}
+ ready=true;offline=false;updateRole();message(queueCount?queueCount+' pending sends need review.':administrator?'Administrator · Official database connected.':'User · private drafts and read-only POs Approved for Inspection.');unblock();if(administrator)await loadRequests();
+ }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay(hasDatabaseConnection()?'The official database connection was interrupted. '+error.message:'You may be signed in, but the database connection is not established yet. No new pending send was created. Existing pending sends are retained for this account. Select Retry connection. '+error.message);if(!session)openLogin()}
 }
 document.getElementById('cloud-retry').onclick=connect;
 document.getElementById('cloud-login').onclick=openLogin;document.getElementById('cloud-logout').onclick=logout;
@@ -3747,10 +3747,10 @@ document.getElementById('required-login-button').onclick=openLogin;document.getE
 window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
+setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No database connection. Try again.');}},15000);
 let changeHistory=[],requestsLoading=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
+const domainNames={'catalog-overrides':'Product','product-notes':'Product notes','brand-notes':'Brand notes','est-references':'EST references','brand-profiles':'Brand profile','stability-overrides':'Stability','observations':'Physical EST observations','fixed-est':'Fixed EST','photos':'Photos'};
 const historyFieldNames={item:'Item number',description:'Description',brand:'Brand',family:'Product family',salesUnit:'Sales unit',producer:'Supplier / source group',plant:'EST / Plant',category:'Product type',pack:'Case / Pack',size:'Size / Unit','product-notes':'Product notes','est-references':'EST / Plant references','stability-overrides':'Review priority','observations':'EST / Plant verification','fixed-est':'Fixed EST / Plant','photos':'Photos'};
 function historyValue(value){
  if(value===null||value===undefined||value==='')return '—';
