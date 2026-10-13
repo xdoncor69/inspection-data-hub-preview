@@ -837,7 +837,7 @@ function renderCatalogPreview(){
  el('po-catalog-heading').hidden=!admin;el('po-catalog-edit-all').hidden=!admin;el('po-catalog-add-all').hidden=!admin;
  el('po-catalog-edit-all').disabled=catalogBusy||!missing.length;el('po-catalog-add-all').disabled=catalogBusy||!missing.some(r=>catalogEdits.has(r.item));
  previewPage=Math.min(previewPage,Math.max(0,Math.ceil(preview.length/250)-1));
- el('po-import-rows').innerHTML=preview.slice(previewPage*250,(previewPage+1)*250).map(r=>{const p=catalogEdits.get(r.item);return '<tr data-import-line="'+r.line+'"><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||'—')+'</td><td>'+escHtml(r.product?.description||'—')+'</td><td>'+(admin&&!r.product&&p?'<input class="input po-import-est-input" aria-label="EST / Plant for '+escHtml(r.item)+'" data-import-field="plant" value="'+escHtml(p.plant||'')+'">':escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||'—')))+'</td><td>'+escHtml((r.product?'Matched':'Not in catalog · source data only')+(r.duplicate?' · Repeated line':''))+'</td>'+(admin?'<td>'+(r.product?'—':catalogEditor(r))+'</td>':'')+'</tr>';}).join('')||'<tr><td colspan="'+(admin?7:6)+'" class="empty">No Item rows found.</td></tr>';
+ el('po-import-rows').innerHTML=preview.slice(previewPage*250,(previewPage+1)*250).map(r=>{const p=catalogEdits.get(r.item);return '<tr data-import-line="'+r.line+'"><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||'—')+'</td><td>'+escHtml(r.product?.description||'—')+'</td><td>'+(admin&&!r.product&&p?'<input class="input po-import-est-input" aria-label="EST / Plant for '+escHtml(r.item)+'" data-import-field="plant" value="'+escHtml(p.plant||'')+'">':escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||'—')))+'</td><td>'+escHtml((r.product?'Matched':'Not in catalog · source data only')+(r.duplicate?' · Repeated line':''))+'</td>'+'<td'+(admin?'':' hidden')+'>'+(admin?(r.product?'—':catalogEditor(r)):'')+'</td></tr>';}).join('')||'<tr><td colspan="'+(admin?7:6)+'" class="empty">No Item rows found.</td></tr>';
  let pager=el('po-import-pager');if(!pager){pager=document.createElement('div');pager.id='po-import-pager';pager.className='row';el('po-import-rows').closest('.tablewrap').insertAdjacentElement('afterend',pager);}
  pager.innerHTML=preview.length>250?'<button class="btn mini" data-import-page="-1" '+(!previewPage?'disabled':'')+'>Previous</button><span>Page '+(previewPage+1)+' of '+Math.ceil(preview.length/250)+'</span><button class="btn mini" data-import-page="1" '+((previewPage+1)*250>=preview.length?'disabled':'')+'>Next</button>':'';
  pager.querySelectorAll('button').forEach(b=>b.onclick=()=>{previewPage+=Number(b.dataset.importPage);renderCatalogPreview();});
@@ -3181,6 +3181,22 @@ function deliveryFileName(po){
  const clean=value=>String(value??'').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/[. ]+$/,'');
  return 'PO'+clean(po.po)+' - D'+clean(po.deliveryNumber)+' '+clean(po.customerName)+'.xlsx';
 }
+let deliveryStyleLoader=null;
+function loadDeliveryExporter(){
+ if(window.XLSX?.style_version)return Promise.resolve(window.XLSX);
+ if(deliveryStyleLoader)return deliveryStyleLoader;
+ deliveryStyleLoader=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';script.async=true;script.onload=()=>window.XLSX?.style_version?resolve(window.XLSX):reject(Error('The delivery exporter did not load.'));script.onerror=()=>reject(Error('Could not load the delivery exporter. Check the connection and try again.'));document.head.appendChild(script);}).catch(error=>{deliveryStyleLoader=null;throw error;});
+ return deliveryStyleLoader;
+}
+function deliveryExportSheet(XLSX,values){
+ const quantities=values.slice(1).map(row=>row[3]),known=quantities.filter(v=>typeof v==='number'&&Number.isFinite(v)),missing=quantities.length-known.length;
+ const totalRow=values.length+4,range='D2:D'+values.length;
+ const total={t:known.length?'n':'s',v:known.length?known.reduce((a,b)=>a+b,0):'',f:'IF(COUNT('+range+')=0,"",SUM('+range+'))',s:{border:Object.fromEntries(['top','bottom','left','right'].map(k=>[k,{style:'thin',color:{rgb:'000000'}}]))}};
+ const sheet=XLSX.utils.aoa_to_sheet([...values,[],[],[],[missing?missing+' row(s) without numeric quantity; total includes supplied quantities only.':'','','Total Quantity',total,'']]);
+ sheet['!cols']=[{wch:55},{wch:18},{wch:18},{wch:14},{wch:20}];
+ if(missing){sheet['A'+totalRow].s={alignment:{wrapText:true}};sheet['!rows']=[];sheet['!rows'][totalRow-1]={hpt:32};}
+ return sheet;
+}
 async function exportDeliveryFile(po,button){
  if(!canConsult()){deny();return;}
  if(!String(po.deliveryNumber||'').trim()||!String(po.customerName||'').trim()){alert('Delivery number and the PO client name are required before export.');return;}
@@ -3188,13 +3204,11 @@ async function exportDeliveryFile(po,button){
  if(values.length===1){alert('This approved PO has no Items to export.');return;}
  if(button){button.disabled=true;button.textContent='Exporting…';}
  try{
-  const XLSX=await window.__inspectionLoadXLSX();
+  const XLSX=await loadDeliveryExporter();
   if(!XLSX.utils?.aoa_to_sheet||!XLSX.utils?.book_new||!XLSX.writeFile)throw Error('The Excel exporter could not be loaded. Please try again.');
-  const workbook=XLSX.utils.book_new(),sheet=XLSX.utils.aoa_to_sheet(values);
-  // Plain worksheet: no fills, colors, extra metadata rows or conditional formatting.
-  sheet['!cols']=[{wch:55},{wch:18},{wch:16},{wch:14},{wch:20}];
+  const workbook=XLSX.utils.book_new(),sheet=deliveryExportSheet(XLSX,values);
   XLSX.utils.book_append_sheet(workbook,sheet,'Delivery');
-  XLSX.writeFile(workbook,deliveryFileName(po),{bookType:'xlsx',cellStyles:false});
+  XLSX.writeFile(workbook,deliveryFileName(po),{bookType:'xlsx',cellStyles:true});
  }catch(error){alert('Delivery export failed: '+error.message);}
  finally{if(button?.isConnected){button.disabled=false;button.textContent='↓ Export Delivery';}}
 }
@@ -3679,8 +3693,9 @@ function apply(state){
  let cols=[...group.children];if(cols.length!==base.length){group.replaceChildren(...base.map(key=>{const col=document.createElement('col');col.dataset.idhCol=key;return col;}));cols=[...group.children];}
  if(cols.some(col=>!col.dataset.idhCol))cols.forEach((col,i)=>col.dataset.idhCol=base[i]);
  const map=new Map(cols.map(col=>[col.dataset.idhCol,col]));place(group,order.map(key=>map.get(key)));
- for(const key of base){map.get(key).style.width=clamp(state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle)handle.setAttribute('aria-valuenow',String(clamp(state.widths[key])));}
- const width=base.reduce((total,key)=>total+clamp(state.widths[key]),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
+ for(const key of base){map.get(key).style.width=clamp(state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle)handle.setAttribute('aria-valuenow',String(clamp(state.widths[key])));map.get(key).hidden=header.hidden;}
+ if(state.widthInput&&document.activeElement!==state.widthInput)state.widthInput.value=clamp(state.widths[base[Number(state.columnSelect.value)]]);
+ const width=base.reduce((total,key)=>total+(state.headers.get(key).hidden?0:clamp(state.widths[key])),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
 }
 function restore(state){
  const uid=account();if(state.uid===uid)return;
@@ -3700,13 +3715,18 @@ function install(table){
  const root=table.id||table.tBodies[0]?.id||table.parentElement?.closest('[id]')?.id||table.closest('section')?.id||'table';
  const key=(table.dataset.layoutKey||root)+':'+base.join('|');
  const cols=[...table.querySelectorAll(':scope > colgroup > col')];const defaults={};
- cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];const explicit=parseFloat(cols[i]?.style.width||'');const measured=cell.getBoundingClientRect().width;defaults[base[i]]=clamp(explicit||measured||(/description|valor|value|note/i.test(labels[i])?280:/item|brand|marca|est|plant/i.test(labels[i])?140:110));});
+ cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];const explicit=parseFloat(cols[i]?.style.width||'');const measured=cell.getBoundingClientRect().width;defaults[base[i]]=clamp(explicit||measured||(/catalog actions/i.test(labels[i])?340:/description|valor|value|note/i.test(labels[i])?280:/item|brand|marca|est|plant/i.test(labels[i])?140:110));});
  const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.innerHTML='<span>Drag headers to reorder · drag column edges to resize</span><button type="button" class="btn mini idh-table-reset">Reset columns</button>';
  table.before(notice);
  state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,order:[...base],defaults,widths:{...defaults},uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
  notice.querySelector('.idh-table-reset').onclick=()=>{state.order=[...base];state.widths={...defaults};apply(state);save(state);};
- const mobile=document.createElement('div');mobile.className='idh-mobile-order';mobile.innerHTML='<select aria-label="Column to move">'+base.map((key,i)=>'<option value="'+i+'">'+labels[i].replace(/[<>]/g,'')+'</option>').join('')+'</select><button type="button" class="btn mini" data-column-left>←</button><button type="button" class="btn mini" data-column-right>→</button>';notice.appendChild(mobile);
- mobile.querySelectorAll('button').forEach(b=>b.onclick=()=>{const key=base[Number(mobile.querySelector('select').value)],index=state.order.indexOf(key),target=state.order[index+(b.hasAttribute('data-column-left')?-1:1)];if(target)move(state,key,target);});
+ const mobile=document.createElement('div');mobile.className='idh-mobile-order';mobile.innerHTML='<select aria-label="Column to adjust">'+base.map((key,i)=>'<option value="'+i+'">'+labels[i].replace(/[<>]/g,'')+'</option>').join('')+'</select><button type="button" class="btn mini" data-column-left>←</button><button type="button" class="btn mini" data-column-right>→</button><label>Width (px) <input class="input idh-width-input" type="number" min="50" max="1400" step="1" aria-label="Column width in pixels"></label><button type="button" class="btn mini" data-column-width>Apply width</button>';notice.appendChild(mobile);
+ mobile.querySelectorAll('[data-column-left],[data-column-right]').forEach(b=>b.onclick=()=>{const key=base[Number(mobile.querySelector('select').value)],index=state.order.indexOf(key),target=state.order[index+(b.hasAttribute('data-column-left')?-1:1)];if(target)move(state,key,target);});
+ const widthInput=mobile.querySelector('.idh-width-input'),columnSelect=mobile.querySelector('select');
+ state.widthInput=widthInput;state.columnSelect=columnSelect;
+ columnSelect.onchange=()=>{widthInput.value=clamp(state.widths[state.base[Number(columnSelect.value)]]);};
+ const setWidth=()=>{const value=Number(widthInput.value);if(!widthInput.value||!Number.isFinite(value)||value<50||value>1400){widthInput.setCustomValidity('Enter a width from 50 to 1400 pixels.');widthInput.reportValidity();return;}widthInput.setCustomValidity('');state.widths[state.base[Number(columnSelect.value)]]=clamp(value);apply(state);save(state);};
+ mobile.querySelector('[data-column-width]').onclick=setWidth;widthInput.oninput=()=>widthInput.setCustomValidity('');widthInput.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();setWidth();}};
  cells.forEach((cell,i)=>{
   const col=base[i];cell.draggable=true;cell.title='Drag to reorder '+labels[i];
   const handle=document.createElement('span');handle.className='idh-col-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','Resize '+labels[i]);handle.setAttribute('aria-valuemin','50');handle.setAttribute('aria-valuemax','1400');cell.appendChild(handle);
@@ -3748,7 +3768,7 @@ window.InspectionTableLayout={refresh};refresh();
 #lookup-view .weekly-stats,#lookup-view .est-stats,#lookup-view .period-stats{display:none!important}
 #draft-print-sheet{display:none}.client-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.client-suggestions:empty{display:none}.delivery-unresolved{background:var(--sk-surface2);outline:1px solid var(--sk-border)}
 #sap-delivery-dialog select{max-width:100%}#admin-clients-panel{margin-top:18px}.inspection-evidence{padding:12px;margin-top:12px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-radius)}
-.idh-mobile-order{display:flex;flex-wrap:wrap;gap:6px}.idh-mobile-order select{max-width:220px}.idh-mobile-order button{min-width:40px}
+.idh-mobile-order{display:flex;flex-wrap:wrap;gap:6px}.idh-mobile-order select{max-width:220px}.idh-mobile-order label{display:flex;align-items:center;gap:5px}.idh-mobile-order .idh-width-input{width:86px;padding:7px;min-height:36px}.idh-table-layout-bar{flex-wrap:wrap}.idh-mobile-order button{min-width:40px}
 @media(max-width:800px){#po-details th,#po-details td{padding:8px}#po-details .btn{white-space:normal;min-height:40px}#po-details [data-po-ref]{font-size:16px}#po-details .po-details-head{flex-wrap:wrap}#sap-delivery-dialog{width:96vw;max-width:96vw}.client-suggestions .btn{min-height:40px}}
 @media print{body.print-draft>.shell,body.print-draft>dialog,body.print-draft>#cloud-banner,body.print-draft>#cloud-blocker{display:none!important}body.print-draft>#draft-print-sheet{display:block!important;background:white;color:black}body.print-draft td,body.print-draft th{white-space:normal;border:1px solid #bbb;color:black;background:white}}
 </style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#lookup-view:not(.show-history) .weekly-stats,#lookup-view:not(.show-history) .est-stats,#lookup-view:not(.show-history) .period-stats{display:none!important}#lookup-view.show-history .weekly-stats,#lookup-view.show-history .est-stats,#lookup-view.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
