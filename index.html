@@ -131,7 +131,7 @@ window.InspectionTableTools={
 <label><span class="label">EST / Plant</span><select class="input" id="iq-plant"><option value="">Select EST / Plant…</option></select></label>
 <label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">Select description status…</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
-<div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
+<label style="display:block;margin:12px 0"><span class="label">Exact Item numbers · one per line</span><textarea class="input" id="iq-items" rows="2" style="width:100%" placeholder="110790-631&#10;272316"></textarea><span class="small muted">Exact Item searches use the complete catalog and ignore the filters above.</span></label><div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results hidden">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
@@ -149,7 +149,7 @@ window.InspectionTableTools={
 <button type="button" class="inspection-workflow-btn active" id="inspection-item-mode" aria-pressed="true">⌕ Item by Item</button>
 <button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Items</button>
 </div>
-<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po" selected>Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
+<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po" selected>Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
 <div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your private PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
@@ -410,11 +410,19 @@ window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-t
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
 function showProduct(){let x=selected;$("lookup-view").classList.toggle("has-product",!!x);$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
-function lookup(){
+let lookupSequence=0;
+async function lookup(){
  if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}
- const q=$("item-input").value.trim();if(!q)return;
- selected=demo.find(x=>x.item===q)||null;
+ const q=window.InspectionCloud.itemKey($("item-input").value);if(!q)return;
+ const sequence=++lookupSequence,status=$("lookup-status");status.textContent='Searching the official catalog…';selected=null;showProduct();
+ try{
+ const products=await window.InspectionCloud.refreshCatalog();
+ if(!products||sequence!==lookupSequence||q!==window.InspectionCloud.itemKey($("item-input").value))return;
+ selected=window.InspectionCloud.exactCatalogItem(products,q);
+ status.textContent=selected?'Found in the official catalog.':'No exact Item found in the official catalog. Check the complete identifier, including suffixes and leading zeros.';
  if(!selected){
+  const suggestions=products.filter(p=>String(p.item).startsWith(q+'-'));
+  if(suggestions.length){modal('<h2>No exact Item match</h2><p>The catalog contains these full identifiers. Select the correct Item explicitly.</p>'+suggestions.map((p,i)=>'<button class="btn" data-exact-choice="'+i+'">'+esc(p.item)+' · '+esc(p.description)+'</button>').join(''));document.querySelectorAll('[data-exact-choice]').forEach(b=>b.onclick=()=>{$('item-input').value=suggestions[Number(b.dataset.exactChoice)].item;closeModal();lookup();});return;}
   const blank={item:q,category:"",brand:"",description:"",producer:"",family:"",plant:"",pack:"",size:"",salesUnit:"",missing:true};selected=blank;showProduct();
   const ask=()=>window.__inspectionOfferMissing(q);
   if(window.__inspectionSearchOnly?.())ask();else window.__inspectionOnLookup?.(blank,ask);
@@ -422,6 +430,7 @@ function lookup(){
  }
  if(!window.__inspectionSearchOnly?.())history.unshift({time:new Date().toLocaleString(),item:selected.item,category:selected.category,brand:selected.brand,description:selected.description,status:"Found"});
  showProduct();renderRecent();window.__inspectionOnLookup?.(selected);$("item-input").focus();$("item-input").select();
+ }catch(error){if(sequence===lookupSequence){selected=null;showProduct();status.textContent=window.InspectionCloud.catalogError(error);}}
 }
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup()};$("history-all").onclick=()=>navigate("history");
 function renderRecent(){if(!$("recent-rows"))return;$("recent-rows").innerHTML=history.slice(0,4).map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="5" class="empty">No searches in this preview session</td></tr>';}
@@ -548,7 +557,14 @@ estInfo[item]={...prev,others:[...prev.others,value]};
 updateProductExtras();
 }
 };
+function renderCatalogValidationProfile(){
+ let panel=$("catalog-validation-profile");if(!panel){panel=document.createElement('div');panel.id='catalog-validation-profile';panel.className='subtlebox';$("est-extras").after(panel);}
+ const item=selected?.item;if(!item){panel.hidden=true;return;}panel.hidden=false;
+ const data=window.InspectionCloud.catalogMeta(),validations=data.validations.filter(v=>v.item===item),delivery=data.deliveries[item];
+ panel.innerHTML='<h3>Administrative EST validation</h3>'+(validations.length?validations.map(v=>'<p><strong>'+safe(v.est)+'</strong> · EST with initial administrator validation'+(window.InspectionCloud.isAdministrator()?' · '+safe(new Date(v.validated_at).toLocaleString()):'')+'</p>').join(''):'<p>No initial administrator validation recorded.</p>')+'<p class="small muted">Administrative acceptance of catalog data. This is separate from physical inspection and receipt history.</p><h3>Receipt record</h3>'+(delivery?'<p>Delivery '+safe(delivery.delivery_number)+' recorded '+safe(new Date(delivery.recorded_at).toLocaleString())+'.</p><p class="small muted">Receipt date not recorded. The date above is the delivery upload date.</p>':'<p>No receipt recorded.</p>');
+}
 function updateProductExtras(){
+renderCatalogValidationProfile();
 const x=selected, info=x?(estInfo[x.item]||{primary:x.plant,others:[],trend:"No recent observations recorded."}):null;
 $("est-extras-title").textContent=x?.category==="Dairy"?"Known plant number references":"Known EST references";
 $("est-tags").innerHTML=x?'<span class="est-tag main">'+safe(info.primary)+' · usual</span>'+info.others.map(s=>'<span class="est-tag">'+safe(s)+' · alternative</span>').join(""):'<span class="muted small">Select a product to see historical references</span>';
@@ -622,7 +638,7 @@ showProduct=function(){originalShow();updateProductExtras();};
 const originalNavigate=navigate;
 navigate=function(v){originalNavigate(v);if(v==="meat"||v==="dairy")updateProductExtras();};
 const originalLookup=lookup;
-lookup=function(){originalLookup();updateProductExtras();};
+lookup=async function(){await originalLookup();updateProductExtras();};
 $("lookup-btn").onclick=lookup;
 $("item-input").onkeydown=e=>{if(e.key==="Enter")lookup();};
 
@@ -800,9 +816,9 @@ function currentPreview(){
  if(itemCol===""){preview=[];el("po-import-rows").innerHTML="";el("po-import-summary").textContent="Choose the column containing Item Numbers.";el("po-import-create").disabled=true;return;}
  const seen=new Set();
  preview=sourceRows.map((values,index)=>{
-  const item=clean(values[Number(itemCol)]).replace(/\.0$/,"");
+  const item=window.InspectionCloud.itemKey(values[Number(itemCol)]);
   const description=descCol!==""?clean(values[Number(descCol)]):"";
-  const product=demo.find(x=>String(x.item)===item);
+  const product=window.InspectionCloud.exactCatalogItem(demo,item);
   const duplicate=!!item&&seen.has(item);
   if(item)seen.add(item);
   return {line:index+2,item,description,product,duplicate,sourceProduct:sourceProduct(values,sourceMapping)};
@@ -872,8 +888,9 @@ async function addImportItems(items){
 el('po-catalog-edit-all').onclick=()=>{if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();preview.filter(r=>!r.product).forEach(editImportItem);renderCatalogPreview();};
 el('po-catalog-add-all').onclick=()=>addImportItems(preview.filter(r=>!r.product&&catalogEdits.has(r.item)).map(r=>r.item));
 
+let importLoadSequence=0;
 async function loadFile(file){
- if(!file)return;
+ if(!file)return;const sequence=++importLoadSequence;
  if(file.size>12*1024*1024)throw Error("File is too large. Maximum size is 12 MB.");
  catalogEdits.clear();previewPage=0;fileName=file.name;sourceFile=file;
  const ext=file.name.split(".").pop().toLowerCase();
@@ -886,6 +903,7 @@ async function loadFile(file){
   if(!sheet)throw Error("The workbook has no readable worksheet.");
   rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:false,blankrows:false});
  }else throw Error("Supported formats: .xlsx, .xls, .csv, .tsv.");
+ if(sequence!==importLoadSequence)return;
  if(!rows||rows.length<2)throw Error("No invoice rows found. The file needs a header row and at least one Item.");
  if(rows.length>10001)throw Error("Import is limited to 10,000 data rows.");
  const headerIndex=rows.findIndex(row=>Array.isArray(row)&&row.some(v=>clean(v)));
@@ -893,16 +911,19 @@ async function loadFile(file){
  sourceRows=rows.slice(headerIndex+1).filter(row=>Array.isArray(row)&&row.some(v=>clean(v)));
  if(!headers.length||!sourceRows.length)throw Error("The file contains no data rows.");
  fillMappings();el("po-import-preview").classList.remove("hidden");
+ setStatus('Querying the official catalog…');
+ const products=await window.InspectionCloud.refreshCatalog();if(sequence!==importLoadSequence)return;if(!products)throw Error('The catalog query was superseded. Select the file again.');
  setStatus(fileName+" · "+sourceRows.length+" data rows. Confirm the column mapping and review matches.");
  el("invoice-select").value="";
  currentPreview();
 }
 el("po-import-file").addEventListener("change",async e=>{
+ const file=e.target.files?.[0];importLoadSequence++;
  el("po-import-preview").classList.add("hidden");sourceRows=[];preview=[];
- try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
+ try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(file);}catch(err){if(e.target.files?.[0]!==file)return;el("po-import-preview").classList.add("hidden");el("po-import-create").disabled=true;setStatus(window.InspectionCloud.catalogError(err),true);console.error("Invoice import",err);}
 });
 for(const id of ["po-import-item-col","po-import-desc-col",...poSourceFields.filter(k=>k!=="description").map(k=>"po-import-"+k+"-col")])el(id).addEventListener("change",()=>{catalogEdits.clear();previewPage=0;currentPreview();});
-el("po-import-cancel").onclick=()=>{catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
+el("po-import-cancel").onclick=()=>{importLoadSequence++;catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
 
 /* Invoice-mode view: historical EST intelligence per imported/saved Item. */
 const itemMode=el("inspection-item-mode"),invoiceMode=el("inspection-invoice-mode"),lookupView=el("lookup-view");
@@ -1085,7 +1106,14 @@ if(window.InspectionCloud.isAdministrator()&&p.rows.some(r=>!String(r.plant||'')
 $('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
 $('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>PRIVATE DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST / Plant suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(demo.find(x=>x.item===r.item)?.category||'')+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
 root.querySelectorAll('[data-po-add-catalog]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poAddCatalog)];window.__inspectionAddImportedProduct(row,()=>renderPODetails());});
-root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=()=>{const item=p.rows[Number(b.dataset.poProductDetail)].item;selected=demo.find(d=>d.item===item)||null;if(!selected){const row=p.rows[Number(b.dataset.poProductDetail)];modal('<h2>Not in catalog</h2><p>Source PO data only. Adding this product to the catalog is optional.</p><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});});
+root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>{
+ const row=p.rows[Number(b.dataset.poProductDetail)],item=row.item;
+ const caption=b.textContent;b.disabled=true;b.textContent='Loading profile…';
+ try{const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.exactCatalogItem(products,item);
+ if(!selected){modal('<h2>Not in catalog</h2><p>The official catalog was queried successfully. Source PO data only; adding this product is optional.</p><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}
+ showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
+ }catch(error){alert(window.InspectionCloud.catalogError(error));}finally{b.disabled=false;b.textContent=caption;}
+});
 root.querySelectorAll('[data-po-select-only]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poSelectOnly)],value=prompt('Select EST / Plant (does not physically verify)',row.plant);if(value===null)return;const next=normalizeESTs(value).join(', ');if(!sameESTs(row.plant,next)){row.verifiedAt='';row.verifiedEsts=[];}row.plant=next;persistPOWorkspace();renderPODetails();});
 root.querySelectorAll('[data-po-observed]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const i=Number(b.dataset.poObserved),row=p.rows[i],value=prompt('EST / Plant physically observed on Item '+row.item,row.plant);if(value===null||!value.trim())return;row.plant=normalizeESTs(value).join(', ');row.verifiedAt='';row.verifiedEsts=[];recordPOCheck(p,row,normalizeESTs(value),localDate(),'Observed different EST');});
 $("po-delete-active").onclick=()=>deletePrivateDraft(p.id);
@@ -1093,7 +1121,7 @@ $("po-close-active").onclick=closeActivePO;
 $("po-approve").onclick=()=>window.InspectionCloud.approvePO(p.id);
 const poAdd=$("po-add-item"),poAddBtn=$("po-add-item-btn");
 poAddBtn.onclick=()=>{
-const item=poAdd.value.trim(),product=demo.find(x=>x.item===item);
+const item=window.InspectionCloud.itemKey(poAdd.value),product=window.InspectionCloud.exactCatalogItem(demo,item);
 if(!item)return;
 if(p.rows.some(x=>x.item===item)&&!confirm("This Item is already in the PO. Add a separate line?"))return;
 if(!product){addItemToActivePO({item,description:"",missing:true});window.__inspectionOfferMissing(item);return;}
@@ -1302,7 +1330,7 @@ showProduct=function(){previousShow();renderWeekly();};
 const previousNavigate=navigate;
 navigate=function(v){previousNavigate(v);renderWeekly();};
 const previousLookup=lookup;
-lookup=function(){previousLookup();renderWeekly();};
+lookup=async function(){await previousLookup();renderWeekly();};
 $("lookup-btn").onclick=lookup;
 $("item-input").onkeydown=e=>{if(e.key==="Enter")lookup();};
 window.__inspectionRenderWeekly=renderWeekly;
@@ -1417,7 +1445,7 @@ const oldSummary=$("weekly-observation-panel");
 if(oldSummary){oldSummary.querySelector("#weekly-stat-content").style.display="none";const oldHead=oldSummary.querySelector(".section-head .hint");if(oldHead)oldHead.textContent="Manual confirmations only · observations can be corrected";}
 const originalShow=showProduct;showProduct=function(){originalShow();render();};
 const originalNavigate=navigate;navigate=function(v){originalNavigate(v);render();};
-const originalLookup=lookup;lookup=function(){originalLookup();render();};
+const originalLookup=lookup;lookup=async function(){await originalLookup();render();};
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup();};
 $("weekly-record").addEventListener("click",()=>setTimeout(render,0));
 $("weekly-review").addEventListener("click",()=>setTimeout(render,0));
@@ -1551,7 +1579,7 @@ closeModal();render();if(window.__inspectionRenderWeekly)window.__inspectionRend
 window.__inspectionProductRefresh=render;
 const oldShow=showProduct;showProduct=function(){oldShow();render();};
 const oldNav=navigate;navigate=function(v){oldNav(v);render();};
-const oldLookup=lookup;lookup=function(){oldLookup();render();};
+const oldLookup=lookup;lookup=async function(){await oldLookup();render();};
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup();};
 const modalRoot=$("modal-root");
 let scheduled=false;
@@ -1766,7 +1794,7 @@ profiles[n]={name:n,description:$("bp-description").value.trim(),mode,stable:$("
 closeModal();refresh();if(window.__inspectionProductRefresh)window.__inspectionProductRefresh();
 };
 }
-const oldLookup=lookup;lookup=function(){oldLookup();refresh();};
+const oldLookup=lookup;lookup=async function(){await oldLookup();refresh();};
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup();};
 const oldRenderHistory=renderHistory;renderHistory=function(){oldRenderHistory();refresh();};
 const modalRoot=$("modal-root");new MutationObserver(()=>{if(!modalRoot.firstElementChild)refresh();}).observe(modalRoot,{childList:true});
@@ -2237,21 +2265,32 @@ function draw(){
  $("iq-export").disabled=matched.length===0;$("iq-print").disabled=matched.length===0;
  selectionLabel();
 }
-function hasConditions(){return facets.some(field=>$("iq-"+field).value)||!!$("iq-description").value.trim();}
+function exactItems(){return [...new Set($("iq-items").value.split(/\r?\n/).map(window.InspectionCloud.itemKey).filter(Boolean))];}
+function hasConditions(){return exactItems().length>0||facets.some(field=>$("iq-"+field).value)||!!$("iq-description").value.trim();}
 function showIdle(){
  matched=[];selectedIds.clear();lastQuery="";resultsDirty=true;
  $("iq-rows").replaceChildren();$("iq-results").classList.add("hidden");
  $("iq-idle").hidden=false;$("iq-count").textContent="";
  $("iq-export").disabled=true;$("iq-print").disabled=true;selectionLabel();
 }
-function run(){
+let querySequence=0;
+async function run(){
  clearTimeout(searchTimer);searchTimer=null;
+ const sequence=++querySequence;
  if(!hasConditions()){showIdle();return;}
- const query=JSON.stringify([...facets.map(field=>$("iq-"+field).value),$("iq-description").value.trim()]);
- if(!resultsDirty&&query===lastQuery)return;
- populate();matched=demo.filter(x=>match(x));selectedIds=new Set();lastQuery=query;resultsDirty=false;
- $("iq-idle").hidden=true;draw();
+ const signature=()=>JSON.stringify([$("iq-items").value,...facets.map(field=>$("iq-"+field).value),$("iq-description").value]);
+ const query=signature(),status=$("iq-filter-status");status.textContent='Searching the official catalog…';
+ $("iq-results").classList.add('hidden');
+ try{
+ const products=await window.InspectionCloud.refreshCatalog();
+ if(!products||sequence!==querySequence||query!==signature())return;
+ const ids=exactItems(),missing=[];
+ if(ids.length){matched=ids.map(id=>{const product=window.InspectionCloud.exactCatalogItem(products,id);if(!product)missing.push(id);return product;}).filter(Boolean);status.textContent=missing.length?'No exact match: '+missing.join(', ')+'. Check full identifiers; no approximate matches were substituted.':'Exact matches from the complete official catalog. Other filters were ignored.';}
+ else {populate();matched=products.filter(x=>match(x));status.textContent='Official catalog queried successfully. Results use the visible filters.';}
+ selectedIds=new Set();lastQuery=query;resultsDirty=false;$("iq-idle").hidden=true;draw();
+ }catch(error){if(sequence===querySequence){matched=[];$("iq-results").classList.add('hidden');status.textContent=window.InspectionCloud.catalogError(error);}}
 }
+
 function changeFacet(field){
  const cleared=[];
  // A newly chosen facet takes precedence over incompatible older selections.
@@ -2273,7 +2312,7 @@ table.querySelector("thead").addEventListener("click",e=>{
  const body=$("iq-rows"),nodes=new Map([...body.querySelectorAll("tr[data-iq-item]")].map(row=>[row.dataset.iqItem,row]));
  for(const item of matched){const row=nodes.get(String(item.item));if(row)body.appendChild(row);}
 });
-window.__inspectionGlobalRefresh=()=>{resultsDirty=true;populate();if(!hasConditions())showIdle();else if(!$("global-view").classList.contains("hidden"))run();};
+window.__inspectionGlobalRefresh=()=>{resultsDirty=true;populate();if(!hasConditions())showIdle();};
 window.addEventListener("inspection:catalog-updated",window.__inspectionGlobalRefresh);
 // Start with no selected search conditions, including after browser form restoration.
 for(const field of facets)$("iq-"+field).value="";
@@ -2290,10 +2329,11 @@ function refreshAfterEdit(){
 }
 // Filter controls drive the result list; there is no keyword bar or Search button.
 $("iq-run").onclick=run;
+$("iq-items").addEventListener("input",()=>{querySequence++;$("iq-results").classList.add("hidden");$("iq-filter-status").textContent="Press Search products to query these exact Item numbers.";});
 for(const field of facets)$("iq-"+field).addEventListener("change",()=>changeFacet(field));
 $("iq-description").addEventListener("input",()=>{clearTimeout(searchTimer);if(!hasConditions()){showIdle();return;}searchTimer=setTimeout(run,180);});
 
-$("iq-reset").onclick=()=>{
+$("iq-reset").onclick=()=>{querySequence++;$("iq-items").value="";
  $("iq-filter-status").textContent="";
  for(const field of fields)$("iq-"+field).value="";
  $("iq-category").value="";
@@ -3121,12 +3161,50 @@ function canConsult(){return !signingOut&&hasDatabaseConnection()&&ready&&!offli
 function canEdit(){return canConsult()&&!saving&&!photoBusy}
 function requireDatabaseConnection(){if(!hasDatabaseConnection())throw Error(DATABASE_NOT_CONNECTED);}
 function deny(){alert(!hasDatabaseConnection()?DATABASE_NOT_CONNECTED:!ready||offline?'Se perdió una conexión con la base de datos que ya estaba establecida. Reintenta la conexión; los envíos guardados se conservarán.':saving||photoBusy?'Hay un envío en curso. Espera a que termine.':'No tienes permisos para modificar la base de datos. Inicia sesión como administrador.');return false}
+let catalogRequestSequence=0,catalogReadRevision=-1,catalogMetadata={validations:[],deliveries:{}};
+function itemKey(value){return String(value??'').replace(/^[\s\u200B\u200C\u200D\u2060\uFEFF]+|[\s\u200B\u200C\u200D\u2060\uFEFF]+$/gu,'');}
+function exactCatalogItem(products,value){
+ const raw=String(value??''),exact=products.find(p=>String(p.item)===raw);if(exact)return exact;
+ const matches=products.filter(p=>itemKey(p.item)===itemKey(raw));
+ if(matches.length>1)throw Error('Multiple catalog identifiers match after trimming boundary whitespace. Enter the full stored identifier.');
+ return matches[0]||null;
+}
+function catalogError(error){return error.status===401||error.status===403?'Catalog access denied. Sign in with an authorized account.':error.network||error instanceof TypeError?'Catalog connection failed. Retry the search; no result has been classified as not found.':'Catalog query failed: '+error.message;}
+async function refreshCatalog(){
+ requireDatabaseConnection();if(!canConsult())throw Error('The database is disconnected. Reconnect and retry the search.');
+ const owner=session.user.id,sequence=++catalogRequestSequence;
+ const keys=['inspection-data-hub-catalog-overrides-v1','inspection-data-hub-est-references-v1'];
+ const hasEdits=()=>keys.some(k=>dirtyDomains.has(k)||JSON.stringify(collectors.get(k)?.get()??official[k])!==JSON.stringify(official[k]));
+ if(saving||hasEdits())throw Error('Wait for catalog edits to finish saving, then retry the search.');
+ const pending=await ownJobs();if(pending.some(j=>keys.some(k=>k in (j.payload?.changed_records||{}))))throw Error('A catalog change is pending. Resolve Pending sends before searching the official catalog.');
+ const data=await request('/rest/v1/rpc/inspection_read_catalog',{method:'POST',body:{}});
+ if(owner!==session?.user.id||sequence!==catalogRequestSequence)return null;
+ if(!data||!data.catalog||typeof data.catalog!=='object'||Array.isArray(data.catalog))throw Error('The server did not return a complete catalog.');
+ if(saving||hasEdits())throw Error('Catalog edits changed during the query. Save them before retrying.');
+ if(Number(data.revision)<Math.max(catalogReadRevision,revision))throw Error('The catalog changed during the query. Retry to read its current version.');
+ catalogReadRevision=Number(data.revision);catalogGeneration=data.generation||catalogGeneration;
+ catalogMetadata={validations:data.validations||[],deliveries:data.deliveries||{}};
+ for(const [key,value]of [[keys[0],data.catalog],[keys[1],data.references||{}]]){official[key]=clone(value);memory.set(key,JSON.stringify(value));const collector=collectors.get(key);if(collector?.set)collector.set(clone(value));else if(collector)replaceObject(collector.get(),clone(value));}
+ return Object.entries(data.catalog).map(([item,p])=>({...p,item}));
+}
+async function initializeCatalogValidation(button){
+ if(!administrator||!canEdit()){deny();return;}
+ if(!confirm('Record initial administrator validation for existing catalog Item / EST associations? This does not create physical checks or receipt dates. Repeating this action does not duplicate validations.'))return;
+ button.disabled=true;
+ try{await commit();if(queueCount)throw Error('Resolve pending sends before initializing the official catalog.');const result=await request('/rest/v1/rpc/inspection_initialize_catalog_validation',{method:'POST',body:{}});await refreshCatalog();message(result.inserted+' initial validations added. '+result.total+' recorded in total. No physical checks or receipts were created.');}
+ catch(error){message(catalogError(error),true);}finally{button.disabled=false;}
+}
+
 function record(k){const v=memory.get(k);return v?JSON.parse(v):null}
 function collect(k,get,set){collectors.set(k,{get,set})}
 function overlay(text,busy=false){const el=document.getElementById('cloud-blocker');el.hidden=false;document.getElementById('cloud-blocker-text').textContent=text;document.getElementById('cloud-retry').hidden=busy;document.querySelector('.shell').inert=true;document.getElementById('required-login-button').hidden=!!session;document.getElementById('blocker-pending-button').hidden=!session||!queueCount;document.getElementById('blocker-account-button').hidden=!session;}
 function unblock(){document.getElementById('cloud-blocker').hidden=true;document.querySelector('.shell').inert=false;}
 function message(text,error=false){const el=document.getElementById('cloud-message');if(el){el.textContent=text;el.classList.toggle('cloud-error',error)}const banner=document.getElementById('cloud-banner');banner.textContent=text;banner.classList.toggle('cloud-error',error)}
 function updateRole(){
+ let validationButton=document.getElementById('catalog-initialize-validation');
+ if(!validationButton){validationButton=document.createElement('button');validationButton.id='catalog-initialize-validation';validationButton.className='btn';validationButton.textContent='Initialize catalog validation';validationButton.onclick=()=>initializeCatalogValidation(validationButton);document.getElementById('settings-view').appendChild(validationButton);}
+ validationButton.hidden=!administrator;
+
  window.InspectionTableLayout?.refresh();
  document.querySelectorAll('#log-rows tr,#po-details tbody tr').forEach(row=>{
   if(!row.querySelector('input,textarea')||row.querySelector('[data-draft-edit]'))return;
@@ -3522,6 +3600,7 @@ async function approvePO(poId){
 async function loadState({hydrate=true}={}){
  const rows=await request('/rest/v1/rpc/inspection_read_official_state',{method:'POST',body:{}});if(!rows?.length)throw Error('Official database is not configured.');
  const workspaces=await request('/rest/v1/inspection_po_workspaces?select=workspace,updated_at&user_id=eq.'+encodeURIComponent(session.user.id));
+ if(Number(rows[0].revision)<catalogReadRevision)return rows[0];
  official=clone(rows[0].records);catalogGeneration=official[IMPORT_KEY]?.generation||'';official[PO_KEY]=clone(workspaces[0]?.workspace||{draft:[],invoices:[]});workspaceStamp=workspaces[0]?.updated_at||'';revision=rows[0].revision;
  deliveryIntakes=await request('/rest/v1/inspection_delivery_intakes?select=id,po_number,customer_name,delivery_number,source_file,source_path,source_rows,draft_id,approved_po_id&order=created_at.desc');
  approvedPOs=await request('/rest/v1/rpc/inspection_read_approved_pos',{method:'POST',body:{}});await loadClients();deliveryOrderIDs=new Set((await request('/rest/v1/inspection_deliveries?select=approved_po_id')).map(d=>d.approved_po_id));renderApprovedPOs();
@@ -3627,7 +3706,7 @@ for(const event of ['click','change'])document.addEventListener(event,e=>{if(can
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3844,6 +3923,7 @@ window.addEventListener('inspection:cloud-ready',()=>{const header=document.quer
 .client-option:hover,.client-option[aria-selected="true"]{background:var(--sk-accent-soft);color:var(--sk-accent)}.client-create{font-weight:700}.client-empty{padding:12px;color:var(--sk-muted)}
 #directory-client-search{width:min(100%,520px)}#client-directory td,#client-directory th{padding:9px 12px}#client-directory td:first-child{white-space:normal;min-width:160px}
 </style><style id="po-catalog-editor-style">#po-import-rows td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}#po-import-rows td:nth-child(3),#po-import-rows td:nth-child(4){min-width:200px}.po-catalog-editor{min-width:260px;max-width:360px;display:grid;gap:8px;margin-top:8px}.po-catalog-editor label{display:block;font-size:11px}.po-catalog-editor .input{width:100%;min-width:0}.po-catalog-editor textarea{min-height:75px}.po-brand-options{max-height:160px;overflow:auto;border:1px solid var(--sk-border);background:var(--sk-surface)}.po-brand-options:empty{display:none}.po-brand-options button{display:block;width:100%;white-space:normal;text-align:left}.po-import-est-input{width:150px!important;min-height:42px}.po-catalog-editor .btn{min-height:40px;white-space:normal}</style></body></html>
+
 
 
 
