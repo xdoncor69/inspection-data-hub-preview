@@ -3442,16 +3442,56 @@ function isPORowVerified(row){
  const reference=norm(row.plant),checked=norm(Array.isArray(row.verifiedEsts)?row.verifiedEsts.join(','):'');
  return !!row.verifiedAt&&reference.length>0&&JSON.stringify(reference)===JSON.stringify(checked);
 }
+function approvalValidation(po){
+ if(!po)return 'PO not found. Refresh the workspace.';
+ if(!po.rows?.length)return 'Add at least one Item before approving this PO.';
+ const missing=po.rows.filter(row=>!String(row.plant??'').trim());
+ return missing.length?'Enter an EST / Plant for '+missing.length+' Item(s) before approving this PO: '+missing.map(row=>row.item).join(', '):'';
+}
+function replaceableApproval(job,poId,owner,generation){
+ // This explicit validation rejection guarantees that this approval did not run.
+ // Network-uncertain operations keep their original ID and payload for idempotent retry.
+ return job.owner===owner&&job.generation===generation&&job.type==='approve-po'&&job.payload?.po_id===poId&&job.state==='conflict'&&/^(?:Supabase HTTP 400: )?Every Item needs a selected EST \/ Plant before approval$/.test(job.error||'');
+}
+async function retireRejectedApproval(poId){
+ const owner=session.user.id;
+ await withDeviceLock('inspection-pending-'+owner,async()=>{
+  for(const job of await ownJobs())if(session?.user.id===owner&&replaceableApproval(job,poId,owner,catalogGeneration))await queueStore('delete',job.id);
+ });
+ await showQueueCount();
+}
+async function explainApprovalPending(){
+ const jobs=await ownJobs();
+ const reason=jobs.find(job=>job.error)?.error;
+ message(reason?'PO not approved. A pending send needs review: '+reason:'PO not approved yet. Submitted changes are still pending.',true);
+ await openPendingWrites();
+}
 async function approvePO(poId){
  if(!administrator||!canEdit()){deny();return}
+ const current=collectors.get(PO_KEY)?.get()||record(PO_KEY);
+ const validation=approvalValidation(current?.invoices?.find(p=>p.id===poId));
+ if(validation){alert(validation);return}
  if(!confirm('As the inspector, do you approve this PO for inspection and publish its selected EST / Plant values for all users? Matching private drafts will be replaced by your version. Only individually verified Items keep their physical verification; this approval does not verify any additional Item.'))return;
+ let approvalQueued=false;
  try{
-  await commit();if(!ready||offline||queueCount){alert('Save all pending changes before approving this PO.');return}
-  const po=official[PO_KEY]?.invoices?.find(p=>p.id===poId);if(!po){alert('PO not found. Refresh the workspace.');return}
+  await retireRejectedApproval(poId);
+  await commit();
+  if(!ready||offline){message('Reconnect to the database before approving this PO.',true);return}
+  // commit() may have no new changes; existing submitted writes still need retrying.
+  await drainQueue();await showQueueCount();
+  if(queueCount){await explainApprovalPending();return}
+  await loadState();
+  const existing=approvedPOs.find(a=>a.snapshot.id===poId);
+  if(existing){selectedApproved=existing.id;renderApprovedPOs();message('This PO is already Approved for Inspection.');return}
+  const po=official[PO_KEY]?.invoices?.find(p=>p.id===poId);
+  const invalid=approvalValidation(po);if(invalid){alert(invalid);return}
   const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'approve-po',payload:{po_id:poId,expected_po:clone(po)}};
-  await queueStore('put',job);saving=true;overlay('Publishing PO Approved for Inspection…',true);
-  await drainQueue();await loadState();selectedApproved=approvedPOs.find(a=>a.snapshot.id===poId)?.id||null;renderApprovedPOs();message(queueCount?'PO approval is pending. Review pending sends.':'PO approved for inspection and published. Matching drafts have been replaced; Item verifications are unchanged.');
- }catch(error){if(error.network){ready=false;offline=true;message('Approval saved on this device. It will retry when the connection returns.',true)}else{message(error.message,true)}}
+  await queueStore('put',job);approvalQueued=true;saving=true;overlay('Publishing PO Approved for Inspection…',true);
+  await drainQueue();await loadState();selectedApproved=approvedPOs.find(a=>a.snapshot.id===poId)?.id||null;renderApprovedPOs();
+  if(queueCount)await explainApprovalPending();
+  else if(selectedApproved)message('PO approved for inspection and published. Matching drafts have been replaced; Item verifications are unchanged.');
+  else message('Approval could not be confirmed. Refresh the workspace before trying again.',true);
+ }catch(error){if(error.network){ready=false;offline=true;message(approvalQueued?'Approval saved on this device. It will retry when the connection returns.':'Connection interrupted before a new approval was submitted. Saved pending changes will retry when the connection returns.',true)}else{message(error.message,true)}}
  finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending sends are saved on this device.');}
 }
 
@@ -3780,6 +3820,7 @@ window.addEventListener('inspection:cloud-ready',()=>{const header=document.quer
 .client-option:hover,.client-option[aria-selected="true"]{background:var(--sk-accent-soft);color:var(--sk-accent)}.client-create{font-weight:700}.client-empty{padding:12px;color:var(--sk-muted)}
 #directory-client-search{width:min(100%,520px)}#client-directory td,#client-directory th{padding:9px 12px}#client-directory td:first-child{white-space:normal;min-width:160px}
 </style><style id="po-catalog-editor-style">#po-import-rows td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}#po-import-rows td:nth-child(3),#po-import-rows td:nth-child(4){min-width:200px}.po-catalog-editor{min-width:260px;max-width:360px;display:grid;gap:8px;margin-top:8px}.po-catalog-editor label{display:block;font-size:11px}.po-catalog-editor .input{width:100%;min-width:0}.po-catalog-editor textarea{min-height:75px}.po-brand-options{max-height:160px;overflow:auto;border:1px solid var(--sk-border);background:var(--sk-surface)}.po-brand-options:empty{display:none}.po-brand-options button{display:block;width:100%;white-space:normal;text-align:left}.po-import-est-input{width:150px!important;min-height:42px}.po-catalog-editor .btn{min-height:40px;white-space:normal}</style></body></html>
+
 
 
 
