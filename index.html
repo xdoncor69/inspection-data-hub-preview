@@ -417,7 +417,9 @@ async function lookup(){
  const sequence=++lookupSequence,status=$("lookup-status");status.textContent='Searching the official catalog…';selected=null;showProduct();
  try{
  const products=await window.InspectionCloud.refreshCatalog();
- if(!products||sequence!==lookupSequence||q!==window.InspectionCloud.itemKey($("item-input").value))return;
+ if(sequence!==lookupSequence)return;
+ if(!products){status.textContent='Search superseded by another catalog query. Press Find Item to retry.';return;}
+ if(q!==window.InspectionCloud.itemKey($("item-input").value)){status.textContent='Item number changed. Press Find Item to search.';return;}
  selected=window.InspectionCloud.exactCatalogItem(products,q);
  status.textContent=selected?'Found in the official catalog.':'No exact Item found in the official catalog. Check the complete identifier, including suffixes and leading zeros.';
  if(!selected){
@@ -2283,7 +2285,8 @@ async function run(){
  $("iq-results").classList.add('hidden');
  try{
  const products=await window.InspectionCloud.refreshCatalog();
- if(!products||sequence!==querySequence||query!==signature())return;
+ if(sequence!==querySequence||query!==signature())return;
+ if(!products){status.textContent='Search superseded by another catalog query. Press Search products to retry.';return;}
  const ids=exactItems(),missing=[];
  if(ids.length){matched=ids.map(id=>{const product=window.InspectionCloud.exactCatalogItem(products,id);if(!product)missing.push(id);return product;}).filter(Boolean);status.textContent=missing.length?'No exact match: '+missing.join(', ')+'. Check full identifiers; no approximate matches were substituted.':'Exact matches from the complete official catalog. Other filters were ignored.';}
  else {populate();matched=products.filter(x=>match(x));status.textContent='Official catalog queried successfully. Results use the visible filters.';}
@@ -2599,7 +2602,7 @@ function canonicalGroup(value){
  return "";
 }
 function productFrom(input){
- const item=trim(input.item).replace(/\.0$/,"");
+ const item=window.InspectionCloud.itemKey(input.item);
  const brand=trim(input.brand),description=productDescription(input.description,brand);
  const category=canonicalGroup(input.category)||"";
  return {item,category,brand,family:trim(input.family),producer:brand,description,pack:trim(input.pack),size:trim(input.size),plant:trim(input.plant)};
@@ -3397,7 +3400,7 @@ function approvedLineKey(row,index){return row.lineId||'legacy:'+index;}
 function matchSAPDelivery(table,mapping,po,associations={}){
  const candidates=new Map();po.rows.forEach((row,index)=>{const key=deliveryItemKey(row.item);if(!candidates.has(key))candidates.set(key,[]);candidates.get(key).push({key:approvedLineKey(row,index),...row});});
  return table.data.map((values,index)=>{
-  const item=String(values[mapping.item]??'').trim().replace(/\.0$/,''),options=candidates.get(deliveryItemKey(item))||[];
+  const item=itemKey(values[mapping.item]),options=candidates.get(deliveryItemKey(item))||[];
   const rawWeight=mapping.weight<0?'':values[mapping.weight],suffix=String(rawWeight??'').match(/\s*(lbs?|kg|oz|g|pounds?)\.?\s*$/i),weightUnit=suffix?(suffix[1].toLowerCase().startsWith('lb')||suffix[1].toLowerCase().startsWith('pound')?'lb':suffix[1].toLowerCase()):table.weightUnit||'lb';
   const quantity=deliverySourceNumber(values[mapping.quantity]),catchWeight=deliveryNumber(String(rawWeight??'').replace(/\s*(lbs?|kg|oz|g|pounds?)\.?\s*$/i,'').trim());
   const variants=new Set(options.map(r=>r.plant?.trim().toUpperCase()).filter(Boolean));
