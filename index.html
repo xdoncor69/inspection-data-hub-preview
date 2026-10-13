@@ -165,8 +165,8 @@ window.InspectionTableTools={
 <label><span class="label">Description column (optional)</span><select class="input" id="po-import-desc-col"></select></label>
 </div><details><summary>Source fields for Items not in the catalog</summary><p class="small muted">Only unmatched Items use these source values. Review the detected columns. Missing fields remain blank; quantities, weights and prices are not imported.</p><div class="po-import-grid"><label><span class="label">Brand (optional)</span><select class="input" id="po-import-brand-col"></select></label><label><span class="label">Class / Type (optional)</span><select class="input" id="po-import-category-col"></select></label><label><span class="label">Family (optional)</span><select class="input" id="po-import-family-col"></select></label><label><span class="label">Case / Pack (optional)</span><select class="input" id="po-import-pack-col"></select></label><label><span class="label">Size / Unit (optional)</span><select class="input" id="po-import-size-col"></select></label><label><span class="label">Sales unit (optional)</span><select class="input" id="po-import-salesUnit-col"></select></label><label><span class="label">Supplier / Source Group (optional)</span><select class="input" id="po-import-producer-col"></select></label><label><span class="label">EST / Plant (optional)</span><select class="input" id="po-import-plant-col"></select></label><label><span class="label">Alternative EST / Plant references (optional)</span><select class="input" id="po-import-alternativeEst-col"></select></label><label><span class="label">Notes (optional)</span><select class="input" id="po-import-notes-col"></select></label></div></details>
 <div class="po-import-summary" id="po-import-summary"></div>
-<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST / Plant reference</th><th>Status</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
-<div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
+<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST / Plant reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
+<div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
 <p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. EST values are references, not physical verification records.</p>
 </div></div></div>
 <div class="panel panel-pad inspection-invoice-workspace hidden" id="inspection-invoice-workspace">
@@ -743,6 +743,7 @@ window.__inspectionOnLookup=(x,after=()=>{})=>{if(window.__inspectionSearchOnly(
 (function initPOSpreadsheetImport(){
 const el=id=>document.getElementById(id);
 let sourceRows=[],headers=[],preview=[],fileName="",sourceFile=null;
+const catalogEdits=new Map();let catalogBusy=false,previewPage=0;
 const clean=s=>String(s??"").replace(/\uFEFF/g,"").trim();
 window.InspectionCloud.bindClientInput(el("po-import-customer"));
 const norm=s=>clean(s).toLowerCase().replace(/[^a-z0-9]/g,"");
@@ -778,7 +779,7 @@ function ensureXLSX(){
 }
 window.__inspectionLoadXLSX=ensureXLSX;
 const poSourceFields=["description","brand","category","family","pack","size","salesUnit","producer","plant","alternativeEst","notes"];
-const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packaging)$/,size:/^(sizeunit|size|unitsize)$/,salesUnit:/^(salesunit|salesuom|uom|unitofmeasure)$/,producer:/^(supplier|vendor|producer|sourcegroup|suppliergroup|proveedor)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
+const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,salesUnit:/^(salesunit|salesuom|uom|unitofmeasure)$/,producer:/^(supplier|vendor|producer|sourcegroup|suppliergroup|proveedor)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
 function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;return out;}
 function bestColumn(kind){
  if(poSourcePatterns[kind])return headers.findIndex(v=>poSourcePatterns[kind].test(norm(v)));
@@ -807,15 +808,74 @@ function currentPreview(){
   return {line:index+2,item,description,product,duplicate,sourceProduct:sourceProduct(values,sourceMapping)};
  }).filter(r=>r.item);
  const matched=preview.filter(r=>r.product&&!r.duplicate),unknown=preview.filter(r=>!r.product),dupes=preview.filter(r=>r.duplicate);
- el("po-import-summary").textContent=preview.length+" Item rows · "+matched.length+" catalog matches · "+unknown.length+" unmatched · "+dupes.length+" duplicate rows"+(preview.length>250?" · showing first 250":"");
- el("po-import-rows").innerHTML=preview.slice(0,250).map(r=>'<tr><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.product?.description||"—")+'</td><td>'+escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||"—"))+'</td><td class="'+(r.product&&!r.duplicate?"po-import-found":"po-import-missing")+'">'+((r.product?"Matched":"Not in catalog · source data only")+(r.duplicate?" · Repeated line":""))+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No Item rows found.</td></tr>';
+ el("po-import-summary").textContent=preview.length+" Item rows · "+matched.length+" catalog matches · "+unknown.length+" unmatched · "+dupes.length+" duplicate rows";
+ renderCatalogPreview();
  el("po-import-create").disabled=!preview.length;
  renderInvoiceOverview();
 }
+function importBrandKey(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();}
+function importBrandNames(){return [...new Set([...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{}),...[...catalogEdits.values()].map(p=>p.selectedBrand)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));}
+function stripImportBrand(description,brand){
+ const text=clean(description),name=importBrandKey(brand);if(!name)return text;
+ // Remove only a complete leading brand; preserve flavor, size and the original source column.
+ for(let i=1;i<=text.length;i++)if(importBrandKey(text.slice(0,i))===name&&(i===text.length||/[\s:–—-]/.test(text[i]))){return text.slice(i).replace(/^[\s:–—-]+/,'').trim()||text;}
+ return text;
+}
+function editImportItem(row){
+ if(catalogEdits.has(row.item))return;
+ const p={...row.sourceProduct,item:row.item};
+ const known=importBrandNames().find(n=>importBrandKey(n)===importBrandKey(p.brand));
+ catalogEdits.set(row.item,{...p,brand:known||p.brand,selectedBrand:known||'',description:p.description||row.description});
+}
+function catalogEditor(row){
+ const p=catalogEdits.get(row.item);if(!p)return '<button class="btn mini" data-import-edit="'+row.line+'">Edit</button>';
+ const input=(k,label)=>'<label>'+label+'<input class="input" data-import-field="'+k+'" value="'+escHtml(p[k]||'')+'"></label>';
+ return '<div class="po-catalog-editor" data-import-editor="'+row.line+'"><label>Brand — select or create<input class="input" autocomplete="off" data-import-field="brand" value="'+escHtml(p.brand||'')+'"></label><div class="po-brand-options"></div><span class="small muted" data-brand-hint>'+escHtml(p.selectedBrand?'Selected: '+p.selectedBrand:'Choose a brand, or explicitly create one.')+'</span><label>Description<textarea class="input" data-import-field="description">'+escHtml(p.description)+'</textarea></label><label>Class<select class="input" data-import-field="category"><option value="">Select class</option>'+['Meat','Poultry','Dairy'].map(v=>'<option'+(p.category===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>'+input('pack','Case / Pack')+input('size','Size / Unit')+'<details><summary>More source fields</summary>'+input('family','Family')+input('salesUnit','Sales unit')+input('producer','Supplier / Source Group')+input('alternativeEst','Alternative EST / Plant references')+input('notes','Notes')+'</details><button class="btn primary" data-import-add="'+row.line+'">Add to catalog</button><span class="small muted">Adds a catalog reference only.</span></div>';
+}
+function renderCatalogPreview(){
+ const admin=window.InspectionCloud.isAdministrator(),missing=preview.filter(r=>!r.product);
+ el('po-catalog-heading').hidden=!admin;el('po-catalog-edit-all').hidden=!admin;el('po-catalog-add-all').hidden=!admin;
+ el('po-catalog-edit-all').disabled=catalogBusy||!missing.length;el('po-catalog-add-all').disabled=catalogBusy||!missing.some(r=>catalogEdits.has(r.item));
+ previewPage=Math.min(previewPage,Math.max(0,Math.ceil(preview.length/250)-1));
+ el('po-import-rows').innerHTML=preview.slice(previewPage*250,(previewPage+1)*250).map(r=>{const p=catalogEdits.get(r.item);return '<tr data-import-line="'+r.line+'"><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||'—')+'</td><td>'+escHtml(r.product?.description||'—')+'</td><td>'+(admin&&!r.product&&p?'<input class="input po-import-est-input" aria-label="EST / Plant for '+escHtml(r.item)+'" data-import-field="plant" value="'+escHtml(p.plant||'')+'">':escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||'—')))+'</td><td>'+escHtml((r.product?'Matched':'Not in catalog · source data only')+(r.duplicate?' · Repeated line':''))+'</td>'+(admin?'<td>'+(r.product?'—':catalogEditor(r))+'</td>':'')+'</tr>';}).join('')||'<tr><td colspan="'+(admin?7:6)+'" class="empty">No Item rows found.</td></tr>';
+ let pager=el('po-import-pager');if(!pager){pager=document.createElement('div');pager.id='po-import-pager';pager.className='row';el('po-import-rows').closest('.tablewrap').insertAdjacentElement('afterend',pager);}
+ pager.innerHTML=preview.length>250?'<button class="btn mini" data-import-page="-1" '+(!previewPage?'disabled':'')+'>Previous</button><span>Page '+(previewPage+1)+' of '+Math.ceil(preview.length/250)+'</span><button class="btn mini" data-import-page="1" '+((previewPage+1)*250>=preview.length?'disabled':'')+'>Next</button>':'';
+ pager.querySelectorAll('button').forEach(b=>b.onclick=()=>{previewPage+=Number(b.dataset.importPage);renderCatalogPreview();});
+ el('po-import-rows').querySelectorAll('[data-import-edit]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();editImportItem(preview.find(r=>r.line===Number(b.dataset.importEdit)));renderCatalogPreview();});
+ el('po-import-rows').querySelectorAll('[data-import-add]').forEach(b=>b.onclick=()=>addImportItems([preview.find(r=>r.line===Number(b.dataset.importAdd)).item]));
+ el('po-import-rows').querySelectorAll('[data-import-field]').forEach(input=>{
+ const row=preview.find(r=>r.line===Number(input.closest('tr').dataset.importLine)),p=catalogEdits.get(row.item);
+ input.oninput=()=>{p[input.dataset.importField]=input.value;if(input.dataset.importField==='brand'){p.selectedBrand='';showBrands(input,p);}for(const other of el('po-import-rows').querySelectorAll('[data-import-field]'))if(other!==input&&other.dataset.importField===input.dataset.importField&&preview.find(r=>r.line===Number(other.closest('tr').dataset.importLine))?.item===row.item)other.value=input.value;};
+ if(input.dataset.importField==='brand')input.onfocus=()=>showBrands(input,p);
+ });
+}
+function showBrands(input,p){
+ const box=input.closest('.po-catalog-editor'),options=box.querySelector('.po-brand-options'),query=importBrandKey(input.value),names=importBrandNames(),matches=names.filter(n=>importBrandKey(n).includes(query)).slice(0,12),exact=names.find(n=>importBrandKey(n)===query);
+ box.querySelector('[data-brand-hint]').textContent='Select a brand below.';
+ options.innerHTML=matches.map(n=>'<button type="button" class="btn mini" data-import-brand="'+escHtml(n)+'">'+escHtml(n)+'</button>').join('')+(!exact&&query?'<button type="button" class="btn mini" data-import-brand="'+escHtml(clean(input.value))+'">Create brand: '+escHtml(clean(input.value))+'</button>':'');
+ options.querySelectorAll('button').forEach(b=>b.onclick=()=>{p.brand=b.dataset.importBrand;p.selectedBrand=p.brand;p.description=stripImportBrand(p.description,p.brand);renderCatalogPreview();});
+}
+async function addImportItems(items){
+ if(catalogBusy)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ const products=[...new Set(items)].map(item=>catalogEdits.get(item)).filter(Boolean);
+ try{
+  if(!products.length)throw Error('Use Edit to review the missing products first.');
+  for(const p of products){p.description=stripImportBrand(p.description,p.selectedBrand);if(!/^[-A-Za-z0-9_.]+$/.test(p.item)||!p.selectedBrand||!['Meat','Poultry','Dairy'].includes(p.category)||!clean(p.description))throw Error('Item '+p.item+': select or create a brand, choose a class and enter a description.');}
+  if(!confirm('Add '+products.length+' new product(s) to the catalog?'+(products.some(p=>!clean(p.plant))?' Some EST / Plant references are blank.':'')+'\nThis does not record a physical verification.'))return;
+  catalogBusy=true;renderCatalogPreview();setStatus('Sending catalog products…');
+  const saved=await window.InspectionCloud.addImportedCatalog(products.map(p=>({...p,brand:p.selectedBrand})));
+  if(saved){for(const p of products)catalogEdits.delete(p.item);setStatus(products.length+' product(s) saved in the catalog.');}
+  else setStatus('Catalog send is pending. Use Pending sends to check or resolve it before trying again.',true);
+ }catch(error){setStatus(error.message||String(error),true);}
+ finally{catalogBusy=false;currentPreview();}
+}
+el('po-catalog-edit-all').onclick=()=>{if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();preview.filter(r=>!r.product).forEach(editImportItem);renderCatalogPreview();};
+el('po-catalog-add-all').onclick=()=>addImportItems(preview.filter(r=>!r.product&&catalogEdits.has(r.item)).map(r=>r.item));
+
 async function loadFile(file){
  if(!file)return;
  if(file.size>12*1024*1024)throw Error("File is too large. Maximum size is 12 MB.");
- fileName=file.name;sourceFile=file;
+ catalogEdits.clear();previewPage=0;fileName=file.name;sourceFile=file;
  const ext=file.name.split(".").pop().toLowerCase();
  let rows;
  if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
@@ -841,8 +901,8 @@ el("po-import-file").addEventListener("change",async e=>{
  el("po-import-preview").classList.add("hidden");sourceRows=[];preview=[];
  try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
 });
-for(const id of ["po-import-item-col","po-import-desc-col",...poSourceFields.filter(k=>k!=="description").map(k=>"po-import-"+k+"-col")])el(id).addEventListener("change",currentPreview);
-el("po-import-cancel").onclick=()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
+for(const id of ["po-import-item-col","po-import-desc-col",...poSourceFields.filter(k=>k!=="description").map(k=>"po-import-"+k+"-col")])el(id).addEventListener("change",()=>{catalogEdits.clear();previewPage=0;currentPreview();});
+el("po-import-cancel").onclick=()=>{catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
 
 /* Invoice-mode view: historical EST intelligence per imported/saved Item. */
 const itemMode=el("inspection-item-mode"),invoiceMode=el("inspection-invoice-mode"),lookupView=el("lookup-view");
@@ -3414,6 +3474,27 @@ async function commit(extra=null){
  catch(error){if(error.network||error.name==='TimeoutError'){offline=true;ready=false;message(queueCount?'El envío está guardado en este dispositivo. Se enviará al recuperar la conexión.':'El envío fue confirmado; no se pudo refrescar la vista por falta de conexión.',true);}else{message(error.message,true);if(!session)openLogin();}}
  finally{dirtyDomains.clear();saving=false;await showQueueCount();updateRole();if(session&&ready&&!offline&&!photoBusy)unblock();else overlay('Sin conexión. Los envíos pendientes están guardados; se reenviarán al reconectar.');}
 }
+async function addImportedCatalog(products){
+ if(!administrator||!canEdit()){deny();throw Error('Administrator access and an active connection are required.');}
+ if((await ownJobs()).length)throw Error('Resolve pending sends before adding more catalog products.');
+ const key='inspection-data-hub-catalog-overrides-v1',notesKey='inspection-data-hub-product-notes-v1',refsKey='inspection-data-hub-est-references-v1',brandsKey='inspection-data-hub-brand-profiles-v1';
+ const catalog=clone(record(key)||{}),notes=clone(record(notesKey)||{}),refs=clone(record(refsKey)||{}),brands=clone(record(brandsKey)||{}),seen=new Set();
+ const brandKey=v=>String(v||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();
+ const names=[...Object.keys(brands),...Object.values(catalog).map(p=>p.brand)].filter(Boolean);
+ for(const p of products){
+  if(!p.item||seen.has(p.item)||Object.hasOwn(catalog,p.item))throw Error('Item '+p.item+' already exists or is repeated. Refresh the preview.');seen.add(p.item);
+  if(!['Meat','Poultry','Dairy'].includes(p.category)||!String(p.brand||'').trim()||!String(p.description||'').trim())throw Error('Missing required fields for Item '+p.item);
+  const brand=names.find(n=>brandKey(n)===brandKey(p.brand))||String(p.brand).trim();
+  const product=Object.fromEntries(['category','description','pack','plant','producer','size','family','salesUnit'].map(k=>[k,String(p[k]||'').trim()]));product.brand=brand;
+  catalog[p.item]=product;
+  if(!names.some(n=>brandKey(n)===brandKey(brand))){brands[brand]={name:brand,description:'',mode:'variable',stable:false,single:'',plants:{},notes:''};names.push(brand);}
+  if(p.notes)notes[p.item]=String(p.notes);
+  if(p.alternativeEst)refs[p.item]={primary:product.plant,others:[...new Set(String(p.alternativeEst).split(',').map(v=>v.trim().toUpperCase()).filter(v=>v&&v!==product.plant.toUpperCase()))],trend:''};
+ }
+ await commit({[key]:catalog,[notesKey]:notes,[refsKey]:refs,[brandsKey]:brands});
+ return ready&&!offline&&queueCount===0&&products.every(p=>Object.hasOwn(official[key]||{},p.item));
+}
+
 async function removePhoto(item,index){if(!administrator||!canEdit()){deny();return}const next=clone(photoMetadata);if(!next[item]?.[index])return;next[item].splice(index,1);await commit({[PHOTO_KEY]:next});if(administrator)await loadState();}
 
 function openLogin(){if(session){openAccount();return}overlay('Inicia sesión para acceder a Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Introduce el correo y la contraseña de tu cuenta de la aplicación.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
@@ -3456,7 +3537,7 @@ async function uploadPhotos(item,files){
  finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
 }
 
-const ADMIN_MUTATING='#directory-client-new,[data-directory-edit],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
+const ADMIN_MUTATING='[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
 const MUTATING='#delivery-first-import,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
@@ -3468,7 +3549,7 @@ for(const event of ['click','change'])document.addEventListener(event,e=>{if(can
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3678,7 +3759,8 @@ window.addEventListener('inspection:cloud-ready',()=>{const header=document.quer
 .client-option{display:block;width:100%;border:0;border-bottom:1px solid var(--sk-border);padding:11px 12px;text-align:left;background:var(--sk-surface);color:var(--sk-ink);font:inherit;cursor:pointer;white-space:normal;min-height:42px}
 .client-option:hover,.client-option[aria-selected="true"]{background:var(--sk-accent-soft);color:var(--sk-accent)}.client-create{font-weight:700}.client-empty{padding:12px;color:var(--sk-muted)}
 #directory-client-search{width:min(100%,520px)}#client-directory td,#client-directory th{padding:9px 12px}#client-directory td:first-child{white-space:normal;min-width:160px}
-</style></body></html>
+</style><style id="po-catalog-editor-style">#po-import-rows td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}#po-import-rows td:nth-child(3),#po-import-rows td:nth-child(4){min-width:200px}.po-catalog-editor{min-width:260px;max-width:360px;display:grid;gap:8px;margin-top:8px}.po-catalog-editor label{display:block;font-size:11px}.po-catalog-editor .input{width:100%;min-width:0}.po-catalog-editor textarea{min-height:75px}.po-brand-options{max-height:160px;overflow:auto;border:1px solid var(--sk-border);background:var(--sk-surface)}.po-brand-options:empty{display:none}.po-brand-options button{display:block;width:100%;white-space:normal;text-align:left}.po-import-est-input{width:150px!important;min-height:42px}.po-catalog-editor .btn{min-height:40px;white-space:normal}</style></body></html>
+
 
 
 
