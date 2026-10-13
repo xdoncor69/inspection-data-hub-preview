@@ -114,7 +114,7 @@ window.InspectionTableTools={
 <dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Introduce el correo y la contraseña de tu cuenta de la aplicación.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">La contraseña no se guarda. La sesión se conserva en este navegador hasta cerrar sesión o cambiar de usuario.</p></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Cuenta de la aplicación</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Global Search</button><button class="nav" data-view="brands"><span class="ico">▤</span> Brands</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History <span class="hidden" id="approval-nav-count"></span></button><button class="nav" data-view="guide"><span class="ico">ⓘ</span> Guide & Rules</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> PO Inspection</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
@@ -146,9 +146,9 @@ window.InspectionTableTools={
 <section id="lookup-view" class="hidden">
 <div class="inspection-workflow-switch" role="group" aria-label="PO Inspection workflow">
 <button type="button" class="inspection-workflow-btn active" id="inspection-item-mode" aria-pressed="true">⌕ Item by Item</button>
-<button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Invoice</button>
+<button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Items</button>
 </div>
-<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po">Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
+<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po" selected>Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" maxlength="20" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span></div></div>
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
 <div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your private PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
@@ -161,12 +161,12 @@ window.InspectionTableTools={
 <div id="po-import-preview" class="hidden">
 <div class="po-import-grid">
 <label><span class="label">Item Number column</span><select class="input" id="po-import-item-col"></select></label>
-<label><span class="label">Description column (optional)</span><select class="input" id="po-import-desc-col"></select></label><label><span class="label">Received quantity column (optional)</span><select class="input" id="po-import-qty-col"></select></label><label><span class="label">Catch Weight column (optional)</span><select class="input" id="po-import-weight-col"></select></label>
+<label><span class="label">Description column (optional)</span><select class="input" id="po-import-desc-col"></select></label>
 </div>
 <div class="po-import-summary" id="po-import-summary"></div>
-<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST / Plant reference</th><th>Received quantity</th><th>Catch Weight</th><th>Status</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST / Plant reference</th><th>Status</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
-<p class="muted small" style="margin-top:10px">All Item numbers are kept in the PO. Unknown Items have blank product fields. Map Received quantity and Catch Weight, or enter them later. Export Delivery uses these PO values. EST values are references, not physical verification records.</p>
+<p class="muted small" style="margin-top:10px">All Item numbers are kept in the PO. Unknown Items have blank product fields. The PO imports Item numbers and their source sequence only. Quantities and weights are loaded later from the SAP delivery. EST values are references, not physical verification records.</p>
 </div></div></div>
 <div class="panel panel-pad inspection-invoice-workspace hidden" id="inspection-invoice-workspace">
 <div class="section-head"><div><h3>Invoice inspection overview</h3><span class="hint">Bulk EST references, verified history and review priorities for every Item</span></div>
@@ -185,11 +185,7 @@ window.InspectionTableTools={
 <div class="panel panel-pad guide-intro" id="guide-overview">
 <div class="section-head"><h3>How to use Inspection Data Hub</h3><span class="pill">REFERENCE GUIDE</span></div>
 <p>The workflow is: prepare a private PO, inspect the cases, verify only the Items physically checked, and let the inspector publish the PO as Approved for Inspection. User drafts and inspector approval are separate; approval of the PO does not imply that every Item was physically verified.</p>
-<div class="guide-steps">
-<div><strong>1 · Prepare the invoice / PO</strong><span>Use Search only to view Items without creating a PO or recording searches. Choose Work on a PO draft to add Items one by one, or import an Excel / CSV invoice after entering the PO number and customer. If a number exists, open its saved version without importing or adding the current Item, or enter a different number to create a new PO. The app suggests EST / Plant references from the product history; these suggestions are not physical verifications.</span></div>
-<div><strong>2 · Users: work with private drafts</strong><span>Each user can consult Items and create, import or organize their own PO drafts. Only that account can see its drafts — other users and the inspector cannot see them. Users can also consult read-only POs in Approved for Inspection.</span></div>
-<div><strong>3 · Inspector: verify individual Items</strong><span>The inspector / administrator reopens their own saved PO and checks the cases physically. For each Item actually checked, select Verify Item. If its EST / Plant differs, edit that row first and then verify the observed value. Checking 3 of 10 Items records only those 3; the other 7 remain unverified. Editing a verified EST makes that row pending again until its new value is verified.</span></div>
-<div><strong>4 · Inspector: approve for inspection</strong><span>When the inspector considers the PO ready, Approve for Inspection publishes their selected values, email and approval date for all users. This approval does not automatically verify any Item. Any private draft with the same PO number disappears and is replaced by the inspector-approved version — not the user's draft values. Other draft numbers remain private.</span></div>
+<div class="guide-steps"><div><strong>1 · Prepare</strong><span>Select a saved client, add or import Item numbers in source order. Your draft is private. Quantities and weights belong to the later delivery.</span></div><div><strong>2 · Inspect</strong><span>Use the phone to identify cases and check priority Items. Editing an EST does not verify it. The administrator records only the lines physically checked.</span></div><div><strong>3 · Approve</strong><span>The administrator publishes Item, description, class and selected EST / Plant. Approval does not physically verify unchecked lines.</span></div><div><strong>4 · Delivery</strong><span>Any signed-in user uploads the sales team's raw SAP Excel and enters the delivery number. The summary preserves delivery lines and uses only approved PO ESTs. Unresolved rows stay visible; partial exports identify omitted rows.</span></div></div>
 </div>
 </div>
 <div class="panel panel-pad">
@@ -255,7 +251,7 @@ window.InspectionTableTools={
 </div>
 <div class="panel panel-pad" id="guide-sync">
 <div class="section-head"><h3>Online database · User accounts and permissions</h3></div>
-<p>The application requires an account and uses the official Supabase database online. Users can create and import POs and organize PO lines. Users can edit product fields through Edit and send proposed changes for administrator approval. Proposed values remain private requests until approved; the official catalog stays unchanged. Only the administrator can modify official records directly, record physical verifications, or view Change History and approval requests. Your session remains on this device until you sign out. Submitted changes interrupted by a connection failure remain in a pending queue and are retried online.</p>
+<p>The application requires an account and uses the official Supabase database online. Users can create and import POs and organize PO lines. Users can consult catalog products, prepare private drafts, and upload or update deliveries. Only the administrator changes catalog data. Only the administrator can modify official records directly, record physical verifications, or view Change History . Your session remains on this device until you sign out. Submitted changes interrupted by a connection failure remain in a pending queue and are retried online.</p>
 </div>
 
 <div class="panel panel-pad" id="guide-faq"><div class="section-head"><h3>Common questions</h3></div>
@@ -270,9 +266,8 @@ window.InspectionTableTools={
 
 <section id="history-view" class="hidden">
 <div id="approvals-view" class="hidden">
-<div class="panel panel-pad"><div class="section-head"><h3>Solicitudes de nuevos cambios</h3><button class="btn" id="approval-refresh">Actualizar solicitudes</button></div><p class="muted small">Los datos oficiales conservan sus valores actuales hasta que apruebes cada solicitud. Las fotografías pendientes solo se muestran aquí al administrador.</p><span class="pill" id="approval-count">0 solicitudes pendientes</span><div id="approval-list" style="margin-top:16px"></div></div>
-<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Product field changes and physical EST / Plant verifications, with before / after values and the requesting and approving accounts.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="observations">EST / Plant verifications</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>Requested by</th><th>Approved by</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
-<div class="panel panel-pad"><div class="section-head"><h3>Historial de solicitudes revisadas</h3><span class="pill" id="approval-history-count">0 solicitudes revisadas</span></div><div class="row"><label>Estado <select class="input" id="approval-filter"><option value="reviewed">Todas las revisadas</option><option value="approved">Aprobadas</option><option value="rejected">Rechazadas</option></select></label></div><div id="approval-history-list" style="margin-top:16px"></div></div>
+<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Product field changes and physical EST / Plant verifications, with the effective changes, date and account.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="observations">EST / Plant verifications</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>User</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
+
 </div>
 <div class="panel panel-pad" id="history-quick-panel">
 <div class="section-head"><div><h3>Quick EST verification</h3><span class="hint">One row per searched Item · physical checks only</span></div><span class="pill">MANUAL CONFIRMATION</span></div>
@@ -409,12 +404,12 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["global","lookup","history","sync","guide","brands","import","settings"];
-function navigate(v){if(['history','import'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={approvals:["Aprobaciones pendientes","Revisa y aprueba solicitudes de cambios al catálogo, EST, marcas y fotografías"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Historial de cambios, solicitudes pendientes y verificaciones de EST"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
-document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
+function navigate(v){if(['history','import'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
-function showProduct(){let x=selected;$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
+function showProduct(){let x=selected;$("lookup-view").classList.toggle("has-product",!!x);$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
 function lookup(){
  if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}
  const q=$("item-input").value.trim();if(!q)return;
@@ -436,10 +431,11 @@ function closeModal(){$("modal-root").innerHTML="";}
 $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an existing image or upload a new one. This preview does not save files.</p><div class="choice" id="choose-gallery">▦ &nbsp; Browse photo gallery</div><div class="choice" id="choose-upload">＋ &nbsp; Add a new photo</div><div class="choice" id="choose-remove">× &nbsp; Remove assigned photo</div>');$("choose-gallery").onclick=gallery;$("choose-upload").onclick=upload;$("choose-remove").onclick=()=>{photoName="";showProduct();closeModal()};};
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
 function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this device to preview its filename.</p><input type="file" id="photo-file" accept="image/*" class="input" style="width:100%">');$("photo-file").onchange=e=>{photoName=e.target.files?.[0]?.name||"";showProduct();closeModal()};}
-window.__inspectionEditProductItem=item=>{const x=demo.find(p=>String(p.item)===String(item));if(!x)return;if(!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}selected=x;$("edit-btn").onclick();};
+window.__inspectionEditProductItem=item=>{const x=demo.find(p=>String(p.item)===String(item));if(!x)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}selected=x;$("edit-btn").onclick();};
 function editCatalogProduct(x,isNew=false,done=()=>{}){
+ if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}
  const data={category:"Meat",brand:"",description:"",producer:"",plant:"",family:"",pack:"",size:"",salesUnit:"",...x};
- modal('<h2>'+(isNew?'Add product':'Edit product / request a change')+'</h2><p>Administrator changes update the catalog. Other users submit a request pending administrator approval.</p><div class="edit-grid"><label><span class="label">Product type</span><select class="input" id="edit-category">'+["Meat","Poultry","Dairy"].map(v=>'<option'+(v===(data.category||"Meat")?' selected':'')+'>'+v+'</option>').join("")+'</select></label>'+[["item","Item number"],["plant","EST / Plant"],["brand","Brand"],["family","Product family"],["producer","Supplier / Source Group"],["salesUnit","Sales unit"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<label><span class="label">'+label+'</span><input class="input" id="edit-'+k+'" value="'+esc(data[k])+'"></label>').join("")+'</div><label class="label" style="margin-top:12px">Alternative EST / Plant references</label><input class="input" id="edit-alternative-est" style="width:100%" value="'+esc(window.__inspectionGetAlternativeRefs?.(data.item)||"")+'"><label class="label" style="margin-top:12px">Product notes</label><textarea class="input" id="edit-new-notes">'+esc(window.InspectionCloud.record("inspection-data-hub-product-notes-v1")?.[data.item]||"")+'</textarea><div class="row" style="margin-top:18px"><button class="btn primary" id="save-demo">'+(window.InspectionCloud.isAdministrator()?"Save product":"Send change request")+'</button><button class="btn" id="edit-product-cancel">Cancel</button></div>');
+ modal('<h2>'+(isNew?'Add product':'Edit product')+'</h2><p>Only the administrator edits catalog products. Editing a catalog reference does not record physical verification.</p><div class="edit-grid"><label><span class="label">Product type</span><select class="input" id="edit-category">'+["Meat","Poultry","Dairy"].map(v=>'<option'+(v===(data.category||"Meat")?' selected':'')+'>'+v+'</option>').join("")+'</select></label>'+[["item","Item number"],["plant","EST / Plant"],["brand","Brand"],["family","Product family"],["producer","Supplier / Source Group"],["salesUnit","Sales unit"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<label><span class="label">'+label+'</span><input class="input" id="edit-'+k+'" value="'+esc(data[k])+'"></label>').join("")+'</div><label class="label" style="margin-top:12px">Alternative EST / Plant references</label><input class="input" id="edit-alternative-est" style="width:100%" value="'+esc(window.__inspectionGetAlternativeRefs?.(data.item)||"")+'"><label class="label" style="margin-top:12px">Product notes</label><textarea class="input" id="edit-new-notes">'+esc(window.InspectionCloud.record("inspection-data-hub-product-notes-v1")?.[data.item]||"")+'</textarea><div class="row" style="margin-top:18px"><button class="btn primary" id="save-demo">'+"Save product"+'</button><button class="btn" id="edit-product-cancel">Cancel</button></div>');
  const finish=()=>{closeModal();done();};$("edit-product-cancel").onclick=finish;
  $("save-demo").onclick=async()=>{
   const obj={};["item","category","plant","brand","family","producer","salesUnit","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value.trim());
@@ -447,9 +443,6 @@ function editCatalogProduct(x,isNew=false,done=()=>{}){
   if(!/^[-A-Za-z0-9_.]+$/.test(obj.item)||!obj.brand||!obj.description){alert("Item number, brand and description are required.");return;}
   if(demo.some(p=>p.item===obj.item&&(isNew||p.item!==x.item))){alert("That Item number already exists.");return;}
   const refs=$("edit-alternative-est").value,notes=$("edit-new-notes").value;
-  if(!window.InspectionCloud.isAdministrator()){
-   try{if(await window.InspectionCloud.submitItemChanges(isNew?obj.item:x.item,obj,{"inspection-data-hub-est-references-v1":{primary:obj.plant,others:refs.split(",").map(v=>v.trim()).filter(Boolean),trend:""},"inspection-data-hub-product-notes-v1":notes},isNew))finish();}catch(error){alert(error.message);}return;
-  }
   const i=demo.findIndex(p=>p.item===x.item);if(i>=0&&!isNew)demo[i]=obj;else demo.push(obj);
   if(!window.__inspectionSaveCatalog())return;
   window.__inspectionSaveAlternativeRefs?.(obj.item,refs,obj.plant);
@@ -458,6 +451,8 @@ function editCatalogProduct(x,isNew=false,done=()=>{}){
  };
 }
 window.__inspectionOfferMissing=(item,done=()=>{})=>{
+ if(!window.InspectionCloud.isAdministrator()){alert('Item '+item+' is not in the catalog. It stays in your draft with unknown data blank. Only the administrator can add it.');$('item-input').focus();$('item-input').select();done();return;}
+
  const next=()=>{const input=$("item-input");input.focus();input.select();done();};
  modal('<h2>Item not found</h2><p>Item '+esc(item)+' does not exist in the database. Would you like to add it?</p><p>A PO draft keeps this Item number with blank product data until you fill it in.</p><div class="row"><button class="btn primary" id="missing-item-yes">Yes, add Item</button><button class="btn" id="missing-item-no">No, continue searching</button></div>');
  $("missing-item-no").onclick=()=>{closeModal();next();};
@@ -567,13 +562,13 @@ $("edit-est").onclick=()=>{
 if(!selected){alert("Select a product first.");return;}
 const x=selected,info=estInfo[x.item]||{primary:x.plant,others:[],trend:""};
 modal('<h2>Manage known '+(view==="dairy"?"plant numbers":"EST numbers")+'</h2><p>Historical references for faster checking, not a substitute for inspecting actual cases.</p><div class="label">Usual / most common</div><input id="ref-primary" class="input" style="width:100%" value="'+safe(info.primary)+'"><div class="label" style="margin-top:12px">Alternatives (comma-separated)</div><input id="ref-others" class="input" style="width:100%" value="'+safe(info.others.join(", "))+'"><div class="label" style="margin-top:12px">Observation / recent trend</div><textarea class="input" id="ref-trend">'+safe(info.trend)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-refs">Save / request references</button></div>');
-$("save-refs").onclick=async()=>{const value={primary:$("ref-primary").value,others:$("ref-others").value.split(",").map(s=>s.trim()).filter(Boolean),trend:$("ref-trend").value};if(!window.InspectionCloud.isAdministrator()){try{if(await window.InspectionCloud.submitItemChanges(x.item,{}, {"inspection-data-hub-est-references-v1":value}))closeModal();}catch(error){alert(error.message);}return;}estInfo[x.item]=value;closeModal();updateProductExtras();};
+$("save-refs").onclick=async()=>{const value={primary:$("ref-primary").value,others:$("ref-others").value.split(",").map(s=>s.trim()).filter(Boolean),trend:$("ref-trend").value};if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}estInfo[x.item]=value;closeModal();updateProductExtras();};
 };
 $("edit-product-note").onclick=()=>{
 if(!selected){alert("Select a product first.");return;}
 const x=selected;
 modal('<h2>Product reference notes</h2><p>Example: "Last five deliveries used EST 81J". These are informal notes, not SAP records.</p><textarea class="input" id="product-note-editor">'+safe(productNotes[x.item]||"")+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-product-note">Save note</button></div>');
-$("save-product-note").onclick=async()=>{const value=$("product-note-editor").value;if(!window.InspectionCloud.isAdministrator()){try{if(await window.InspectionCloud.submitItemChanges(x.item,{}, {"inspection-data-hub-product-notes-v1":value}))closeModal();}catch(error){alert(error.message);}return;}productNotes[x.item]=value;closeModal();updateProductExtras();};
+$("save-product-note").onclick=async()=>{const value=$("product-note-editor").value;if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}productNotes[x.item]=value;closeModal();updateProductExtras();};
 };
 const photoPanel=$("lookup-view").querySelector(".panel.photo");
 add($("photo-area"),"afterend",'<div class="thumbnails" id="photo-thumbs"></div><div class="small muted" style="margin-top:8px">Select a thumbnail · click main photo to enlarge</div><button class="btn mini" id="manage-gallery" style="margin-top:10px;width:100%">＋ Manage photos</button>');
@@ -651,7 +646,7 @@ const sorted=[...arr].sort((a,b)=>String(b.date).localeCompare(String(a.date))||
 return sorted[0]?.est||"";
 }
 function initialEST(x){return lastConfirmed(x.item)||estInfo[x.item]?.primary||x.plant||"";}
-function rowFor(x){const plant=x.missing?"":initialEST(x);return {item:x.item,description:productDescription(x.description,x.brand),receivedQuantity:"",catchWeight:"",plant,expectedEst:plant,note:"",verifiedAt:"",verifiedEsts:[],changeFrom:"",changeTo:""};}
+function rowFor(x){const plant=x.missing?"":initialEST(x);return {item:x.item,description:productDescription(x.description,x.brand),lineId:crypto.randomUUID(),plant,expectedEst:plant,note:"",verifiedAt:"",verifiedEsts:[],changeFrom:"",changeTo:""};}
 const normalizeESTs=value=>[...new Set(String(value||"").split(",").map(s=>s.trim().toUpperCase()).filter(Boolean))];
 const sameESTs=(a,b)=>{const aa=normalizeESTs(a).sort(),bb=normalizeESTs(b).sort();return aa.length===bb.length&&aa.every((v,i)=>v===bb[i]);};
 const fixedESTKey="inspection-data-hub-fixed-est-v1";
@@ -707,7 +702,7 @@ function activatePO(id,reopened=false){if(!invoices.some(x=>x.id===id))return;op
 function closeActivePO(){openPO=null;existingPOAccepted=false;persistPOWorkspace();renderPOArchive();}
 function addItemToActivePO(x){
 const p=invoices.find(z=>z.id===openPO);if(!p||!x)return;
-if(p.rows.some(r=>r.item===x.item)){renderPOArchive();return;}
+if(p.rows.some(r=>r.item===x.item)&&!confirm("This Item is already in the PO. Add a separate line?"))return;
 if(!existingPOAccepted){
 if(!confirm("PO "+p.po+" is an existing, previously closed order. Add new Items to this PO? Accept once to continue adding Items during this session."))return;
 existingPOAccepted=true;
@@ -728,13 +723,13 @@ function offerExistingPO(number,onNew,onOpen=()=>{}){
 }
 function createPOFlow(pendingItem=null,initial={},after=()=>{}){
 modal('<h2>Open or create a private PO draft</h2><p>Enter a PO number and customer. Only your account can see this draft. The administrator publishes POs Approved for Inspection.</p><div class="label">PO number</div><input class="input" id="po-number" maxlength="90" placeholder="PO-123456" style="width:100%" autocomplete="off"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-customer" maxlength="120" value="'+safe(initial.customer||"" )+'" placeholder="Customer / company name" style="width:100%" autocomplete="off"><div class="row" style="margin-top:15px;justify-content:flex-end"><button class="btn primary" id="po-confirm-save">Continue</button></div>');
-$("po-number").focus();$("po-number").onkeydown=e=>{if(e.key==="Enter")$("po-confirm-save").click();};
+window.InspectionCloud.bindClientInput($("po-customer"));$("po-number").focus();$("po-number").onkeydown=e=>{if(e.key==="Enter")$("po-confirm-save").click();};
 $("po-confirm-save").onclick=()=>{
-const number=$("po-number").value.trim(),customer=$("po-customer").value.trim();
+const number=$("po-number").value.trim();let customer=$("po-customer").value.trim();
 if(!number){alert("Enter the PO number.");return;}
 if(offerExistingPO(number,()=>createPOFlow(pendingItem,{customer},after)))return;
-if(!customer){alert("Enter the customer name.");return;}
-const saved={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:log.map(x=>({...x,verifiedAt:"",verifiedEsts:[]}))};
+const client=window.InspectionCloud.requireClient($("po-customer"));if(!client)return;customer=client.name;
+const saved={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,clientId:client.id,savedAt:new Date().toISOString(),rows:log.map(x=>({...x,verifiedAt:"",verifiedEsts:[]}))};
 if(pendingItem&&!saved.rows.some(r=>r.item===pendingItem.item))saved.rows.push(rowFor(pendingItem));
 invoices.unshift(saved);if(!persistPOWorkspace()){invoices.shift();return;}
 log=[];persistPOWorkspace();closeModal();purpose.value="po";updateLookupPurpose();activatePO(saved.id,false);renderLog();after();
@@ -747,6 +742,7 @@ window.__inspectionOnLookup=(x,after=()=>{})=>{if(window.__inspectionSearchOnly(
 const el=id=>document.getElementById(id);
 let sourceRows=[],headers=[],preview=[],fileName="",sourceFile=null;
 const clean=s=>String(s??"").replace(/\uFEFF/g,"").trim();
+window.InspectionCloud.bindClientInput(el("po-import-customer"));
 const norm=s=>clean(s).toLowerCase().replace(/[^a-z0-9]/g,"");
 const escHtml=s=>safe(String(s??""));
 const setStatus=(s,error=false)=>{el("po-import-status").textContent=s;el("po-import-status").style.color=error?"#ad4343":"";};
@@ -785,14 +781,14 @@ function bestColumn(kind){
  return index;
 }
 function fillMappings(){
- for(const [id,kind] of [["po-import-item-col","item"],["po-import-desc-col","description"],["po-import-qty-col","quantity"],["po-import-weight-col","weight"]]){
+ for(const [id,kind] of [["po-import-item-col","item"],["po-import-desc-col","description"]]){
   const select=el(id),old=select.value;
   select.innerHTML='<option value="">'+(kind==="item"?"Select Item Number column":kind==="quantity"?"None / enter quantity later":kind==="weight"?"None / enter Catch Weight later":"None / use catalog description")+'</option>'+headers.map((name,i)=>'<option value="'+i+'">'+escHtml(name||"Column "+(i+1))+'</option>').join("");
   const suggested=bestColumn(kind);select.value=old&&Number(old)<headers.length?old:(suggested>=0?String(suggested):"");
  }
 }
 function currentPreview(){
- const itemCol=el("po-import-item-col").value,descCol=el("po-import-desc-col").value,qtyCol=el("po-import-qty-col").value,weightCol=el("po-import-weight-col").value;
+ const itemCol=el("po-import-item-col").value,descCol=el("po-import-desc-col").value;
  if(itemCol===""){preview=[];el("po-import-rows").innerHTML="";el("po-import-summary").textContent="Choose the column containing Item Numbers.";el("po-import-create").disabled=true;return;}
  const seen=new Set();
  preview=sourceRows.map((values,index)=>{
@@ -801,11 +797,11 @@ function currentPreview(){
   const product=demo.find(x=>String(x.item)===item);
   const duplicate=!!item&&seen.has(item);
   if(item)seen.add(item);
-  return {line:index+2,item,description,product,duplicate,receivedQuantity:qtyCol!==""?clean(values[Number(qtyCol)]):"",catchWeight:weightCol!==""?clean(values[Number(weightCol)]):""};
+  return {line:index+2,item,description,product,duplicate};
  }).filter(r=>r.item);
  const matched=preview.filter(r=>r.product&&!r.duplicate),unknown=preview.filter(r=>!r.product),dupes=preview.filter(r=>r.duplicate);
  el("po-import-summary").textContent=preview.length+" Item rows · "+matched.length+" catalog matches · "+unknown.length+" unmatched · "+dupes.length+" duplicate rows"+(preview.length>250?" · showing first 250":"");
- el("po-import-rows").innerHTML=preview.slice(0,250).map(r=>'<tr><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.product?.description||"—")+'</td><td>'+escHtml(r.product?initialEST(r.product):"—")+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td>'+escHtml(r.catchWeight??"")+'</td><td class="'+(r.product&&!r.duplicate?"po-import-found":"po-import-missing")+'">'+(r.duplicate?"Duplicate":r.product?"Matched":"Not in catalog")+'</td></tr>').join("")||'<tr><td colspan="8" class="empty">No Item rows found.</td></tr>';
+ el("po-import-rows").innerHTML=preview.slice(0,250).map(r=>'<tr><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.product?.description||"—")+'</td><td>'+escHtml(r.product?initialEST(r.product):"—")+'</td><td class="'+(r.product&&!r.duplicate?"po-import-found":"po-import-missing")+'">'+(r.duplicate?"Duplicate":r.product?"Matched":"Not in catalog")+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No Item rows found.</td></tr>';
  el("po-import-create").disabled=!preview.length;
  renderInvoiceOverview();
 }
@@ -838,13 +834,13 @@ el("po-import-file").addEventListener("change",async e=>{
  el("po-import-preview").classList.add("hidden");sourceRows=[];preview=[];
  try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(e.target.files?.[0]);}catch(err){setStatus(err.message||String(err),true);console.error("Invoice import",err);}
 });
-for(const id of ["po-import-item-col","po-import-desc-col","po-import-qty-col","po-import-weight-col"])el(id).addEventListener("change",currentPreview);
+for(const id of ["po-import-item-col","po-import-desc-col"])el(id).addEventListener("change",currentPreview);
 el("po-import-cancel").onclick=()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
 
 /* Invoice-mode view: historical EST intelligence per imported/saved Item. */
 const itemMode=el("inspection-item-mode"),invoiceMode=el("inspection-invoice-mode"),lookupView=el("lookup-view");
 function setInspectionMode(mode){
- const invoice=mode==="invoice";
+ const invoice=mode==="invoice";if(invoice){document.getElementById('po-import-body').classList.remove('hidden');document.getElementById('po-import-toggle').setAttribute('aria-expanded','true');}
  lookupView.classList.toggle("invoice-mode",invoice);
  itemMode.classList.toggle("active",!invoice);invoiceMode.classList.toggle("active",invoice);
  itemMode.setAttribute("aria-pressed",String(!invoice));invoiceMode.setAttribute("aria-pressed",String(invoice));
@@ -928,12 +924,10 @@ el("po-import-create").onclick=()=>{
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
  if(offerExistingPO(number,()=>{el("po-import-number").value="";el("po-import-number").focus();setStatus("Enter a different PO number to create a new private draft. Your invoice preview is retained.");},()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");el("invoice-select").value="";setStatus("Opened existing PO. The selected invoice was not imported.");renderInvoiceOverview();}))return;
  const existing=null;
- if(!customer){alert("Enter the customer name for the new PO.");el("po-import-customer").focus();return;}
- const unique=new Map();
- for(const r of preview)if(!unique.has(r.item))unique.set(r.item,r);
- if(!unique.size){alert("No Item numbers found. Check the column mapping.");return;}
- const newItems=[...unique.values()];
- const importRow=r=>({...rowFor(r.product||{item:r.item,description:"",missing:true}),receivedQuantity:r.receivedQuantity??"",catchWeight:r.catchWeight??""});
+ const client=window.InspectionCloud.requireClient(el("po-import-customer"));if(!client)return;
+ const newItems=preview;
+ if(!newItems.length){alert("No Item numbers found. Check the mapping.");return;}
+ const importRow=r=>rowFor(r.product||{item:r.item,description:"",missing:true});
  const unknown=newItems.filter(r=>!r.product);
  const info="Create private PO draft "+number+" with "+newItems.length+" Items?"+(unknown.length?"\n"+unknown.length+" unknown Items will have blank product data.":"")+"\nEST / Plant values are references, not physical verification.";
  if(!confirm(info))return;
@@ -942,13 +936,13 @@ el("po-import-create").onclick=()=>{
   if(!persistPOWorkspace()){existing.rows.splice(existing.rows.length-newItems.length,newItems.length);return;}
   activatePO(existing.id,false);
  }else{
-  const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,savedAt:new Date().toISOString(),rows:[...unique.values()].map(importRow)};
+  const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer:client.name,clientId:client.id,savedAt:new Date().toISOString(),rows:newItems.map(importRow)};
   invoices.unshift(po);
   if(!persistPOWorkspace()){invoices.shift();return;}
   purpose.value="po";updateLookupPurpose();activatePO(po.id,false);
  }
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unknown Items were kept with blank product fields.":"")+".";
- setStatus("Private PO draft "+number+" saved. Only the administrator can publish an PO Approved for Inspection.");
+ setStatus("Private PO draft "+number+" prepared. Synchronization status is shown in the connection banner. Only the administrator can publish an PO Approved for Inspection.");
  el("po-import-body").classList.add("hidden");toggle.setAttribute("aria-expanded","false");toggle.textContent="↑ Import Excel / CSV";
  el("invoice-select").value=existing?existing.id:invoices[0]?.id||"";
  renderInvoiceOverview();
@@ -968,7 +962,7 @@ $("po-search-clear").onclick=()=>{$("po-search-input").value="";renderPOArchive(
 function renderPOArchive(){
 const root=$("po-list"),active=invoices.find(p=>p.id===openPO);
 $("po-count").textContent=invoices.length+" private";
-$("po-workspace-title").textContent=window.InspectionCloud.isAdministrator()?(active?"Current PO · awaiting approval":"My POs · awaiting approval"):(active?"Current PO Draft":"My PO Drafts");
+$("po-workspace-title").textContent=window.InspectionCloud.isAdministrator()?(active?"Current PO · awaiting approval":"My private drafts"):(active?"Current PO Draft":"My PO Drafts");
 $("po-workspace-hint").textContent=active?"Private draft · "+active.po+" · "+(active.customer||"Customer not specified"):"Only you can see these drafts. POs Approved for Inspection are published above by the administrator.";
 $("po-new").classList.toggle("hidden",!!active);
 root.classList.toggle("hidden",!!active);
@@ -978,7 +972,7 @@ $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of 
 root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+safe(p.po)+' <span class="pill">Draft</span></strong><div class="po-customer">'+safe(p.customer||"Customer not specified")+'</div><div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open draft</button>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini primary" data-po-approve="'+safe(p.id)+'">✓ Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'">Delete draft</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No POs match this number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No private drafts yet. Click New draft or search an Item.</div>');
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
-root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[["PO","Customer","Item","Type","Description","EST / Plant","Received quantity","Verification date","Physically observed ESTs","Note"],...p.rows.map(x=>[p.po,p.customer||"",x.item,demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.receivedQuantity||"",x.verifiedAt||"",x.verifiedEsts?.join(", ")||"",x.note||""])]);});
+root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[["PO","Customer","Item","Type","Description","EST / Plant","Verification date","Physically observed ESTs","Note"],...p.rows.map(x=>[p.po,p.customer||"",x.item,demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.verifiedAt||"",x.verifiedEsts?.join(", ")||"",x.note||""])]);});
 root.querySelectorAll("[data-po-delete]").forEach(b=>b.onclick=()=>deletePrivateDraft(b.dataset.poDelete));
 renderPODetails();
 }
@@ -988,14 +982,19 @@ function deletePrivateDraft(id){
  invoices=invoices.filter(x=>x.id!==id);if(openPO===id)openPO=null;
  persistPOWorkspace();renderPOArchive();
 }
+function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=demo.find(d=>d.item===r.item),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong><div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([product?.pack,product?.size,product?.category].filter(Boolean).join(' · '))+'</p><div>'+estPriorityCell(r.item)+'</div><p><strong>EST / Plant: '+safe(r.plant||'Unknown')+'</strong></p><p class="small">'+(checked?'Physically checked '+safe(r.verifiedAt):'Not physically checked')+'</p>'+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
 function renderPODetails(){
 const root=$("po-details"),p=invoices.find(x=>x.id===openPO);
-if(!p){root.innerHTML="";return;}
-root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">Customer: '+safe(p.customer||"Not specified")+'</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>✓ Approve for Inspection</button><button class="btn mini" id="po-edit-details">✎ Edit draft details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini primary" id="po-close-active">✓ Close PO</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number to add to this saved PO" autocomplete="off"><button class="btn mini primary" id="po-add-item-btn">＋ Add Item</button><span class="small muted">Inspector: verify each Item you physically checked. If its EST differs, edit the row first, then select Verify Item.</span></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Type</th><th>EST / Plant</th><th>Received quantity</th><th>Catch Weight</th><th>Weeks Since Check</th><th>Verification Priority</th><th>Verify</th><th>Order / Remove</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
-const checked=window.InspectionCloud.isPORowVerified(x);
-const verified=estStatus(x.item)+(checked?'<div class="po-verified">✓ Verified on this PO: '+safe(x.verifiedAt)+' · '+safe(x.verifiedEsts.join(", "))+'</div>':'<div class="small muted">Not verified on this PO</div>');
-return '<tr><td>'+(i+1)+'</td><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'" aria-label="Item number"></td><td><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'" aria-label="Description">'+safe(productDescription(x.description,demo.find(d=>d.item===x.item)?.brand))+'</textarea></td><td><span class="po-type '+safe((demo.find(d=>d.item===x.item)?.category||"").toLowerCase())+'">'+safe(demo.find(d=>d.item===x.item)?.category||"—")+'</span></td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'" aria-label="EST / Plant reference"></td><td><input class="input" readonly data-po-qty="'+i+'" value="'+safe(x.receivedQuantity||"")+'" aria-label="Received quantity" placeholder="Enter quantity"></td><td><input class="input" readonly data-po-weight="'+i+'" value="'+safe(x.catchWeight??"")+'" aria-label="Catch Weight" placeholder="Enter weight"></td><td>'+verified+'</td><td>'+estPriorityCell(x.item)+'<div><button class="btn mini po-fixed-toggle" data-po-fixed="'+i+'" title="Switch fixed EST classification on or off">'+(fixedEST(x.item)?"Unmark fixed":"Mark fixed")+'</button></div></td><td class="po-actions"><button class="btn mini primary" data-po-confirm="'+i+'"'+(!demo.some(d=>d.item===x.item)?' disabled data-unknown-item="true"':'')+' title="Verify only this Item after physically checking its cases">'+(checked?"✓ Verified · Recheck":"✓ Verify Item")+'</button></td><td><button class="btn mini" data-po-up="'+i+'" title="Move up">↑</button> <button class="btn mini" data-po-down="'+i+'" title="Move down">↓</button> <button class="btn mini" data-po-remove="'+i+'" title="Remove Item from this PO">×</button></td></tr>';
-}).join("")+'</tbody></table></div>';
+if(!p){root.innerHTML="";return;}p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
+root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · In review · PRIVATE DRAFT</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST / Plant</th><th>Priority</th><th>Physical check</th><th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
+ const product=demo.find(d=>d.item===x.item),checked=window.InspectionCloud.isPORowVerified(x);
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'"></td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,product?.pack,product?.size,product?.salesUnit,product?.producer].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(product?.category||'')+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td><td>'+estPriorityCell(x.item)+'</td><td>'+(checked?'<div class="po-verified">Physically checked · '+safe(x.verifiedAt)+'</div>':'<span class="muted">Not physically checked</span>')+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button>':'')+'</td><td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p);
+$('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
+$('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>PRIVATE DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST / Plant suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(demo.find(x=>x.item===r.item)?.category||'')+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
+root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=()=>{const item=p.rows[Number(b.dataset.poProductDetail)].item;selected=demo.find(d=>d.item===item)||null;if(!selected){window.__inspectionOfferMissing(item);return;}showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});});
+root.querySelectorAll('[data-po-select-only]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poSelectOnly)],value=prompt('Select EST / Plant (does not physically verify)',row.plant);if(value===null)return;const next=normalizeESTs(value).join(', ');if(!sameESTs(row.plant,next)){row.verifiedAt='';row.verifiedEsts=[];}row.plant=next;persistPOWorkspace();renderPODetails();});
+root.querySelectorAll('[data-po-observed]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const i=Number(b.dataset.poObserved),row=p.rows[i],value=prompt('EST / Plant physically observed on Item '+row.item,row.plant);if(value===null||!value.trim())return;row.plant=normalizeESTs(value).join(', ');row.verifiedAt='';row.verifiedEsts=[];recordPOCheck(p,row,normalizeESTs(value),localDate(),'Observed different EST');});
 $("po-delete-active").onclick=()=>deletePrivateDraft(p.id);
 $("po-close-active").onclick=closeActivePO;
 $("po-approve").onclick=()=>window.InspectionCloud.approvePO(p.id);
@@ -1003,19 +1002,19 @@ const poAdd=$("po-add-item"),poAddBtn=$("po-add-item-btn");
 poAddBtn.onclick=()=>{
 const item=poAdd.value.trim(),product=demo.find(x=>x.item===item);
 if(!item)return;
-if(p.rows.some(x=>x.item===item)){alert("This Item is already in the PO.");return;}
+if(p.rows.some(x=>x.item===item)&&!confirm("This Item is already in the PO. Add a separate line?"))return;
 if(!product){addItemToActivePO({item,description:"",missing:true});window.__inspectionOfferMissing(item);return;}
 addItemToActivePO(product);
 };
 poAdd.onkeydown=e=>{if(e.key==="Enter")poAddBtn.click();};
 $("po-edit-details").onclick=()=>{
 modal('<h2>Edit private PO draft</h2><div class="label">PO number</div><input class="input" id="po-edit-number" maxlength="90" style="width:100%" value="'+safe(p.po)+'"><div class="label" style="margin-top:12px">Customer name</div><input class="input" id="po-edit-customer" maxlength="120" style="width:100%" value="'+safe(p.customer||"")+'"><div style="margin-top:15px;text-align:right"><button class="btn primary" id="po-edit-save">Save changes</button></div>');
-$("po-edit-save").onclick=()=>{
+window.InspectionCloud.bindClientInput($("po-edit-customer"));$("po-edit-save").onclick=()=>{
 const number=$("po-edit-number").value.trim(),customer=$("po-edit-customer").value.trim();
 if(!number||!customer){alert("Enter the PO number and customer name.");return;}
 if(window.InspectionCloud.hasApprovedPO(number)){alert("This number already has an PO Approved for Inspection.");return;}
 if(invoices.some(x=>x.id!==p.id&&x.po.toLowerCase()===number.toLowerCase())){alert("Another saved PO already has that number.");return;}
-p.po=number;p.customer=customer;persistPOWorkspace();closeModal();renderPOArchive();
+const client=window.InspectionCloud.requireClient($("po-edit-customer"));if(!client)return;p.po=number;p.customer=client.name;p.clientId=client.id;persistPOWorkspace();closeModal();renderPOArchive();
 };
 };
 root.querySelectorAll("[data-po-item]").forEach(el=>el.onchange=()=>{
@@ -1062,7 +1061,7 @@ if(typeof window.__inspectionVerifyPO!=="function"){alert("Verification service 
 const original=x.expectedEst||x.plant;
 const ok=window.__inspectionVerifyPO(x.item,ests,date,"PO "+p.po+(note?" · "+note:""));
 if(!ok)return;
-x.plant=ests.join(", ");x.verifiedAt=date;x.verifiedEsts=ests;x.note=note||x.note||"";
+x.plant=ests.join(", ");x.verifiedAt=new Date().toISOString();x.verifiedBy=window.InspectionCloud.layoutAccount();x.verifiedEsts=ests;x.note=note||x.note||"";
 x.expectedEst=original;
 if(!sameESTs(original,x.plant)){x.changeFrom=original;x.changeTo=x.plant;}else{x.changeFrom="";x.changeTo="";}
 persistPOWorkspace();renderPOArchive();
@@ -2251,9 +2250,7 @@ $("iq-rows").onclick=async e=>{
  changes.description=productDescription(changes.description,changes.brand);
  if(!changes.description||!changes.brand||!changes.category){alert("Category, brand and description cannot be empty.");return;}
  if(changes.plant!==x.plant&&!confirm("Update catalog EST / Plant for Item "+x.item+"? This is a reference edit, NOT a physical verification."))return;
- if(!window.InspectionCloud.isAdministrator()){
-  try{if(await window.InspectionCloud.submitItemChanges(x.item,changes))refreshAfterEdit();}catch(error){alert(error.message);}return;
- }
+ if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}
  Object.assign(x,changes);
  if(window.__inspectionCatalogReferenceUpdated)window.__inspectionCatalogReferenceUpdated([x]);
  if(!window.__inspectionSaveCatalog())return;
@@ -2976,32 +2973,18 @@ function pendingPayload(changes){
  }
  return{base_records:clone(base),changed_records:clone(next)};
 }
-async function submitItemChanges(item,changes={},extra={},creating=false){
- requireDatabaseConnection();if(!canEdit()){deny();return false;}
- const key='inspection-data-hub-catalog-overrides-v1',old=official[key]?.[item];
- if(!old&&!creating)throw Error('Select an existing catalog Item first.');if(old&&creating)throw Error('That Item number already exists.');
- const next={...(old?clone(old):{}),...changes};delete next.item;next.description=window.__inspectionProductDescription?.(next.description,next.brand)||next.description;
- const target=String(changes.item||item).trim();
- if(!/^[-A-Za-z0-9_.]+$/.test(target)||!next.brand?.trim()||!next.description?.trim())throw Error('Item number, brand and description are required.');
- if(target!==item&&official[key]?.[target])throw Error('That Item number already exists.');
- const operations=[];
- const add=(domain,id,after)=>{const before=official[domain]?.[id]??null;if(JSON.stringify(before)!==JSON.stringify(after))operations.push({path:[domain,id],before:clone(before),after:clone(after)});};
- if(Object.keys(changes).length){if(target!==item)add(key,item,null);add(key,target,next);}
- for(const [domain,value] of Object.entries(extra))add(domain,target,value);
- if(!operations.length){alert('No changes to submit.');return false;}
- const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'item-proposal',payload:{proposals:[{summary:'Item '+item+(target!==item?' → '+target:''),operations}]}};
- await queueStore('put',job);await showQueueCount();
- try{await drainQueue();const remaining=(await ownJobs()).find(j=>j.id===job.id);if(remaining?.state==='conflict')throw Error(remaining.error);alert(remaining?'Request saved on this device. It will be sent when connection returns; administrator approval is required.':'Change request sent. Pending administrator approval. Official data is unchanged.');}
- catch(error){if(error.network||error.name==='TimeoutError'){alert('Request saved on this device. It will be sent when connection returns; administrator approval is required.');}else throw error;}
- return true;
-}
 async function sendQueuedJob(job){
  if(catalogGeneration&&job.generation!==catalogGeneration)throw Error("This pending send belongs to the previous test catalog. It has not been applied. Discard it and prepare the change using the current catalog.");
- if(job.type==='item-proposal')return request('/rest/v1/rpc/inspection_queued_item_proposal',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ if(['item-proposal','review'].includes(job.type))throw Error('Change requests have been retired. This old pending request was not applied; you can discard it.');
+ if(job.type==='client')return request('/rest/v1/rpc/inspection_save_client',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ if(job.type==='delivery-v3'){
+  if(job.file){const path=job.payload.source_path.split('/').map(encodeURIComponent).join('/');try{await request('/storage/v1/object/inspection-delivery-originals/'+path,{method:'POST',body:job.file,raw:true,headers:{'Content-Type':'application/octet-stream','x-upsert':'false'}});}catch(error){if(!/already exists|duplicate/i.test(error.message))throw error;await request('/storage/v1/object/sign/inspection-delivery-originals/'+path,{method:'POST',body:{expiresIn:60}});}}
+  return request('/rest/v1/rpc/inspection_save_delivery_v3',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ }
  if(job.type==='save-delivery')return request('/rest/v1/rpc/inspection_save_delivery_v2',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='manage-approved-po')return request('/rest/v1/rpc/inspection_manage_approved_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='approve-po')return request('/rest/v1/rpc/inspection_approve_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
- if(job.type==='review')return request('/rest/v1/rpc/inspection_queued_review',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ 
  if(job.type==='photos'){
   if(!administrator)throw Error('Solo el administrador puede subir fotografías.');
   for(const f of job.files)await request('/storage/v1/object/inspection-photos/'+f.path,{method:'POST',body:f.blob,raw:true,headers:{'Content-Type':f.type,'x-upsert':'true'}});
@@ -3020,7 +3003,7 @@ async function drainQueue(){
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
- root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:j.type==='save-delivery'?'Delivery '+j.payload.delivery_number:j.type==='review'?'Revisión de solicitud':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Fotografías de Item '+j.item:['save-delivery','delivery-v3'].includes(j.type)?'Delivery '+j.payload.delivery_number:j.type==='review'?'Retired legacy operation':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Esperando conexión')+'</p><details><summary>Ver datos pendientes</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Reintentar</button><button class="btn" data-queue-discard="'+j.id+'">Descartar envío</button></div></article>').join('')||'<p>No hay envíos pendientes para esta cuenta.</p>';
  root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
  root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('¿Descartar este envío pendiente? No se aplicará a la base de datos.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
@@ -3028,7 +3011,7 @@ async function openPendingWrites(){
 async function loadIdentity(){
  const user=await request('/auth/v1/user');if(!user?.id)throw Error('Inicia sesión para continuar.');session.user={id:user.id,email:user.email||''};persistSession();verifiedIdentityUser=user.id;
  const rows=await request('/rest/v1/inspection_admins?select=user_id&user_id=eq.'+encodeURIComponent(user.id));administrator=rows.length>0;
- const profiles=await request('/rest/v1/inspection_profiles?select=user_id,email,display_name');profileNames=new Map(profiles.map(p=>[p.user_id,p.display_name&&p.display_name!==p.email?p.display_name+' ('+p.email+')':p.email]));
+ const profiles=await request('/rest/v1/inspection_profiles?select=user_id,email,display_name');profileNames=new Map(profiles.map(p=>[p.user_id,p.display_name==='Invitados'?'Invitados':p.display_name&&p.display_name!==p.email?p.display_name+' ('+p.email+')':p.email]));
 }
 function actorLabel(id){return id?(profileNames.get(id)||id):'Registro anterior sin cuenta identificada';}
 
@@ -3050,10 +3033,14 @@ function updateRole(){
  document.querySelectorAll('#log-rows tr,#po-details tbody tr').forEach(row=>{
   if(!row.querySelector('input,textarea')||row.querySelector('[data-draft-edit]'))return;
   const button=document.createElement('button');button.type='button';button.className='btn mini';button.dataset.draftEdit='true';button.textContent='Edit';(row.querySelector('[data-po-up],[data-delete]')?.closest('td')||row.lastElementChild).appendChild(button);
-  const requestButton=document.createElement('button');requestButton.type='button';requestButton.className='btn mini';requestButton.dataset.catalogRequest='true';requestButton.textContent='Edit catalog Item';(row.querySelector('[data-po-up],[data-delete]')?.closest('td')||row.lastElementChild).appendChild(requestButton);
+  if(!administrator)return;const requestButton=document.createElement('button');requestButton.type='button';requestButton.className='btn mini';requestButton.dataset.catalogRequest='true';requestButton.textContent='Edit catalog Item';(row.querySelector('[data-po-up],[data-delete]')?.closest('td')||row.lastElementChild).appendChild(requestButton);
  });
 
  const editable=canConsult(),adminActive=editable&&administrator;
+ document.body.classList.toggle('normal-user',!administrator);
+ document.querySelectorAll('#edit-btn,#edit-est,#edit-product-note,#manage-gallery,.iq-edit,.iq-save,.iq-cancel,.iq-photo-add,[data-catalog-request],.inspection-query-bulk,#admin-clients-panel,[data-view="history"],[data-view="brands"]').forEach(el=>el.hidden=!administrator);
+ document.querySelectorAll('.iq-cell').forEach(el=>el.readOnly=!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true');
+
  const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ Usuario · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Iniciar sesión';if(pill.textContent!==text)pill.textContent=text;pill.title='Cuenta, cerrar sesión o cambiar de usuario'}
  const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(administrator?'AD':'US'))avatar.textContent=administrator?'AD':'US';
  for(const id of ['cloud-role','cloud-access-label']){const el=document.getElementById(id);if(el&&el.textContent!==(administrator?'Administrator · full access':'Usuario · Acceso a POs'))el.textContent=administrator?'Administrator · full access':'Usuario · Acceso a POs'}
@@ -3061,12 +3048,12 @@ function updateRole(){
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
- for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current private draft'],['#po-search-form label','Search my private drafts'],['#po-import-create','Create private draft from invoice Items'],['#po-close-active','✓ Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
+ for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current private draft'],['#po-search-form label','Search my private drafts'],['#po-import-create','Create private draft from invoice Items'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
  const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Private PO: review the selected EST / Plant values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Private draft: only your account can see it. When the administrator publishes the same PO number, the approved version replaces your draft.';if(hint.textContent!==text)hint.textContent=text;}
- const badge=document.getElementById('approval-nav-count');if(badge)badge.classList.toggle('hidden',!administrator);
+ 
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
- if(!administrator){for(const id of ['approval-list','approval-history-list','change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
- document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||false;});
+ if(!administrator){for(const id of ['change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
+ document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell'))||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||false;});
  document.querySelectorAll(ADMIN_MUTATING).forEach(el=>{if(el.matches('button,input,select,textarea'))el.disabled=!administrator||el.hasAttribute('data-unknown-item');});
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
 }
@@ -3112,16 +3099,16 @@ function deliveryNumber(value){
 }
 function approvedDeliveryRows(po){
  return [['Item Description','Item No.','Catch Weight','Quantity','EST No.'],...po.rows.map(row=>[
-  String(row.description??''),String(row.item??''),deliveryNumber(row.catchWeight),deliveryNumber(row.receivedQuantity),String(row.plant??'')
+  String(row.description??''),String(row.item??''),(row.catchWeight!==''&&row.catchWeight!=null&&row.weightUnit&&row.weightUnit!=='lb'?String(row.catchWeight)+' '+row.weightUnit:deliveryNumber(row.catchWeight)),deliveryNumber(row.receivedQuantity),String(row.plant??'')
  ])];
 }
 function deliveryFileName(po){
  const clean=value=>String(value??'').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/[. ]+$/,'');
- return 'PO '+clean(po.po)+' - D '+clean(po.deliveryNumber)+' '+clean(po.customerNumber)+'.xlsx';
+ return 'PO'+clean(po.po)+' - D'+clean(po.deliveryNumber)+' '+clean(po.customerName)+'.xlsx';
 }
 async function exportDeliveryFile(po,button){
  if(!canConsult()){deny();return;}
- if(!String(po.deliveryNumber||'').trim()||!String(po.customerNumber||'').trim()){alert('Delivery number and customer number are required before export. Update this delivery first.');return;}
+ if(!String(po.deliveryNumber||'').trim()||!String(po.customerName||'').trim()){alert('Delivery number and the PO client name are required before export.');return;}
  const values=approvedDeliveryRows(clone(po));
  if(values.length===1){alert('This approved PO has no Items to export.');return;}
  if(button){button.disabled=true;button.textContent='Exporting…';}
@@ -3137,7 +3124,39 @@ async function exportDeliveryFile(po,button){
  finally{if(button?.isConnected){button.disabled=false;button.textContent='↓ Export Delivery';}}
 }
 // SAP delivery imports retain only the requested columns; ESTs come exclusively from the approved PO.
-const poDeliveries=new Map(),deliveryLoads=new Map();
+const poDeliveries=new Map(),deliveryLoads=new Map();let deliveryOrderIDs=new Set();
+let clients=[];
+const clientText=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+function clientDistance(a,b){const row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let prior=row[0];row[0]=i;for(let j=1;j<=b.length;j++){const old=row[j];row[j]=Math.min(row[j]+1,row[j-1]+1,prior+(a[i-1]===b[j-1]?0:1));prior=old;}}return row[b.length];}
+function clientSuggestions(value){const q=clientText(value);return clients.map(c=>{const name=clientText(c.name);let score=!q?1:name.includes(q)?0:Math.min(clientDistance(q,name),...name.split(' ').map(word=>clientDistance(q,word)));return{c,score};}).filter(x=>!q||x.score<=Math.max(q.length>=4?2:1,Math.floor(q.length/4))).sort((a,b)=>a.score-b.score||a.c.name.localeCompare(b.c.name)).slice(0,8).map(x=>x.c);}
+function bindClientInput(input){
+ if(!input||input.dataset.clientBound)return;input.dataset.clientBound='true';
+ const holder=document.createElement('div');holder.className='client-suggestions';input.after(holder);
+ const draw=()=>{input.dataset.clientId='';holder.replaceChildren();for(const client of clientSuggestions(input.value)){const b=document.createElement('button');b.type='button';b.className='btn mini';b.textContent=client.name;b.onclick=()=>{input.value=client.name;input.dataset.clientId=client.id;holder.replaceChildren();};holder.appendChild(b);}};
+ input.addEventListener('input',draw);input.addEventListener('focus',draw);
+}
+function requireClient(input){const selected=clients.find(c=>c.id===input?.dataset.clientId)||clients.find(c=>c.name.toLowerCase()===String(input?.value||'').trim().toLowerCase());if(!selected){alert('Choose a registered client from the suggestions. Only the administrator can add a new client in Settings.');input?.focus();return null;}input.value=selected.name;input.dataset.clientId=selected.id;return selected;}
+async function loadClients(){clients=await request('/rest/v1/inspection_clients?select=*&order=name');renderClientSettings();}
+function renderClientSettings(){
+ let root=document.getElementById('admin-clients-panel');if(!root){root=document.createElement('section');root.id='admin-clients-panel';root.className='panel panel-pad';document.querySelector('.skin-settings').appendChild(root);}
+ root.hidden=!administrator;if(!administrator)return;
+ root.innerHTML='<div class="section-head"><h3>Clients</h3><button class="btn primary" id="client-new">Add client</button></div><p class="muted small">Saved clients are selected explicitly when creating a PO. Client numbers are optional.</p><div class="row"><button class="btn settings-tab" data-view="brands">Brand reference</button><button class="btn settings-tab" data-view="guide">Help & rules</button></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Optional client number</th><th>Actions</th></tr></thead><tbody>'+clients.map(c=>'<tr><td>'+escapeHTML(c.name)+'</td><td>'+escapeHTML(c.customer_number)+'</td><td><button class="btn mini" data-client-edit="'+c.id+'">Edit</button></td></tr>').join('')+'</tbody></table></div><details><summary>Shared Invitados account</summary><p>Create its email/password account in Supabase Authentication first. Then label that existing account here. Invitados has the same normal-user permissions as Ariadna; actions are attributed to Invitados.</p><input class="input" id="shared-account-email" type="email" placeholder="Shared account email"><button class="btn" id="shared-account-label">Label as Invitados</button></details>';
+ root.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>document.querySelector('.nav[data-view="'+b.dataset.view+'"]')?.click()||window.__inspectionNavigate?.(b.dataset.view));
+ document.getElementById('client-new').onclick=()=>editClient();root.querySelectorAll('[data-client-edit]').forEach(b=>b.onclick=()=>editClient(clients.find(c=>c.id===b.dataset.clientEdit)));
+ document.getElementById('shared-account-label').onclick=async()=>{if(!administrator||!canEdit()){deny();return;}try{await request('/rest/v1/rpc/inspection_set_shared_account',{method:'POST',body:{account_email:document.getElementById('shared-account-email').value}});await loadIdentity();message('Shared account labelled Invitados.');}catch(error){alert(error.message);}};
+}
+function editClient(existing=null){
+ if(!administrator||!canEdit()){deny();return;}
+ let dialog=document.getElementById('client-editor');if(!dialog){dialog=document.createElement('dialog');dialog.id='client-editor';dialog.className='online-dialog';document.body.appendChild(dialog);}
+ dialog.innerHTML='<h3>'+ (existing?'Edit client':'Add client')+'</h3><label class="label">Name</label><input class="input" id="client-name" maxlength="120" value="'+escapeHTML(existing?.name||'')+'"><label class="label">Optional client number</label><input class="input" id="client-number" value="'+escapeHTML(existing?.customer_number||'')+'"><div class="row" style="margin-top:16px"><button class="btn primary" id="client-save">Save</button><button class="btn" id="client-cancel">Cancel</button></div>';
+ document.getElementById('client-cancel').onclick=()=>dialog.close();document.getElementById('client-save').onclick=async()=>{
+  const name=document.getElementById('client-name').value.trim(),number=document.getElementById('client-number').value.trim();if(!name)return;
+  if(clients.some(c=>c.id!==existing?.id&&clientText(c.name)===clientText(name))){alert('That client already exists. Edit the existing client.');return;}
+  const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'client',payload:{client_id:existing?.id||null,client_name:name,customer_number:number,expected_client:existing}};
+  try{await queueStore('put',job);saving=true;await drainQueue();const pending=(await ownJobs()).find(j=>j.id===job.id);if(pending){alert('Client change is pending on this device, not synchronized yet. '+(pending.error||'It will retry when connection returns.'));return;}await loadClients();dialog.close();message('Client saved to the official database.');}catch(error){alert('Client change remains pending: '+error.message);}finally{saving=false;await showQueueCount();updateRole();}
+ };dialog.showModal();
+}
+
 function deliveryItemKey(value){return String(value??'').trim().toUpperCase();}
 function deliverySourceNumber(value,weight=false){
  const text=String(value??'').trim().replace(weight?/\s*(?:lbs?\.?|pounds?)\s*$/i:/$^/,'').trim();
@@ -3154,15 +3173,19 @@ function sapDeliveryTable(matrix){
  const cw=find(headers,[/^catchweight$/, /^catchwt$/]),wt=find(headers,[/^weight$/, /^netweight$/, /^actualweight$/]);
  const positive=col=>col<0?0:data.filter(row=>typeof deliverySourceNumber(row[col],true)==='number'&&deliverySourceNumber(row[col],true)>0).length;
  const weight=cw>=0&&positive(cw)>0?cw:wt>=0&&positive(wt)>0?wt:cw>=0?cw:wt;
- return {headers,data,mapping:{item,description,quantity,weight}};
+ return {headers,data,headerIndex:index,mapping:{item,description,quantity,weight}};
 }
-function matchSAPDelivery(table,mapping,po){
- const lookup=new Map(po.rows.map(row=>[deliveryItemKey(row.item),row]));
+function approvedLineKey(row,index){return row.lineId||'legacy:'+index;}
+function matchSAPDelivery(table,mapping,po,associations={}){
+ const candidates=new Map();po.rows.forEach((row,index)=>{const key=deliveryItemKey(row.item);if(!candidates.has(key))candidates.set(key,[]);candidates.get(key).push({key:approvedLineKey(row,index),...row});});
  return table.data.map((values,index)=>{
-  const item=String(values[mapping.item]??'').trim().replace(/\.0$/,''),reference=lookup.get(deliveryItemKey(item));
-  const quantity=deliverySourceNumber(values[mapping.quantity]),catchWeight=mapping.weight<0?'':deliverySourceNumber(values[mapping.weight],true);
-  const valid=value=>value===''||(typeof value==='number'&&Number.isFinite(value)&&value>=0);
-  return {item,description:String(values[mapping.description]??'').trim(),quantity,catchWeight,plant:reference?.plant||'',matched:!!reference,valid:valid(quantity)&&valid(catchWeight),sourceRow:index+2};
+  const item=String(values[mapping.item]??'').trim().replace(/\.0$/,''),options=candidates.get(deliveryItemKey(item))||[];
+  const rawWeight=mapping.weight<0?'':values[mapping.weight],suffix=String(rawWeight??'').match(/\s*(lbs?|kg|oz|g|pounds?)\.?\s*$/i),weightUnit=suffix?(suffix[1].toLowerCase().startsWith('lb')||suffix[1].toLowerCase().startsWith('pound')?'lb':suffix[1].toLowerCase()):table.weightUnit||'lb';
+  const quantity=deliverySourceNumber(values[mapping.quantity]),catchWeight=deliveryNumber(String(rawWeight??'').replace(/\s*(lbs?|kg|oz|g|pounds?)\.?\s*$/i,'').trim());
+  const variants=new Set(options.map(r=>r.plant?.trim().toUpperCase()).filter(Boolean));
+  const selected=options.find(r=>r.key===associations[index]),reference=selected||(variants.size===1?options.find(r=>r.plant?.trim()):null);
+  const valid=v=>v===''||(typeof v==='number'&&Number.isFinite(v)&&v>=0);
+  return {item,description:String(values[mapping.description]??'').trim(),quantity,catchWeight,weightUnit,plant:reference?.plant||'',association:reference?.key||null,matched:!!reference&&!!reference.plant,match_status:reference?'matched':variants.size>1?'ambiguous':'unmatched',options,valid:valid(quantity)&&valid(catchWeight),sourceRow:index+2,sourceIndex:index};
  }).filter(row=>row.item&&deliveryItemKey(row.item)!=='ITEM NO.');
 }
 function deliveryCurrent(delivery,a){return JSON.stringify(delivery.po_snapshot)===JSON.stringify(a.snapshot);}
@@ -3172,78 +3195,68 @@ async function loadPODeliveries(id,redraw=true){
  const task=(async()=>{try{const rows=await request('/rest/v1/inspection_deliveries?approved_po_id=eq.'+encodeURIComponent(id)+'&select=*&order=updated_at.desc');if(session?.user.id!==owner)return;poDeliveries.set(id,{rows});}catch(error){if(session?.user.id!==owner)return;poDeliveries.set(id,{rows:[],error:error.message});}finally{deliveryLoads.delete(id);if(redraw&&selectedApproved===id)renderApprovedPOs();}})();
  deliveryLoads.set(id,task);return task;
 }
+async function downloadDeliveryOriginal(d){
+ if(!canConsult()){deny();return;}if(!d.source_path){alert('This older delivery has no retained original. Upload the raw file when updating it.');return;}
+ try{const path=d.source_path.split('/').map(encodeURIComponent).join('/'),signed=await request('/storage/v1/object/sign/inspection-delivery-originals/'+path,{method:'POST',body:{expiresIn:60,download:d.source_file}});const a=document.createElement('a');a.href=BASE+'/storage/v1'+signed.signedURL;a.download=d.source_file;a.click();}catch(error){alert('Original download failed: '+error.message);}
+}
 function renderPODeliveries(a){
- const root=document.getElementById('approved-po-deliveries');if(!root)return;
- const cached=poDeliveries.get(a.id);
- root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Upload the sales team’s SAP delivery after PO approval. SAP EST values are discarded; matching Items use this approved PO’s EST / Plant.</p></div><div class="row">'+(administrator?'<button class="btn primary" id="sap-delivery-upload">Create / Update Delivery</button>':'')+'<button class="btn" id="sap-delivery-refresh">Refresh deliveries</button></div></div>'+
- (!cached?'<p class="muted">Loading deliveries…</p>':cached.error?'<p class="cloud-error">'+escapeHTML(cached.error)+'</p>':!cached.rows.length?'<p class="muted">No deliveries uploaded for this approved PO yet.</p>':cached.rows.map(d=>{
-  const current=deliveryCurrent(d,a),missing=d.rows.filter(r=>!r.matched).length;
-  return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Delivery '+escapeHTML(d.delivery_number)+'</strong><p class="small muted">'+escapeHTML(d.source_file)+' · Customer No. '+escapeHTML(d.customer_number||'Not set')+' · Uploaded by '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+escapeHTML(d.id)+'"'+(!current||!d.customer_number?' disabled':'')+'>Export Delivery</button>'+(administrator?'<button class="btn" data-delivery-update="'+escapeHTML(d.id)+'">Update Delivery</button>':'')+'</div></div>'+
- (!current?'<p class="cloud-error">The approved PO changed after this delivery was created. Update the delivery to rematch its approved EST / Plant values before exporting.</p>':'')+(missing?'<p class="cloud-error">'+missing+' Item(s) are not in this approved PO. Their EST / Plant is blank.</p>':'')+
- '<div class="tablewrap"><table><thead><tr><th>Item Description</th><th>Item No.</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th><th>PO match</th></tr></thead><tbody>'+d.rows.map(r=>'<tr><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(r.catchWeight??'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td><td>'+escapeHTML(r.matched?'Matched approved PO':'Not in approved PO')+'</td></tr>').join('')+'</tbody></table></div></article>';
+ const root=document.getElementById('approved-po-deliveries');if(!root)return;const cache=poDeliveries.get(a.id);
+ root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Weights and quantities come from SAP. EST / Plant comes only from the approved PO.</p></div><div class="row"><button class="btn primary" id="sap-delivery-upload">Load delivery</button><button class="btn" id="sap-delivery-refresh">Refresh</button></div></div>'+(!cache?'<p>Loading…</p>':cache.error?'<p class="cloud-error">'+escapeHTML(cache.error)+'</p>':!cache.rows.length?'<p>Approved · pending delivery</p>':cache.rows.map(d=>{
+ const current=deliveryCurrent(d,a),missing=d.rows.filter(r=>!r.matched).length;
+ return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Delivery '+escapeHTML(d.delivery_number)+'</strong><p class="small muted">'+escapeHTML(d.source_file)+' · '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+d.id+'"'+(!current?' disabled':'')+'>'+(missing?'Export matched part':'Export summary')+'</button><button class="btn" data-delivery-original="'+d.id+'"'+(!d.source_path?' disabled':'')+'>Download original</button><button class="btn" data-delivery-update="'+d.id+'">Update / resolve</button></div></div>'+(!current?'<p class="cloud-error">Approved PO changed. Update the match before exporting.</p>':'')+(missing?'<p class="cloud-error">Partial summary: '+missing+' unresolved row(s). They stay visible and will be excluded from the matched export.</p>':'')+'<div class="tablewrap"><table data-layout-key="delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th></tr></thead><tbody>'+d.rows.map((r,i)=>'<tr class="'+(!r.matched?'delivery-unresolved':'')+'"><td>'+escapeHTML(r.item)+(!r.matched?'<div class="cloud-error small">Source line '+(i+1)+' · '+escapeHTML(r.match_status==='ambiguous'?'Ambiguous approved EST':'No valid PO match')+'</div>':'')+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight??'')+' '+escapeHTML(r.catchWeight!==''&&r.catchWeight!=null?r.weightUnit||d.weight_unit:'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div></article>';
  }).join(''));
- if(administrator)document.getElementById('sap-delivery-upload').onclick=()=>openSAPDelivery(a);
- document.getElementById('sap-delivery-refresh').onclick=()=>loadPODeliveries(a.id);
- root.querySelectorAll('[data-delivery-update]').forEach(button=>button.onclick=()=>openSAPDelivery(a,cached.rows.find(d=>d.id===button.dataset.deliveryUpdate)));
- root.querySelectorAll('[data-delivery-export]').forEach(button=>button.onclick=()=>{const delivery=cached.rows.find(d=>d.id===button.dataset.deliveryExport);if(!deliveryCurrent(delivery,a)){alert('Update the delivery to match the latest approved PO first.');return;}const missing=delivery.rows.filter(r=>!r.matched).length;if(missing&&!confirm(missing+' Items have no match in this approved PO. Export with their EST / Plant blank?'))return;exportDeliveryFile({po:a.snapshot.po,deliveryNumber:delivery.delivery_number,customerNumber:delivery.customer_number,rows:delivery.rows},button);});
- if(!cached&&!deliveryLoads.has(a.id))loadPODeliveries(a.id);
+ document.getElementById('sap-delivery-upload').onclick=()=>openSAPDelivery(a);document.getElementById('sap-delivery-refresh').onclick=()=>loadPODeliveries(a.id);
+ root.querySelectorAll('[data-delivery-update]').forEach(b=>b.onclick=()=>openSAPDelivery(a,cache.rows.find(d=>d.id===b.dataset.deliveryUpdate)));
+ root.querySelectorAll('[data-delivery-original]').forEach(b=>b.onclick=()=>downloadDeliveryOriginal(cache.rows.find(d=>d.id===b.dataset.deliveryOriginal)));
+ root.querySelectorAll('[data-delivery-export]').forEach(b=>b.onclick=()=>{const d=cache.rows.find(d=>d.id===b.dataset.deliveryExport);if(!deliveryCurrent(d,a)){alert('Update the delivery against the current approved PO first.');return;}const kept=d.rows.filter(r=>r.matched&&r.plant),omitted=d.rows.map((r,i)=>({r,i})).filter(x=>!x.r.matched||!x.r.plant);if(!kept.length){alert('No resolved lines to export. Resolve the associations first.');return;}if(omitted.length&&!confirm('PARTIAL SUMMARY: '+kept.length+' lines exported; '+omitted.length+' omitted:\n'+omitted.map(x=>'Line '+(x.i+1)+' · '+x.r.item).join('\n')+'\nThe complete original remains available. Continue?'))return;exportDeliveryFile({po:a.snapshot.po,deliveryNumber:d.delivery_number,customerName:a.snapshot.customer,rows:kept},b);});
+ if(!cache&&!deliveryLoads.has(a.id))loadPODeliveries(a.id);
 }
 function openSAPDelivery(a,existing=null){
- if(!administrator||!canEdit()){deny();return;}
+ if(!canEdit()){deny();return;}
  let dialog=document.getElementById('sap-delivery-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='sap-delivery-dialog';dialog.className='online-dialog';dialog.style.maxWidth='1100px';document.body.appendChild(dialog);}
- let table=null,preview=[],fileName=existing?.source_file||'',selection=null;
- dialog.innerHTML='<div class="section-head"><h3>Create / Update Delivery</h3><button class="btn" id="sap-delivery-cancel">Cancel</button></div><p>PO '+escapeHTML(a.snapshot.po)+' · '+escapeHTML(a.snapshot.customer)+'. The source file cannot change this approved PO. Source ESTs are never imported.</p><label class="label">Delivery number</label><input class="input" id="sap-delivery-number" maxlength="90" value="'+escapeHTML(existing?.delivery_number||'')+'"><label class="label" style="margin-top:12px">Customer number</label><input class="input" id="sap-delivery-customer-number" maxlength="90" value="'+escapeHTML(existing?.customer_number||'')+'"><label class="label" style="margin-top:12px">Raw SAP delivery (.xls / .xlsx)</label><input class="input" type="file" id="sap-delivery-file" accept=".xls,.xlsx"><div class="po-import-grid hidden" id="sap-delivery-mapping">'+[['item','Item number'],['description','Description'],['quantity','Quantity'],['weight','Catch Weight / Weight']].map(([key,label])=>'<label><span class="label">'+label+' source column</span><select class="input" id="sap-delivery-map-'+key+'"></select></label>').join('')+'</div><p class="small muted" id="sap-delivery-status">Choose the SAP file. Enter the delivery number and customer number. Export name: PO [PO number] - D [delivery number] [customer number].xlsx.</p><div class="tablewrap"><table><thead><tr><th>Item Description</th><th>Item No.</th><th>Catch Weight</th><th>Quantity</th><th>EST No. from approved PO</th><th>Status</th></tr></thead><tbody id="sap-delivery-preview"></tbody></table></div><button class="btn primary" id="sap-delivery-save" disabled style="margin-top:16px">Save Delivery</button>';
+ let table=null,preview=[],sourceBlob=null,fileName=existing?.source_file||'',sourcePath=existing?.source_path||'',selection=null,associations={};
+ dialog.innerHTML='<div class="section-head"><h3>Load / Update Delivery</h3><button class="btn" id="sap-delivery-cancel">Cancel</button></div><p>PO '+escapeHTML(a.snapshot.po)+' · '+escapeHTML(a.snapshot.customer)+'. Original SAP ESTs are discarded. This does not edit or verify the PO.</p><label class="label">Delivery number</label><input class="input" id="sap-delivery-number" maxlength="90" value="'+escapeHTML(existing?.delivery_number||'')+'"><label class="label" style="margin-top:12px">Original SAP file (.xls / .xlsx)</label><input class="input" type="file" id="sap-delivery-file" accept=".xls,.xlsx"><details id="sap-delivery-mapping" class="hidden"><summary>Detected source columns · change only if necessary</summary><div class="po-import-grid">'+[['item','Item number'],['description','Description'],['quantity','Quantity'],['weight','Weight / Catch Weight']].map(([k,label])=>'<label><span class="label">'+label+'</span><select class="input" id="sap-delivery-map-'+k+'"></select></label>').join('')+'</div></details><p id="sap-delivery-status" class="small muted">Enter the delivery number and choose the file. The summary is generated automatically.</p><div class="tablewrap"><table><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th><th>Approved EST association</th></tr></thead><tbody id="sap-delivery-preview"></tbody></table></div><button class="btn primary" id="sap-delivery-save" disabled style="margin-top:16px">Save delivery</button>';
  const el=id=>dialog.querySelector('#'+id),status=(text,error=false)=>{el('sap-delivery-status').textContent=text;el('sap-delivery-status').classList.toggle('cloud-error',error);};
  const draw=()=>{
-  if(!table)return;const mapping={};for(const key of ['item','description','quantity','weight'])mapping[key]=Number(el('sap-delivery-map-'+key).value);
-  preview=matchSAPDelivery(table,mapping,a.snapshot);
-  const unmatched=preview.filter(r=>!r.matched).length,invalid=preview.filter(r=>!r.valid).length,blanks=preview.filter(r=>r.quantity==='').length;
-  status(fileName+' · '+preview.length+' Items · '+unmatched+' not in approved PO · '+blanks+' with blank quantity'+(invalid?' · '+invalid+' invalid quantities / weights':'')+'. ESTs from SAP are discarded. Catch Weight uses '+(mapping.weight>=0?table.headers[mapping.weight]:'a blank value')+'.',!!unmatched||!!invalid);
-  el('sap-delivery-preview').innerHTML=preview.map(r=>'<tr><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(r.catchWeight)+'</td><td>'+escapeHTML(r.quantity)+'</td><td>'+escapeHTML(r.plant)+'</td><td>'+escapeHTML(!r.valid?'Invalid quantity / weight':r.matched?'Matched approved PO':'Not in approved PO')+'</td></tr>').join('');el('sap-delivery-save').disabled=!preview.length||!!invalid;
+  if(!table)return;const map={};for(const k of ['item','description','quantity','weight'])map[k]=Number(el('sap-delivery-map-'+k).value);preview=matchSAPDelivery(table,map,a.snapshot,associations);
+  const missing=preview.filter(r=>!r.matched).length,bad=preview.filter(r=>!r.valid).length,blank=preview.filter(r=>r.quantity==='').length;
+  status(fileName+' · '+preview.length+' lines · '+missing+' unresolved · '+blank+' blank quantities'+(bad?' · '+bad+' invalid values':'')+'. Weight source: '+(map.weight>=0?table.headers[map.weight]:'blank')+'. No weights or quantities are calculated.',!!missing||!!bad);
+  el('sap-delivery-preview').innerHTML=preview.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight)+' '+escapeHTML(r.catchWeight!==''?r.weightUnit:'')+'</td><td>'+escapeHTML(r.quantity)+'</td><td>'+(r.options.length?'<select class="input" data-delivery-association="'+r.sourceIndex+'"><option value="">'+(r.match_status==='ambiguous'?'Select the approved line you can identify':'Automatic approved EST')+'</option>'+r.options.map(o=>'<option value="'+escapeHTML(o.key)+'"'+(r.association===o.key?' selected':'')+'>'+escapeHTML(o.item+' · '+o.plant+' · '+o.description)+'</option>').join('')+'</select>':'<span class="cloud-error">No valid match · EST blank</span>')+(!r.valid?'<p class="cloud-error">Invalid source value</p>':'')+'</td></tr>').join('');
+  el('sap-delivery-preview').querySelectorAll('[data-delivery-association]').forEach(input=>input.onchange=()=>{associations[input.dataset.deliveryAssociation]=input.value;draw();});el('sap-delivery-save').disabled=!preview.length||!!bad||(!sourceBlob&&!sourcePath);
  };
- el('sap-delivery-cancel').onclick=()=>dialog.close();dialog.onclose=()=>{selection=null;};
+ const mappings=()=>{for(const k of ['item','description','quantity','weight']){el('sap-delivery-map-'+k).innerHTML=(k==='weight'?'<option value="-1">None / blank</option>':'')+table.headers.map((v,i)=>'<option value="'+i+'">'+escapeHTML(v||'Column '+(i+1))+'</option>').join('');el('sap-delivery-map-'+k).value=String(table.mapping[k]);el('sap-delivery-map-'+k).onchange=()=>{associations={};draw();};}el('sap-delivery-mapping').classList.remove('hidden');draw();};
+ el('sap-delivery-cancel').onclick=()=>dialog.close();dialog.onclose=()=>selection=null;
  el('sap-delivery-file').onchange=async e=>{
-  const file=e.target.files?.[0];if(!file)return;table=null;preview=[];el('sap-delivery-save').disabled=true;status('Reading SAP delivery…');
-  const version=selection={};
-  try{
-   const XLSX=await window.__inspectionLoadXLSX(),book=XLSX.read(await file.arrayBuffer(),{type:'array'});if(selection!==version)return;
-   let chosen=null;for(const name of book.SheetNames){try{chosen=sapDeliveryTable(XLSX.utils.sheet_to_json(book.Sheets[name],{header:1,defval:'',raw:true}));break;}catch(error){}}
-   if(!chosen)throw Error('No worksheet contains Item No., Item Description and Quantity headers.');
-   table=chosen;fileName=file.name;
-   for(const key of ['item','description','quantity','weight']){el('sap-delivery-map-'+key).innerHTML=(key==='weight'?'<option value="-1">None / blank</option>':'')+table.headers.map((label,i)=>'<option value="'+i+'">'+escapeHTML(label||'Column '+(i+1))+'</option>').join('');el('sap-delivery-map-'+key).value=String(table.mapping[key]);el('sap-delivery-map-'+key).onchange=draw;}
-   el('sap-delivery-mapping').classList.remove('hidden');draw();
-  }catch(error){if(selection!==version)return;status('Could not read delivery: '+error.message,true);}
+  const file=e.target.files?.[0];if(!file)return;table=null;preview=[];sourceBlob=null;associations={};el('sap-delivery-save').disabled=true;status('Reading original SAP file…');const version=selection={};
+  try{if(!/\.xlsx?$/i.test(file.name))throw Error('Only .xls and .xlsx SAP files are supported.');if(file.size>20971520)throw Error('File exceeds 20 MB.');const bytes=await file.arrayBuffer(),XLSX=await window.__inspectionLoadXLSX(),book=XLSX.read(bytes,{type:'array',cellNF:true});if(selection!==version)return;
+   for(const sheet of book.SheetNames){try{table=sapDeliveryTable(XLSX.utils.sheet_to_json(book.Sheets[sheet],{header:1,defval:'',raw:true}));table.data.forEach((row,i)=>{const cell=book.Sheets[sheet][XLSX.utils.encode_cell({r:table.headerIndex+i+1,c:table.mapping.item})];if(cell?.t==='n'&&/^0[0-9]+$/.test(cell.w||''))row[table.mapping.item]=cell.w;});break;}catch{}}if(!table)throw Error('Unsupported structure: Item No., Item Description and Quantity headers were not found.');
+   fileName=file.name;sourcePath='';sourceBlob=new Blob([bytes],{type:file.type||'application/octet-stream'});mappings();
+  }catch(error){if(selection===version)status('Could not load file: '+error.message,true);}
  };
- if(existing){table={headers:['Item No.','Item Description','Quantity','Catch Weight'],data:existing.rows.map(r=>[r.item,r.description,r.receivedQuantity??'',r.catchWeight??''])};for(const [key,col] of [['item',0],['description',1],['quantity',2],['weight',3]]){el('sap-delivery-map-'+key).innerHTML=table.headers.map((label,i)=>'<option value="'+i+'">'+escapeHTML(label)+'</option>').join('');el('sap-delivery-map-'+key).value=String(col);el('sap-delivery-map-'+key).onchange=draw;}el('sap-delivery-mapping').classList.remove('hidden');draw();}
- el('sap-delivery-save').onclick=async()=>{
-  const customerNumber=el('sap-delivery-customer-number').value.trim();if(!customerNumber){status('Enter the customer number for the export file name.',true);el('sap-delivery-customer-number').focus();return;}const number=el('sap-delivery-number').value.trim();if(!number){status('Enter the delivery number.',true);el('sap-delivery-number').focus();return;}if(!preview.length||preview.some(r=>!r.valid))return;
-  const previous=poDeliveries.get(a.id)?.rows.find(d=>d.delivery_number===number)||null;
-  if(previous&&!confirm('Replace Delivery '+number+' with this newly matched delivery? The approved PO stays unchanged.'))return;
-  if(await saveSAPDelivery(a,number,fileName,preview,previous,customerNumber))dialog.close();
- };
- dialog.showModal();
+ if(existing){table={headers:['Item No.','Item Description','Quantity','Catch Weight'],data:existing.rows.map((r,i)=>{associations[i]=r.association||'';return[r.item,r.description,r.receivedQuantity??'',r.catchWeight===''?'':String(r.catchWeight??'')+' '+(r.weightUnit||existing.weight_unit||'lb')];}),mapping:{item:0,description:1,quantity:2,weight:3},weightUnit:existing.weight_unit};mappings();}
+ el('sap-delivery-save').onclick=async()=>{const number=el('sap-delivery-number').value.trim();if(!number){status('Enter the delivery number.',true);el('sap-delivery-number').focus();return;}if(!preview.length||preview.some(r=>!r.valid)||(!sourceBlob&&!sourcePath))return;const previous=poDeliveries.get(a.id)?.rows.find(d=>d.delivery_number===number)||null;if(previous&&!confirm('Update Delivery '+number+'? The PO stays unchanged.'))return;if(await saveSAPDelivery(a,number,fileName,preview,previous,sourceBlob,sourcePath))dialog.close();};dialog.showModal();
 }
-async function saveSAPDelivery(a,number,fileName,rows,previous,customerNumber){
- if(!administrator||!canEdit()){deny();return false;}
- const payload={approved_id:a.id,expected_po:clone(a.snapshot),delivery_number:number,customer_number:customerNumber,source_file:fileName,source_rows:rows.map(r=>({item:r.item,description:r.description,catchWeight:r.catchWeight,quantity:r.quantity})),expected_delivery:previous?clone(previous):null};
- const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'save-delivery',payload};
- try{await queueStore('put',job);saving=true;overlay('Saving matched Delivery…',true);await drainQueue();const pending=(await ownJobs()).find(j=>j.id===job.id);if(pending?.state==='conflict')throw Error(pending.error);await loadPODeliveries(a.id,false);renderApprovedPOs();message(pending?'Delivery saved on this device for retry.':'Delivery saved. EST / Plant values were matched to the approved PO.');return true;}
- catch(error){if(error.network){ready=false;offline=true;message('Delivery saved on this device for retry.',true);return true;}alert(error.message);return false;}
- finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending Delivery is kept for retry.');}
+async function saveSAPDelivery(a,number,fileName,rows,previous,sourceBlob,sourcePath){
+ if(!canEdit()){deny();return false;}const id=crypto.randomUUID();
+ if(sourceBlob)sourcePath=session.user.id+'/'+a.id+'/'+id+'/'+fileName.replace(/[^a-zA-Z0-9_.-]/g,'_');
+ const payload={approved_id:a.id,expected_po:clone(a.snapshot),delivery_number:number,source_file:fileName,source_path:sourcePath,source_rows:rows.map(r=>({item:r.item,description:r.description,catchWeight:r.catchWeight,quantity:r.quantity,association:r.association,weightUnit:r.weightUnit})),expected_delivery:previous?clone(previous):null,weight_unit:rows.find(r=>r.catchWeight!=='')?.weightUnit||''};
+ const job={id,owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'delivery-v3',payload,file:sourceBlob};
+ try{await queueStore('put',job);saving=true;overlay('Synchronizing delivery and original file…',true);await drainQueue();const pending=(await ownJobs()).find(j=>j.id===job.id);if(pending){if(pending.state==='conflict')throw Error(pending.error);message('Delivery is pending on this device; it is not synchronized yet.',true);return true;}await loadPODeliveries(a.id,false);deliveryOrderIDs.add(a.id);renderApprovedPOs();message('Delivery and original file synchronized.');return true;}catch(error){if(error.network){ready=false;offline=true;message('Delivery pending on this device; not synchronized yet.',true);return true;}alert(error.message);return false;}finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Connection lost. Pending delivery will retry for this account.');}
 }
-
-function approvedRowsHTML(p){return '<div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>Selected EST / Plant</th><th>Received quantity</th><th>Catch Weight</th><th>Physical verification</th><th>Note</th></tr></thead><tbody>'+p.rows.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+escapeHTML(r.item)+'</td><td>'+escapeHTML(window.__inspectionProductDescription?.(r.description,official["inspection-data-hub-catalog-overrides-v1"]?.[r.item]?.brand)||r.description)+'</td><td>'+escapeHTML(r.pack||'')+'</td><td>'+escapeHTML(r.size||'')+'</td><td><strong>'+escapeHTML(r.plant)+'</strong></td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.catchWeight??'')+'</td><td>'+(isPORowVerified(r)?'Verified · '+escapeHTML(r.verifiedAt)+' · '+escapeHTML(r.verifiedEsts.join(', ')):'Not individually verified')+'</td><td>'+escapeHTML(r.note||'')+'</td></tr>').join('')+'</tbody></table></div>';}
+function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-key="approved-po"><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST / Plant</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.category||'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function approvedEvidenceHTML(p){return '<details class="inspection-evidence"><summary>Inspection evidence</summary>'+p.rows.map(r=>'<p>'+escapeHTML(r.item)+' · '+(isPORowVerified(r)?'Physically checked '+escapeHTML(r.verifiedAt)+' · '+escapeHTML(actorLabel(r.verifiedBy||r.verified_by)):'Not individually verified')+'</p>').join('')+'</details>';}
 function renderApprovedPOs(){
  if(!started||!approvedPanel())return;
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
- const rows=approvedPOs.filter(a=>!term||normalize(a.snapshot.po).includes(term)||normalize(a.snapshot.customer).includes(term));
- document.getElementById('approved-po-list').innerHTML=rows.map(a=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">View PO approved for inspection</button></div>').join('')||'<p class="muted">'+(term?'No matching POs approved for inspection.':'No POs approved for inspection published yet.')+'</p>';
+ const rows=approvedPOs.filter(a=>!term||normalize(a.snapshot.po).includes(term)||normalize(a.snapshot.customer).includes(term)).sort((a,b)=>Number(deliveryOrderIDs.has(a.id))-Number(deliveryOrderIDs.has(b.id)));
+ document.getElementById('approved-po-list').innerHTML=rows.map(a=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items · '+(deliveryOrderIDs.has(a.id)?'Delivery available':'Approved · pending delivery')+'</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">View PO approved for inspection</button></div>').join('')||'<p class="muted">'+(term?'No matching POs approved for inspection.':'No POs approved for inspection published yet.')+'</p>';
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
  const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
- detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version · individual verification shown per Item</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version · individual verification shown per Item</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+approvedEvidenceHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
- document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const p=a.snapshot;const values=[['PO','Customer','Approved by','Approved at','Item','Description','Case / Pack','Size / Unit','EST / Plant','Received quantity','Physical verification','Verified EST / Plant','Verification date','Note'],...p.rows.map(r=>[p.po,p.customer,a.approved_email,a.approved_at,r.item,window.__inspectionProductDescription?.(r.description,official["inspection-data-hub-catalog-overrides-v1"]?.[r.item]?.brand)||r.description,r.pack||'',r.size||'',r.plant,r.receivedQuantity||'',isPORowVerified(r)?'Verified':'Not individually verified',isPORowVerified(r)?r.verifiedEsts.join(', '):'',isPORowVerified(r)?r.verifiedAt:'',r.note||''])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO_'+p.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST / Plant'],...a.snapshot.rows.map(r=>[r.item,r.description,r.category||'',r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
  document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>PO Approved for Inspection</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
 }
 async function manageApprovedPO(a,replacement){
@@ -3262,14 +3275,14 @@ async function manageApprovedPO(a,replacement){
 function editApprovedPO(a){
  if(!administrator||!canEdit()){deny();return;}
  let dialog=document.getElementById('approved-po-editor');if(!dialog){dialog=document.createElement('dialog');dialog.id='approved-po-editor';dialog.className='online-dialog';dialog.style.maxWidth='1100px';document.body.appendChild(dialog);}
- const draft=clone(a.snapshot),fields=['item','description','pack','size','plant','receivedQuantity','catchWeight','note'];
- dialog.innerHTML='<div class="section-head"><h3>Edit approved PO</h3><button class="btn" id="approved-editor-cancel">Cancel</button></div><p>Changes update this approved PO only. Product catalog data and historical observations are unchanged.</p><label class="label">PO number</label><input class="input" id="approved-editor-number" value="'+escapeHTML(draft.po)+'"><label class="label">Customer</label><input class="input" id="approved-editor-customer" value="'+escapeHTML(draft.customer)+'"><div class="tablewrap"><table><thead><tr>'+['Item','Description','Case / Pack','Size','EST / Plant','Received quantity','Catch Weight','Note','Order / Remove'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody id="approved-editor-rows"></tbody></table></div><div class="row" style="margin-top:14px"><button class="btn" id="approved-editor-add">Add Item</button><button class="btn primary" id="approved-editor-save">Save approved PO</button></div>';
+ const draft=clone(a.snapshot);draft.rows.forEach((r,i)=>r.lineId||="legacy:"+i);const fields=['item','description','category','plant'];
+ dialog.innerHTML='<div class="section-head"><h3>Edit approved PO</h3><button class="btn" id="approved-editor-cancel">Cancel</button></div><p>Changes update this approved PO only. Product catalog data and historical observations are unchanged.</p><label class="label">PO number</label><input class="input" id="approved-editor-number" value="'+escapeHTML(draft.po)+'"><label class="label">Customer</label><input class="input" id="approved-editor-customer" value="'+escapeHTML(draft.customer)+'"><div class="tablewrap"><table><thead><tr>'+['Item','Description','Class','EST / Plant','Order / Remove'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody id="approved-editor-rows"></tbody></table></div><div class="row" style="margin-top:14px"><button class="btn" id="approved-editor-add">Add Item</button><button class="btn primary" id="approved-editor-save">Save approved PO</button></div>';
  const rows=dialog.querySelector('#approved-editor-rows');
  const draw=()=>{rows.innerHTML=draft.rows.map((r,i)=>'<tr data-approved-edit-row="'+i+'">'+fields.map(k=>'<td>'+(k==='description'?'<textarea class="input auto-description" rows="2" data-approved-field="description" aria-label="Description">'+escapeHTML(r[k]??'')+'</textarea>':'<input class="input" data-approved-field="'+k+'" value="'+escapeHTML(r[k]??'')+'" aria-label="'+k+'">')+'</td>').join('')+'<td><button class="btn mini" data-approved-move="up" data-index="'+i+'">↑</button><button class="btn mini" data-approved-move="down" data-index="'+i+'">↓</button><button class="btn mini" data-approved-remove="'+i+'">Remove</button></td></tr>').join('');};
  const collect=()=>{rows.querySelectorAll('tr[data-approved-edit-row]').forEach(row=>{const r=draft.rows[Number(row.dataset.approvedEditRow)];row.querySelectorAll('[data-approved-field]').forEach(input=>r[input.dataset.approvedField]=input.value.trim());});};
  rows.addEventListener('change',e=>{if(e.target.dataset.approvedField!=='item')return;const row=e.target.closest('tr'),product=official['inspection-data-hub-catalog-overrides-v1']?.[e.target.value.trim()];if(!product)return;for(const key of ['description','pack','size','plant']){const input=row.querySelector('[data-approved-field="'+key+'"]');if(!input.value)input.value=product[key]||'';}},{once:false});
  rows.onclick=e=>{const remove=e.target.closest('[data-approved-remove]'),move=e.target.closest('[data-approved-move]');if(!remove&&!move)return;collect();if(remove)draft.rows.splice(Number(remove.dataset.approvedRemove),1);else{const i=Number(move.dataset.index),j=i+(move.dataset.approvedMove==='up'?-1:1);if(j>=0&&j<draft.rows.length)[draft.rows[i],draft.rows[j]]=[draft.rows[j],draft.rows[i]];}draw();};
- dialog.querySelector('#approved-editor-add').onclick=()=>{collect();draft.rows.push({item:'',description:'',pack:'',size:'',plant:'',note:'',verifiedAt:'',verifiedEsts:[]});draw();};
+ dialog.querySelector('#approved-editor-add').onclick=()=>{collect();draft.rows.push({lineId:crypto.randomUUID(),item:'',description:'',category:'',plant:'',verifiedAt:'',verifiedEsts:[]});draw();};
  dialog.querySelector('#approved-editor-cancel').onclick=()=>dialog.close();
  dialog.querySelector('#approved-editor-save').onclick=async()=>{collect();draft.po=dialog.querySelector('#approved-editor-number').value.trim();draft.customer=dialog.querySelector('#approved-editor-customer').value.trim();if(!draft.po||!draft.customer||!draft.rows.length||draft.rows.some(r=>!r.item||!r.description||!r.plant)){alert('PO number, customer, Item, description and EST / Plant are required.');return;}if(await manageApprovedPO(a,draft))dialog.close();};
  draw();dialog.showModal();
@@ -3296,7 +3309,7 @@ async function loadState({hydrate=true}={}){
  const rows=await request('/rest/v1/inspection_official_state?id=eq.official&select=records,revision,updated_at');if(!rows?.length)throw Error('Official database is not configured.');
  const workspaces=await request('/rest/v1/inspection_po_workspaces?select=workspace,updated_at&user_id=eq.'+encodeURIComponent(session.user.id));
  official=clone(rows[0].records);catalogGeneration=official[IMPORT_KEY]?.generation||'';official[PO_KEY]=clone(workspaces[0]?.workspace||{draft:[],invoices:[]});workspaceStamp=workspaces[0]?.updated_at||'';revision=rows[0].revision;
- approvedPOs=await request('/rest/v1/inspection_approved_pos?select=*&order=approved_at.desc');renderApprovedPOs();
+ approvedPOs=await request('/rest/v1/inspection_approved_pos?select=*&order=approved_at.desc');await loadClients();deliveryOrderIDs=new Set((await request('/rest/v1/inspection_deliveries?select=approved_po_id')).map(d=>d.approved_po_id));renderApprovedPOs();
  memory.clear();for(const [k,v]of Object.entries(official))memory.set(k,JSON.stringify(v));
  await buildPhotos();
  if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionFullProductRefresh?.();window.__inspectionReloadCloudWorkspace?.();window.__inspectionGlobalRefresh?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
@@ -3309,27 +3322,6 @@ function markDomains(event){
  if(!(event.target instanceof Element)||!['click','change'].includes(event.type))return;
  const selectors=[['#save-demo,.iq-save,#iq-bulk-apply,#ip-commit',['catalog-overrides','est-references','product-notes']],['#save-refs',['est-references']],['#save-product-note',['product-notes']],['#save-brand-note',['brand-notes']],['#bp-save',['brand-profiles']],['#ob-save,#ob-edit-save,[data-ob-delete],#est-confirm-save,#q-save,#quick-confirm-selected,[data-po-confirm]',['observations','est-references']],['[data-po-fixed]',['fixed-est']],['#est-toggle-stable',['stability-overrides']]];
  for(const[selector,domains]of selectors)if(event.target.closest(selector))for(const key of domains)dirtyDomains.add('inspection-data-hub-'+key+'-v1');
-}
-function makeProposals(changes,extra){
- const grouped=new Map();
- for(const key of PROTECTED){
-  if(!(key in changes)||(!extra&&!dirtyDomains.has(key)))continue;
-  const before=official[key]||{},after=changes[key]||{};
-  for(const entity of new Set([...Object.keys(before),...Object.keys(after)])){
-   const old=before[entity]??null,next=after[entity]??null;if(JSON.stringify(old)===JSON.stringify(next))continue;
-   const group=(key.includes('brand-profiles')||key.includes('brand-notes')?'Brand ':'Item ')+entity;
-   if(!grouped.has(group))grouped.set(group,{summary:group,operations:[],po_verifications:[]});
-   grouped.get(group).operations.push({path:[key,entity],before:clone(old),after:clone(next)});
-  }
- }
- const workspace=changes[PO_KEY];
- if(workspace){for(const p of workspace.invoices||[])for(const row of p.rows||[]){
-  const previous=(official[PO_KEY]?.invoices||[]).find(x=>x.id===p.id)?.rows?.find(x=>x.item===row.item);
-  if(row.verifiedAt&&JSON.stringify([row.verifiedAt,row.verifiedEsts])!==JSON.stringify([previous?.verifiedAt,previous?.verifiedEsts])){
-   const proposal=grouped.get('Item '+row.item);if(proposal)proposal.po_verifications.push({po_id:p.id,item:row.item,plant:row.plant,verifiedAt:row.verifiedAt,verifiedEsts:row.verifiedEsts,changeFrom:row.changeFrom||'',changeTo:row.changeTo||''});
-  }
- }}
- return [...grouped.values()];
 }
 async function commit(extra=null){
  if(signingOut)return;
@@ -3349,7 +3341,7 @@ async function removePhoto(item,index){if(!administrator||!canEdit()){deny();ret
 
 function openLogin(){if(session){openAccount();return}overlay('Inicia sesión para acceder a Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Introduce el correo y la contraseña de tu cuenta de la aplicación.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
 function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value=''}
-function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'User: create and import private PO drafts; view POs Approved for Inspection. You can submit product changes for administrator approval. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
+function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrador: acceso completo.':'User: create and import private PO drafts; view POs Approved for Inspection. You can upload and update deliveries; catalog changes and official verification are administrator-only. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
  e.preventDefault();if(signingIn)return;signingIn=true;const button=document.getElementById('online-login-submit');button.disabled=true;
  const email=document.getElementById('online-email').value.trim(),password=document.getElementById('online-password').value;
@@ -3387,7 +3379,7 @@ async function uploadPhotos(item,files){
  finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. Tus envíos pendientes están guardados en este dispositivo.');}
 }
 
-const ADMIN_MUTATING='#sap-delivery-upload,#sap-delivery-save,[data-delivery-update],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
+const ADMIN_MUTATING='[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
 const MUTATING='#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
@@ -3399,7 +3391,7 @@ for(const event of ['click','change'])document.addEventListener(event,e=>{if(can
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Sin conexión. La base de datos no está disponible. Los envíos pendientes se conservarán.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
-window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",submitItemChanges,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3438,25 +3430,9 @@ window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.pa
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
 setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/inspection_po_workspaces?select=updated_at&user_id=eq.'+encodeURIComponent(session.user.id)),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No hay conexión con la base de datos. Vuelve a intentar.');}},15000);
-let requests=[],changeHistory=[],requestsLoading=false,reviewing=false;
+let changeHistory=[],requestsLoading=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Producto','product-notes':'Notas del producto','brand-notes':'Notas de marca','est-references':'Referencias EST','brand-profiles':'Perfil de marca','stability-overrides':'Estabilidad','observations':'Observaciones físicas EST','fixed-est':'EST fijo','photos':'Fotografías'};
-function renderRequests(){
- if(!administrator)return;
- const status=document.getElementById('approval-filter').value;
- const pendingRows=requests.filter(r=>r.status==='pending');
- const historyRows=requests.filter(r=>r.status!=='pending'&&(status==='reviewed'||r.status===status)).sort((a,b)=>String(b.reviewed_at||b.submitted_at).localeCompare(String(a.reviewed_at||a.submitted_at)));
- document.getElementById('approval-count').textContent=pendingRows.length+' solicitudes pendientes';
- document.getElementById('approval-history-count').textContent=historyRows.length+' solicitudes revisadas';
- document.getElementById('approval-nav-count').textContent=pendingRows.length?'('+pendingRows.length+')':'';
- for(const [rootId,rows,empty] of [['approval-list',pendingRows,'No hay solicitudes pendientes.'],['approval-history-list',historyRows,'No hay solicitudes revisadas en este estado.']]){
- const root=document.getElementById(rootId);
- root.innerHTML=rows.map(r=>'<article class="approval-card" data-request-id="'+escapeHTML(r.id)+'"><div class="section-head"><strong>'+escapeHTML(r.payload.summary||'Solicitud de cambio')+'</strong><span class="pill">'+escapeHTML(r.status)+'</span></div><p class="muted small">'+escapeHTML(new Date(r.submitted_at).toLocaleString())+' · '+escapeHTML(actorLabel(r.submitted_by))+' · '+escapeHTML(r.id.slice(0,8))+'</p><div class="tablewrap"><table><thead><tr><th>Cambio</th><th>Valor oficial al solicitar</th><th>Valor propuesto</th></tr></thead><tbody>'+r.payload.operations.map(op=>{const code=op.path[0].replace('inspection-data-hub-','').replace(/-v1$/,'');const current=official[op.path[0]]?.[op.path[1]]??null;const conflict=JSON.stringify(current)!==JSON.stringify(op.before);return '<tr><td>'+escapeHTML(domainNames[code]||code)+'<br><strong>'+escapeHTML(op.path[1])+'</strong>'+(conflict&&r.status==='pending'?'<p class="cloud-error">El valor oficial cambió. Revisa y solicita nuevamente antes de aprobar.</p><pre>Actual: '+escapeHTML(historyValue(current))+'</pre>':'')+'</td><td><pre>'+escapeHTML(historyValue(op.before))+'</pre></td><td><pre>'+escapeHTML(historyValue(op.after))+'</pre>'+(code==='photos'?'<div data-pending-previews></div>':'')+'</td></tr>'}).join('')+'</tbody></table></div>'+((r.payload.po_verifications||[]).length?'<p class="muted small">Incluye '+r.payload.po_verifications.length+' confirmación(es) física(s) de líneas de PO.</p>':'')+(r.status==='pending'?'<div class="approval-actions"><button class="btn primary" data-review-approve="'+escapeHTML(r.id)+'">Aprobar cambio</button><button class="btn" data-review-reject="'+escapeHTML(r.id)+'">Denegar cambio</button></div>':'<p class="muted small">Revisado: '+escapeHTML(new Date(r.reviewed_at).toLocaleString())+(r.review_note?' · '+escapeHTML(r.review_note):'')+'</p>')+'</article>').join('')||'<p class="muted">'+empty+'</p>';
- root.querySelectorAll('[data-review-approve]').forEach(button=>button.onclick=()=>reviewRequest(button.dataset.reviewApprove,'approve'));
- root.querySelectorAll('[data-review-reject]').forEach(button=>button.onclick=()=>reviewRequest(button.dataset.reviewReject,'reject'));
- for(const r of rows){const card=root.querySelector('[data-request-id="'+r.id+'"]');const holders=[...card.querySelectorAll('[data-pending-previews]')];let index=0;for(const op of r.payload.operations)if(op.path[0]===PHOTO_KEY){const holder=holders[index++];for(const metadata of op.after||[])signPhoto(metadata).then(photo=>{if(!administrator||!holder.isConnected)return;const img=document.createElement('img');img.src=photo.url;img.alt=photo.name||'Fotografía propuesta';holder.appendChild(img)}).catch(()=>{if(holder.isConnected)holder.append('No se pudo cargar esta fotografía.')});}}
- }
-}
 const historyFieldNames={item:'Item number',description:'Description',brand:'Brand',family:'Product family',salesUnit:'Sales unit',producer:'Supplier / source group',plant:'EST / Plant',category:'Product type',pack:'Case / Pack',size:'Size / Unit','product-notes':'Product notes','est-references':'EST / Plant references','stability-overrides':'Review priority','observations':'EST / Plant verification','fixed-est':'Fixed EST / Plant','photos':'Photos'};
 function historyValue(value){
  if(value===null||value===undefined||value==='')return '—';
@@ -3482,26 +3458,12 @@ function renderChangeHistory(){
  const term=document.getElementById('change-history-search').value.trim().toLocaleLowerCase(),domain=document.getElementById('change-history-domain').value;
  const rows=productHistoryRows().filter(row=>(!domain||row.domain===domain)&&(!term||[row.entity,row.field_name,historyFieldNames[row.field_name],historyValue(row.before_value),historyValue(row.after_value)].join(' ').toLocaleLowerCase().includes(term)));
  document.getElementById('change-history-count').textContent=rows.length+' changes';
- document.getElementById('change-history-rows').innerHTML=rows.map(row=>'<tr><td>'+escapeHTML(new Date(row.changed_at).toLocaleString())+'</td><td><strong>'+escapeHTML(row.entity)+'</strong></td><td>'+escapeHTML(historyFieldNames[row.field_name]||row.field_name)+'</td><td class="history-change-value">'+escapeHTML(historyValue(row.before_value))+'</td><td class="history-change-value">'+escapeHTML(historyValue(row.after_value))+'</td><td>'+escapeHTML(actorLabel(row.requested_by||row.actor_id))+'</td><td>'+escapeHTML(actorLabel(row.approved_by||row.actor_id))+'</td></tr>').join('')||'<tr><td colspan="7" class="empty">No matching product changes.</td></tr>';
+ document.getElementById('change-history-rows').innerHTML=rows.map(row=>'<tr><td>'+escapeHTML(new Date(row.changed_at).toLocaleString())+'</td><td><strong>'+escapeHTML(row.entity)+'</strong></td><td>'+escapeHTML(historyFieldNames[row.field_name]||row.field_name)+'</td><td class="history-change-value">'+escapeHTML(historyValue(row.before_value))+'</td><td class="history-change-value">'+escapeHTML(historyValue(row.after_value))+'</td><td>'+escapeHTML(actorLabel(row.actor_id))+'</td></tr>').join('')||'<tr><td colspan="6" class="empty">No matching product changes.</td></tr>';
 }
 async function loadRequests(){
- if(!administrator||requestsLoading||reviewing)return;requestsLoading=true;
- try{[requests,changeHistory]=await Promise.all([request('/rest/v1/inspection_change_requests?select=*&order=submitted_at.desc&limit=1000'),request('/rest/v1/inspection_change_history?select=*&order=changed_at.desc,id.desc&limit=1000')]);renderRequests();renderChangeHistory()}
- catch(error){message('No se pudieron cargar las aprobaciones: '+error.message,true)}finally{requestsLoading=false}
+ if(!administrator||requestsLoading)return;requestsLoading=true;
+ try{changeHistory=await request('/rest/v1/inspection_change_history?select=*&order=changed_at.desc,id.desc&limit=1000');renderChangeHistory();}catch(error){message('Could not load Change History: '+error.message,true);}finally{requestsLoading=false;}
 }
-async function reviewRequest(id,decision){
- if(!administrator){deny();return}if(reviewing||saving||photoBusy)return;
- if(!confirm(decision==='approve'?'¿Aprobar esta solicitud y aplicar sus cambios a los datos oficiales?':'¿Denegar esta solicitud? Los datos oficiales conservarán sus valores.'))return;
- const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'review',payload:{request_id:id,decision,expected_revision:revision}};
- try{await queueStore('put',job)}catch(error){alert('No se pudo guardar esta revisión. '+error.message);return}
- reviewing=true;saving=true;overlay('Procesando revisión en Supabase…',true);
- try{await drainQueue();await loadState();message(queueCount?'La revisión quedó pendiente.':decision==='approve'?'Solicitud aprobada. Cambios aplicados a la base oficial.':'Solicitud denegada. Los datos oficiales no cambiaron.');}
- catch(error){if(error.network){ready=false;offline=true;message('Revisión guardada en este dispositivo; se enviará al reconectar.',true)}else{message(error.message,true);}}
- finally{reviewing=false;saving=false;await showQueueCount();window.__inspectionWorkspaceRefresh?.();window.__inspectionProductRefresh?.();if(ready&&!offline)await loadRequests();updateRole();if(ready&&!offline)unblock();else overlay('Sin conexión. La revisión pendiente se conserva en este dispositivo.');}
-}
-
-document.getElementById('approval-refresh').onclick=loadRequests;
-document.getElementById('approval-filter').onchange=renderRequests;
 document.getElementById('change-history-search').oninput=renderChangeHistory;
 document.getElementById('change-history-domain').onchange=renderChangeHistory;
 document.querySelector('[data-view="history"]').addEventListener('click',loadRequests);
@@ -3578,13 +3540,15 @@ function install(table){
  const seen=new Map(),labels=cells.map(cell=>cell.querySelector('.query-sort')?.dataset.label||cell.textContent.trim()||'Actions');
  const base=cells.map((cell,i)=>{const label=cell.dataset.sort||labels[i];const n=seen.get(label)||0;seen.set(label,n+1);return label+':'+n;});
  const root=table.id||table.tBodies[0]?.id||table.parentElement?.closest('[id]')?.id||table.closest('section')?.id||'table';
- const key=root+':'+base.join('|');
+ const key=(table.dataset.layoutKey||root)+':'+base.join('|');
  const cols=[...table.querySelectorAll(':scope > colgroup > col')];const defaults={};
  cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];const explicit=parseFloat(cols[i]?.style.width||'');const measured=cell.getBoundingClientRect().width;defaults[base[i]]=clamp(explicit||measured||(/description|valor|value|note/i.test(labels[i])?280:/item|brand|marca|est|plant/i.test(labels[i])?140:110));});
  const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.innerHTML='<span>Drag headers to reorder · drag column edges to resize</span><button type="button" class="btn mini idh-table-reset">Reset columns</button>';
  table.before(notice);
  state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,order:[...base],defaults,widths:{...defaults},uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
- notice.querySelector('button').onclick=()=>{state.order=[...base];state.widths={...defaults};apply(state);save(state);};
+ notice.querySelector('.idh-table-reset').onclick=()=>{state.order=[...base];state.widths={...defaults};apply(state);save(state);};
+ const mobile=document.createElement('div');mobile.className='idh-mobile-order';mobile.innerHTML='<select aria-label="Column to move">'+base.map((key,i)=>'<option value="'+i+'">'+labels[i].replace(/[<>]/g,'')+'</option>').join('')+'</select><button type="button" class="btn mini" data-column-left>←</button><button type="button" class="btn mini" data-column-right>→</button>';notice.appendChild(mobile);
+ mobile.querySelectorAll('button').forEach(b=>b.onclick=()=>{const key=base[Number(mobile.querySelector('select').value)],index=state.order.indexOf(key),target=state.order[index+(b.hasAttribute('data-column-left')?-1:1)];if(target)move(state,key,target);});
  cells.forEach((cell,i)=>{
   const col=base[i];cell.draggable=true;cell.title='Drag to reorder '+labels[i];
   const handle=document.createElement('span');handle.className='idh-col-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','Resize '+labels[i]);handle.setAttribute('aria-valuemin','50');handle.setAttribute('aria-valuemax','1400');cell.appendChild(handle);
@@ -3621,7 +3585,17 @@ window.InspectionTableLayout={refresh};refresh();
  function scan(){pending=false;document.querySelectorAll('textarea.iq-description-cell,textarea.auto-description').forEach(el=>{if(!watched.has(el)){watched.add(el);ro?.observe(el);}fit(el);});}
  function schedule(){if(!pending){pending=true;(window.requestAnimationFrame||window.setTimeout)(scan);}}
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});document.addEventListener('input',e=>{if(e.target.matches('textarea.iq-description-cell,textarea.auto-description'))fit(e.target);});window.addEventListener('resize',schedule);document.addEventListener('click',schedule);scan();
-})();</script><style>.sap-delivery-card{border-top:1px solid var(--sk-border,#ddd);padding:16px 0}.delivery-description{white-space:normal;overflow-wrap:anywhere;min-width:220px}#sap-delivery-dialog .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}#sap-delivery-dialog .input{width:100%}#sap-delivery-dialog label{display:block}#sap-delivery-dialog .tablewrap{max-height:50vh;margin-top:16px}#sap-delivery-dialog th{white-space:normal}</style></body></html>
+})();</script><style>.sap-delivery-card{border-top:1px solid var(--sk-border,#ddd);padding:16px 0}.delivery-description{white-space:normal;overflow-wrap:anywhere;min-width:220px}#sap-delivery-dialog .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}#sap-delivery-dialog .input{width:100%}#sap-delivery-dialog label{display:block}#sap-delivery-dialog .tablewrap{max-height:50vh;margin-top:16px}#sap-delivery-dialog th{white-space:normal}</style><style>
+[hidden]{display:none!important}#lookup-view:not(.has-product)>.layout{display:none!important}#lookup-view .inspection-invoice-workspace,#lookup-view #po-current-worklog{display:none!important}
+#lookup-view .weekly-stats,#lookup-view .est-stats,#lookup-view .period-stats{display:none!important}
+#draft-print-sheet{display:none}.client-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.client-suggestions:empty{display:none}.delivery-unresolved{background:var(--sk-surface2);outline:1px solid var(--sk-border)}
+#sap-delivery-dialog select{max-width:100%}#admin-clients-panel{margin-top:18px}.inspection-evidence{padding:12px;margin-top:12px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-radius)}
+.idh-mobile-order{display:flex;flex-wrap:wrap;gap:6px}.idh-mobile-order select{max-width:220px}.idh-mobile-order button{min-width:40px}
+@media(max-width:800px){#po-details th,#po-details td{padding:8px}#po-details .btn{white-space:normal;min-height:40px}#po-details [data-po-ref]{font-size:16px}#po-details .po-details-head{flex-wrap:wrap}#sap-delivery-dialog{width:96vw;max-width:96vw}.client-suggestions .btn{min-height:40px}}
+@media print{body.print-draft>.shell,body.print-draft>dialog,body.print-draft>#cloud-banner,body.print-draft>#cloud-blocker{display:none!important}body.print-draft>#draft-print-sheet{display:block!important;background:white;color:black}body.print-draft td,body.print-draft th{white-space:normal;border:1px solid #bbb;color:black;background:white}}
+</style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#lookup-view:not(.show-history) .weekly-stats,#lookup-view:not(.show-history) .est-stats,#lookup-view:not(.show-history) .period-stats{display:none!important}#lookup-view.show-history .weekly-stats,#lookup-view.show-history .est-stats,#lookup-view.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
+window.addEventListener('inspection:cloud-ready',()=>{const header=document.querySelector('.product-header');if(!header||document.getElementById('product-details-toggle'))return;const button=document.createElement('button');button.id='product-details-toggle';button.className='btn mini';button.textContent='Reference statistics';button.onclick=()=>{const view=document.getElementById('lookup-view');view.classList.toggle('show-history');button.textContent=view.classList.contains('show-history')?'Hide statistics':'Reference statistics';};header.appendChild(button);});
+</script><style>#lookup-view:not(.show-history) .est-summary,#lookup-view:not(.show-history) .est-variant,#lookup-view:not(.show-history) .stat-pill{display:none!important}#lookup-view.show-history .est-summary{display:block!important}#lookup-view.show-history .est-variant,#lookup-view.show-history .stat-pill{display:block!important}</style></body></html>
 
 
 
