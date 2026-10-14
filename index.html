@@ -168,26 +168,18 @@ window.InspectionTableTools={
 </div>
 <div class="muted small" id="po-import-status" style="margin:10px 0">Select a file to preview the rows before creating the PO. Nothing is saved until you confirm.</div>
 <div id="po-import-preview" class="hidden">
+<h4>Import overview</h4>
 <div class="po-import-grid">
 <label><span class="label">Item Number column</span><select class="input" id="po-import-item-col"></select></label>
 <label><span class="label">Description column (optional)</span><select class="input" id="po-import-desc-col"></select></label>
 </div><details><summary>Source fields for Items not in the catalog</summary><p class="small muted">Only unmatched Items use these source values. Review the detected columns. Missing fields remain blank; quantities, weights and prices are not imported.</p><div class="po-import-grid"><label><span class="label">Brand (optional)</span><select class="input" id="po-import-brand-col"></select></label><label><span class="label">Class / Type (optional)</span><select class="input" id="po-import-category-col"></select></label><label><span class="label">Family (optional)</span><select class="input" id="po-import-family-col"></select></label><label><span class="label">Pack / Size (optional)</span><select class="input" id="po-import-pack-col"></select></label><label><span class="label">Additional size column (optional)</span><select class="input" id="po-import-size-col"></select></label><label><span class="label">EST (optional)</span><select class="input" id="po-import-plant-col"></select></label><label><span class="label">Alternative EST references (optional)</span><select class="input" id="po-import-alternativeEst-col"></select></label><label><span class="label">Notes (optional)</span><select class="input" id="po-import-notes-col"></select></label></div></details>
 <div class="po-import-summary" id="po-import-summary"></div>
 <div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
-<div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
+<div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Import again</button><button class="btn primary" type="button" id="po-import-create" disabled>Move to Drafts</button></div>
 <p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. </p>
 </div></div></div>
 <section class="panel panel-pad" id="delivery-intakes-panel" hidden></section></div>
-<div class="panel panel-pad inspection-invoice-workspace hidden" id="inspection-invoice-workspace">
-<div class="section-head"><div><h3>Invoice inspection overview</h3><span class="hint">EST references and review priorities</span></div>
-<div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn mini" id="invoice-export" type="button">↓ Excel / CSV</button><button class="btn mini primary" id="invoice-print" type="button">⎙ Print invoice</button></div></div>
-<div class="row" style="flex-wrap:wrap;gap:10px;margin-bottom:12px"><label class="label" for="invoice-select">Saved PO</label><select class="input" id="invoice-select" style="min-width:180px;max-width:100%;flex:1"><option value="">Preview imported file / choose saved PO</option></select></div>
-<div class="po-import-summary" id="invoice-overview-summary">Import an Excel/CSV file to preview the invoice, or choose a saved PO.</div>
-<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:160px"><col style="width:100px"><col style="width:100px"><col style="width:78px"></colgroup><thead><tr>
-<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="receivedQuantity"><button type="button" class="query-sort" data-label="Received quantity">Received quantity<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
-<th>Actions</th></tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="8" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
-<div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current EST numbers. Printing includes Item, Description,Pack / Size, EST and Received quantity.</div>
-</div>
+
 </section>
 
 <section id="guide-view" class="hidden">
@@ -377,7 +369,7 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a PO draft or start with a delivery"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
+function navigate(v){if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a PO draft or start with a delivery"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(v==="meat")window.__inspectionResetOrderImport?.();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -747,8 +739,8 @@ function setOrderImportMode(mode){
   const button=el(id);button.classList.toggle("primary",active);button.setAttribute("aria-pressed",String(active));
  }
 }
-el("order-import-po").onclick=()=>setOrderImportMode("po");
-el("order-import-delivery").onclick=()=>setOrderImportMode("delivery");
+el("order-import-po").onclick=()=>{resetOrderImport();setOrderImportMode("po");};
+el("order-import-delivery").onclick=()=>{resetOrderImport();setOrderImportMode("delivery");};
 setOrderImportMode("po");
 const toggle=el("po-import-toggle"),body=el("po-import-body");
 toggle.onclick=()=>{const opening=body.classList.contains("hidden");body.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"− Hide import":"↑ Import Excel / CSV";};
@@ -812,7 +804,7 @@ function currentPreview(){
  el("po-import-summary").textContent=preview.length+" Item rows · "+matched.length+" catalog matches · "+unknown.length+" unmatched · "+dupes.length+" duplicate rows";
  renderCatalogPreview();
  el("po-import-create").disabled=!preview.length;
- renderInvoiceOverview();
+
 }
 function importBrandKey(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();}
 function importBrandNames(){return [...new Set([...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{}),...[...catalogEdits.values()].map(p=>p.selectedBrand)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));}
@@ -899,7 +891,6 @@ async function loadFile(file){
  setStatus('Querying the official catalog…');
  const products=await window.InspectionCloud.refreshCatalog();if(sequence!==importLoadSequence)return;if(!products)throw Error('The catalog query was superseded. Select the file again.');
  setStatus(fileName+" · "+sourceRows.length+" data rows. Confirm the column mapping and review matches.");
- el("invoice-select").value="";
  currentPreview();
 }
 el("po-import-file").addEventListener("change",async e=>{
@@ -908,7 +899,16 @@ el("po-import-file").addEventListener("change",async e=>{
  try{if(!clean(el("po-import-number").value)||!clean(el("po-import-customer").value)){e.target.value="";throw Error("Enter the PO number and customer name before selecting an invoice file.");}await loadFile(file);}catch(err){if(e.target.files?.[0]!==file)return;el("po-import-preview").classList.add("hidden");el("po-import-create").disabled=true;setStatus(window.InspectionCloud.catalogError(err),true);console.error("Invoice import",err);}
 });
 for(const id of ["po-import-item-col","po-import-desc-col",...poSourceFields.filter(k=>k!=="description").map(k=>"po-import-"+k+"-col")])el(id).addEventListener("change",()=>{catalogEdits.clear();previewPage=0;currentPreview();});
-el("po-import-cancel").onclick=()=>{importLoadSequence++;catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
+function resetOrderImport(){
+ importLoadSequence++;catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;fileName="";
+ for(const id of ["po-import-number","po-import-customer","po-import-file"])el(id).value="";
+ const customer=el("po-import-customer");customer.dataset.clientId="";customer.setCustomValidity("");
+ const picker=customer.closest(".client-picker");if(picker){picker.querySelector(".client-picker-hint").textContent="";picker.querySelector(".client-suggestions").hidden=true;}customer.setAttribute("aria-expanded","false");
+ el("po-import-rows").replaceChildren();el("po-import-summary").textContent="";el("po-import-preview").classList.add("hidden");el("po-import-create").disabled=true;
+ setStatus("Select a file to review it before moving it to Drafts.");
+}
+el("po-import-cancel").onclick=resetOrderImport;
+window.__inspectionResetOrderImport=resetOrderImport;
 
 /* Invoice-mode view: historical EST intelligence per imported/saved Item. */
 function weekOf(date){
@@ -927,63 +927,10 @@ function statsFor(item){
  return {latest:[...new Set(latest)].join(" + "),date:latestDate,recent,all,recentWeeks:Math.min(10,keys.length),allWeeks:keys.length};
 }
 window.__inspectionIntakeHistory=statsFor;
-function getInvoiceRows(){
- const chosen=el("invoice-select").value;
- if(chosen){const po=invoices.find(p=>p.id===chosen);if(po)return {po:po.po,customer:po.customer,rows:po.rows.map(r=>({item:r.item,description:r.description,plant:r.plant,receivedQuantity:r.receivedQuantity||"",product:demo.find(x=>x.item===r.item)})),saved:true};}
- return {po:el("po-import-number").value.trim()||"Invoice preview",customer:el("po-import-customer").value.trim(),rows:preview.map(r=>({item:r.item,description:r.product?productDescription(r.product.description,r.product.brand):"",plant:r.product?initialEST(r.product):"",receivedQuantity:r.receivedQuantity||"",product:r.product})),saved:false};
-}
-let invoiceSortKey="",invoiceSortDirection=1;
-function invoiceData(){
- const inv=getInvoiceRows();
- return {...inv,rows:inv.rows.map(r=>{
-  const product=r.product||demo.find(x=>x.item===r.item),s=statsFor(r.item),p=window.__inspectionItemPriority?.(r.item),fixed=fixedEST(r.item);
-  const level=fixed?"stable":p?.level||"high";
-  const label=fixed?"Stable":({low:"Low",medium:"Medium",high:"High"}[level]||"High");
-  const pct=(pair,weeks)=>pair?pair[0]+" · "+Math.round(100*pair[1]/Math.max(1,weeks))+"%":"—";
-  return {...r,brand:product?.brand||"—",pack:window.InspectionProduct.packSize(product?.pack,product?.size)||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
- })};
-}
-function renderInvoiceOverview(){
- const select=el("invoice-select"),chosen=select.value;
- select.innerHTML='<option value="">Current imported file / preview</option>'+invoices.map(p=>'<option value="'+escHtml(p.id)+'">PO '+escHtml(p.po)+" · "+escHtml(p.customer||"No customer")+'</option>').join("");
- select.value=invoices.some(p=>p.id===chosen)?chosen:"";
- const data=invoiceData();
- const displayRows=invoiceSortKey?window.InspectionTableTools.sort(data.rows,invoiceSortKey,invoiceSortDirection,(r,k)=>k==="latest"?r.s.latest:k==="priority"?({low:0,stable:0,medium:1,high:2}[r.level]):r[k]):data.rows;
- window.InspectionTableTools.headers(el("invoice-query-table"),invoiceSortKey,invoiceSortDirection);
- el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items";
- el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td><span class="po-priority '+escHtml(r.level)+'">'+escHtml(({high:"High",medium:"Medium",low:"Low",stable:"Stable"})[r.level]||"High")+'</span></td><td><button type="button" class="btn mini" data-invoice-edit="'+escHtml(r.item)+'">Edit</button></td></tr>').join("")||'<tr><td colspan="8" class="empty">Import a file or select a saved PO.</td></tr>';
-}
-el("invoice-query-table").querySelector("thead").addEventListener("click",e=>{
- const button=e.target.closest(".query-sort");if(!button)return;
- const key=button.closest("th").dataset.sort;invoiceSortDirection=key===invoiceSortKey?-invoiceSortDirection:1;invoiceSortKey=key;renderInvoiceOverview();
-});
-el("invoice-overview-rows").addEventListener("click",e=>{const b=e.target.closest("[data-invoice-edit]");if(b)window.__inspectionEditProductItem?.(b.dataset.invoiceEdit);});
-window.__inspectionInvoiceRefresh=renderInvoiceOverview;
-el("invoice-select").addEventListener("change",renderInvoiceOverview);
-el("po-import-number").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
-el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").value)renderInvoiceOverview();});
-el("invoice-export").onclick=()=>{
- const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
- saveCSV("PO_Inspection_Overview_"+String(data.po).replace(/[^a-z0-9_-]/gi,"_")+".csv",[
- ["PO","Customer","Item","Brand","EST","Description","Pack / Size","Received quantity","Review priority"],
- ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.receivedQuantity||"",({high:"High",medium:"Medium",low:"Low",stable:"Stable"})[r.level]||"High"])
- ]);
-};
-el("invoice-print").onclick=()=>{
- const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
- let printRoot=document.getElementById("inspection-invoice-print-sheet");
- if(!printRoot){printRoot=document.createElement("div");printRoot.id="inspection-invoice-print-sheet";document.body.appendChild(printRoot);}
- printRoot.innerHTML='<h2>Purchase Order '+escHtml(data.po)+'</h2><p>Customer: '+escHtml(data.customer||"—")+'</p><table><thead><tr><th>Item</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Received quantity</th></tr></thead><tbody>'+data.rows.map(r=>'<tr><td>'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td></tr>').join("")+'</tbody></table>';
- document.body.classList.add("print-invoice");
- window.print();
- setTimeout(()=>document.body.classList.remove("print-invoice"),1200);
-};
-renderInvoiceOverview();
-
 el("po-import-create").onclick=()=>{
  const number=clean(el("po-import-number").value),customer=clean(el("po-import-customer").value);
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
- if(offerExistingPO(number,()=>{el("po-import-number").value="";el("po-import-number").focus();setStatus("Enter a different PO number to create a new draft. Your invoice preview is retained.");},()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");el("invoice-select").value="";setStatus("Opened existing PO. The selected invoice was not imported.");renderInvoiceOverview();}))return;
+ if(offerExistingPO(number,()=>{el("po-import-number").value="";el("po-import-number").focus();setStatus("Enter a different PO number to create a new draft. Your invoice preview is retained.");},()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Opened existing PO. The selected invoice was not imported.");}))return;
  const existing=null;
  const client=window.InspectionCloud.requireClient(el("po-import-customer"));if(!client)return;
  const newItems=preview;
@@ -1005,8 +952,8 @@ el("po-import-create").onclick=()=>{
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unknown Items were kept with available source product data, without adding them to the catalog.":"")+".";
  setStatus("PO draft "+number+" prepared. Synchronization status is shown in the connection banner. Only the administrator can publish an PO Approved for Inspection.");
  el("po-import-body").classList.add("hidden");toggle.setAttribute("aria-expanded","false");toggle.textContent="↑ Import Excel / CSV";
- el("invoice-select").value=existing?existing.id:invoices[0]?.id||"";
- renderInvoiceOverview();
+ resetOrderImport();
+
  renderPOArchive();
 };
 })();
@@ -3122,7 +3069,7 @@ function updateRole(){
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
- for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current draft'],['#po-search-form label','Search drafts'],['#po-import-create','Create draft from invoice Items'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
+ for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current draft'],['#po-search-form label','Search drafts'],['#po-import-create','Move to Drafts'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
  const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Draft PO: review the selected EST values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Shared draft pending inspection. The administrator approves the order; the approved version then appears below.';if(hint.textContent!==text)hint.textContent=text;}
  
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
@@ -3369,7 +3316,8 @@ function openSAPDelivery(a,existing=null){
  dialog.querySelector('h3').textContent='Import delivery without PO';
  dialog.querySelector('p').textContent='Creates a draft PO pending inspection for the administrator. SAP ESTs are ignored; catalog references are suggestions until approved. The delivery original, quantities and weights are retained separately.';
  const fields=document.createElement('div');fields.className='po-import-grid';fields.innerHTML='<label><span class="label">PO number (optional)</span><input class="input" id="intake-po-number" maxlength="90" placeholder="e.g. 402824"></label><label><span class="label">Saved customer</span><input class="input" id="intake-client"></label>';dialog.querySelector('p').after(fields);bindClientInput(fields.querySelector('#intake-client'));
- dialog.querySelector('#sap-delivery-save').textContent='Create draft · pending inspection';
+ dialog.querySelector('#sap-delivery-save').textContent='Move to Drafts';
+ const restart=document.createElement('button');restart.className='btn';restart.type='button';restart.textContent='Import again';restart.style.marginLeft='8px';restart.onclick=()=>{dialog.close();openSAPDelivery(null);};dialog.querySelector('#sap-delivery-save').after(restart);
  dialog.querySelector('th:last-child').textContent='Catalog reference · pending review';
  }
  const el=id=>dialog.querySelector('#'+id),status=(text,error=false)=>{el('sap-delivery-status').textContent=text;el('sap-delivery-status').classList.toggle('cloud-error',error);};
@@ -3401,14 +3349,12 @@ function intakeReferenceHTML(row){
  return '<span>'+escapeHTML(ref)+'</span>';
 }
 function renderDeliveryIntakes(){
- if(!started)return;let root=document.getElementById('delivery-intakes-panel');
- if(!root){const anchor=document.getElementById('order-import-panels');if(!anchor)return;root=document.createElement('section');root.id='delivery-intakes-panel';root.className='panel panel-pad';root.hidden=anchor.dataset.importMode!=='delivery';anchor.appendChild(root);}
- root.innerHTML='<div class="section-head"><div><h3>Import Delivery First</h3><p class="small muted">Import a delivery to create a draft PO pending inspection. Final ESTs and export become available after administrator approval.</p></div><button class="btn primary" id="delivery-first-import">Import delivery without PO</button></div>'+deliveryIntakes.map(d=>'<article class="subtlebox" style="margin-top:10px"><div class="section-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionOrderDirectory.summary({id:d.draft_id,po:d.po_number,customer:d.customer_name},{approvedId:d.approved_po_id,intakes:[d]}),escapeHTML)+'</div><div class="row"><button class="btn mini" data-intake-original="'+d.id+'">Download original</button>'+(d.approved_po_id?'<button class="btn mini primary" data-intake-approved="'+d.approved_po_id+'">Open approved order</button>':administrator?'<button class="btn mini primary" data-intake-review="'+escapeHTML(d.draft_id)+'">Review PO</button>':'')+'</div></div><details><summary>Delivery lines ('+d.source_rows.length+')</summary><div class="tablewrap"><table data-layout-key="pending-delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th></tr></thead><tbody>'+d.source_rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight)+' '+escapeHTML(r.catchWeight!==''?r.weightUnit:'')+'</td><td>'+escapeHTML(r.quantity)+(deliveryNotReceived(r)?'<div class="small muted">Not received</div>':'')+'</td></tr>').join('')+'</tbody></table></div></details></article>').join('');
+ if(!started)return;
+ const root=document.getElementById('delivery-intakes-panel');if(!root)return;
+ root.innerHTML='<div class="section-head"><div><h3>Import Delivery First</h3><p class="small muted">Choose a delivery file, review its lines, then move it to Drafts for inspection.</p></div><button class="btn primary" id="delivery-first-import">Import delivery</button></div>';
  root.querySelector('#delivery-first-import').onclick=()=>openSAPDelivery(null);
- root.querySelectorAll('[data-intake-original]').forEach(b=>b.onclick=()=>{const d=deliveryIntakes.find(x=>x.id===b.dataset.intakeOriginal);downloadDeliveryOriginal({...d,source_bucket:'inspection-delivery-intakes'});});
- root.querySelectorAll('[data-intake-review]').forEach(b=>b.onclick=()=>{if(!administrator)return;const id=b.dataset.intakeReview;if(!official[PO_KEY]?.invoices?.some(p=>p.id===id)){alert('The review draft is no longer available. The original delivery remains retained.');return;}window.__inspectionOpenReviewPO?.(id);});
- root.querySelectorAll('[data-intake-approved]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.intakeApproved;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById('approved-po-details')?.scrollIntoView?.({block:'start'});});
 }
+
 async function saveDeliveryIntake(number,po,client,fileName,rows,file){
  if(!canEdit()||!file){deny();return false;}
  try{await commit();}catch(error){alert('Could not prepare the upload: '+error.message);return false;}if(!canEdit()||queueCount){alert('Resolve pending sends before creating this review PO.');return false;}
