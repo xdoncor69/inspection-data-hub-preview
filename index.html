@@ -59,21 +59,21 @@ table{font-size:10px}td,th{white-space:normal;padding:7px 8px}
 #lookup-view .po-search-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:5px}
 #lookup-view #po-search-input{flex:1 1 220px;min-width:0;width:100%;max-width:none}
 #lookup-view #po-search-status{margin-top:6px;min-height:1em}
-:is(#lookup-view,#purchase-orders-view) .po-list-row{padding:12px 5px;gap:12px}
-:is(#lookup-view,#purchase-orders-view) .po-list-identity{min-width:0}
-:is(#lookup-view,#purchase-orders-view) .po-number{display:block;font-size:13px;line-height:1.4;font-weight:700;color:var(--sk-accent);overflow-wrap:anywhere}
-:is(#lookup-view,#purchase-orders-view) .po-number .pill{font-size:10px;font-weight:600;padding:3px 7px;vertical-align:middle;margin-left:4px}
-:is(#lookup-view,#purchase-orders-view) .po-customer{font-size:12px;line-height:1.45;font-weight:600;color:var(--sk-ink);margin-top:3px;overflow-wrap:anywhere}
-:is(#lookup-view,#purchase-orders-view) .po-list-meta{margin-top:4px}
-@media(max-width:800px){:is(#lookup-view,#purchase-orders-view) .po-list-row .row{flex-wrap:wrap}}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row{padding:12px 5px;gap:12px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-identity{min-width:0}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-number{display:block;font-size:13px;line-height:1.4;font-weight:700;color:var(--sk-accent);overflow-wrap:anywhere}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-number .pill{font-size:10px;font-weight:600;padding:3px 7px;vertical-align:middle;margin-left:4px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-customer{font-size:12px;line-height:1.45;font-weight:600;color:var(--sk-ink);margin-top:3px;overflow-wrap:anywhere}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-meta{margin-top:4px}
+@media(max-width:800px){:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row .row{flex-wrap:wrap}}
 </style>
 <style>.history-change-value{white-space:pre-wrap;overflow-wrap:anywhere;max-width:380px;margin:0;font-family:inherit;font-size:12px;max-height:200px;overflow:auto}#change-history-rows td{vertical-align:top}#change-history-rows td:nth-child(3){min-width:150px}</style><style>.login-pill{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#blocker-pending-button,#blocker-account-button,#required-login-button{margin:6px}</style><style id="po-panel-consistency">
 /* Keep both PO sections aligned while preserving each selected skin. */
-:is(#lookup-view,#purchase-orders-view) :is(#approved-po-panel,.po-archive){margin-top:9px;padding:10px 12px;min-width:0;max-width:100%}
-:is(#lookup-view,#purchase-orders-view) :is(#approved-po-panel,.po-archive) .section-head{margin-bottom:7px;gap:8px;flex-wrap:wrap}
-:is(#lookup-view,#purchase-orders-view) :is(#approved-po-panel,.po-archive) .section-head h3{font-size:13px;line-height:1.3;margin:0}
-:is(#lookup-view,#purchase-orders-view) :is(#approved-po-panel,.po-archive) .section-head .hint{display:block;margin:0;line-height:1.45}
-:is(#lookup-view,#purchase-orders-view) :is(#approved-po-panel,.po-archive) .section-head>.row{flex-wrap:wrap}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) :is(#approved-po-panel,.po-archive){margin-top:9px;padding:10px 12px;min-width:0;max-width:100%}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) :is(#approved-po-panel,.po-archive) .section-head{margin-bottom:7px;gap:8px;flex-wrap:wrap}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) :is(#approved-po-panel,.po-archive) .section-head h3{font-size:13px;line-height:1.3;margin:0}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) :is(#approved-po-panel,.po-archive) .section-head .hint{display:block;margin:0;line-height:1.45}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) :is(#approved-po-panel,.po-archive) .section-head>.row{flex-wrap:wrap}
 </style>
 <style id="settings-sections-layout">#settings-view .settings-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}#settings-view>.skin-settings,#settings-view>#import-view,#settings-view>#sync-view{min-width:0}</style>
 <script>
@@ -329,6 +329,50 @@ window.InspectionOrderDirectory=Object.freeze({
 });
 </script>
 <style id="order-directory-status-style">#purchase-orders-view .order-directory-deliveries{font-size:12px;font-weight:650;color:var(--sk-ink);overflow-wrap:anywhere;margin-top:3px}#purchase-orders-view .order-directory-status{margin:7px 0}#purchase-orders-view .order-directory-status .pill{display:inline-block;font-weight:700;white-space:normal}</style>
+<script id="order-overview-controller">
+window.InspectionOrderOverview=(()=>{
+ let current=null,onDismiss=null;
+ function dialog(){
+  let d=document.getElementById('order-overview-dialog');if(d)return d;
+  d=document.createElement('dialog');d.id='order-overview-dialog';d.className='online-dialog';d.setAttribute('aria-labelledby','order-overview-title');
+  d.innerHTML='<div class="section-head order-overview-heading"><h3 id="order-overview-title">Order overview</h3><button type="button" class="btn" id="order-overview-close">Close</button></div><div id="order-overview-content"></div>';
+  document.body.appendChild(d);d.querySelector('#order-overview-close').onclick=dismiss;
+  d.addEventListener('cancel',e=>{e.preventDefault();dismiss();});return d;
+ }
+ function dismiss(){const fn=onDismiss;current=null;onDismiss=null;const d=document.getElementById('order-overview-dialog');if(d?.open)d.close();fn?.();}
+ function sync(kind,root,active,close){
+  if(!active){if(current===kind)dismiss();return;}
+  const d=dialog();
+  if(current!==kind){const previous=onDismiss;current=null;onDismiss=null;previous?.();}
+  for(const child of d.querySelector('#order-overview-content').children)child.hidden=child!==root;
+  d.querySelector('#order-overview-content').appendChild(root);root.hidden=false;current=kind;onDismiss=close;
+  if(!d.open)d.showModal();
+ }
+ function capture(root,record){
+  const same=root.dataset.orderRecord===record;root.dataset.orderRecord=record;
+  return same?Object.fromEntries([...root.querySelectorAll('details[data-order-fold]')].map(d=>[d.dataset.orderFold,d.open])):{};
+ }
+ function restore(root,state){for(const d of root.querySelectorAll('details[data-order-fold]'))d.open=state[d.dataset.orderFold]===true;}
+ return Object.freeze({sync,dismiss,capture,restore,isOpen:()=>!!document.getElementById('order-overview-dialog')?.open});
+})();
+</script>
+<style id="order-overview-style">
+#order-overview-dialog{width:1100px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box}
+#order-overview-dialog *{box-sizing:border-box}
+#order-overview-dialog :is(#po-details,#approved-po-details,.panel,.sap-delivery-card,details){min-width:0;max-width:100%}
+#order-overview-dialog :is(.section-head,.po-details-head){display:flex;align-items:flex-start;flex-wrap:wrap;gap:12px}
+#order-overview-dialog :is(.section-head,.po-details-head)>div:first-child{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}
+#order-overview-dialog :is(.section-head,.po-details-head)>.row{display:flex;flex:0 1 auto;flex-wrap:wrap;gap:8px;min-width:0;max-width:100%}
+#order-overview-dialog .row>.btn{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#order-overview-dialog .tablewrap{max-width:100%;overflow-x:auto}
+#order-overview-dialog details.order-lines{margin-top:14px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);padding:10px}
+#order-overview-dialog details.order-lines>summary{cursor:pointer;font-weight:700;padding:4px}
+#order-overview-dialog .order-counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#order-overview-dialog .order-counts>span{padding:7px 10px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-radius)}
+.order-action-modal{margin:0;padding:0;border:0;width:100vw;max-width:none;height:100dvh;max-height:none;background:transparent;color:inherit}
+.order-action-modal::backdrop{background:transparent}
+@media(max-width:620px){#order-overview-dialog{padding:14px}#order-overview-dialog :is(.section-head,.po-details-head)>.row{flex-basis:100%}}
+</style>
 <script id="product-field-policy">
 /* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
 window.InspectionProduct=Object.freeze({
@@ -371,7 +415,7 @@ window.__inspectionSaveCatalog=function(){
 let view="purchase-orders",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(v==="meat")v="purchase-orders";if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
+function navigate(v){if(v==="meat")v="purchase-orders";if(v==="dairy")v="global";if(v!=="purchase-orders")window.InspectionOrderOverview?.dismiss();if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -405,7 +449,7 @@ async function lookup(){
 $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")lookup()};$("history-all").onclick=()=>navigate("history");
 function renderRecent(){if(!$("recent-rows"))return;$("recent-rows").innerHTML=history.slice(0,4).map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="5" class="empty">No searches in this preview session</td></tr>';}
 function renderHistory(){$("history-rows").innerHTML=history.map(x=>'<tr><td>'+esc(x.time)+'</td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.brand)+'</td><td>'+esc(x.description)+'</td><td>'+esc(x.status)+'</td></tr>').join("")||'<tr><td colspan="6" class="empty">No searches in this preview session</td></tr>';}
-function modal(body){$("modal-root").innerHTML='<div class="modal-bg"><div class="modal">'+body+'<div style="margin-top:17px;text-align:right"><button class="btn" id="close-modal">Close</button></div></div></div>';$("close-modal").onclick=closeModal;$("modal-root").querySelector(".modal-bg").onclick=e=>{if(e.target.classList.contains("modal-bg"))closeModal()};}
+function modal(body){$("modal-root").innerHTML='<div class="modal-bg"><div class="modal">'+body+'<div style="margin-top:17px;text-align:right"><button class="btn" id="close-modal">Close</button></div></div></div>';if(window.InspectionOrderOverview?.isOpen()){const layer=document.createElement("dialog");layer.className="order-action-modal";while($("modal-root").firstChild)layer.appendChild($("modal-root").firstChild);$("modal-root").appendChild(layer);layer.showModal();layer.addEventListener("cancel",closeModal);}$("close-modal").onclick=closeModal;$("modal-root").querySelector(".modal-bg").onclick=e=>{if(e.target.classList.contains("modal-bg"))closeModal()};}
 function closeModal(){$("modal-root").innerHTML="";}
 $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an existing image or upload a new one. This preview does not save files.</p><div class="choice" id="choose-gallery">▦ &nbsp; Browse photo gallery</div><div class="choice" id="choose-upload">＋ &nbsp; Add a new photo</div><div class="choice" id="choose-remove">× &nbsp; Remove assigned photo</div>');$("choose-gallery").onclick=gallery;$("choose-upload").onclick=upload;$("choose-remove").onclick=()=>{photoName="";showProduct();closeModal()};};
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
@@ -971,7 +1015,7 @@ $("po-count").textContent=invoices.length+" drafts";
 $("po-workspace-title").textContent=active?"Draft · pending inspection":"Drafts";
 $("po-workspace-hint").textContent=active?"Draft · pending inspection · "+active.po+" · "+(active.customer||"Customer not specified"):"Drafts are shared with all signed-in users. Approved POs and POs with delivery are listed below.";
 $("po-new").classList.toggle("hidden",!!active);
-root.classList.toggle("hidden",!!active);
+root.classList.toggle("hidden",false);
 $("po-search-form").classList.toggle("hidden",!!active);
 const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
@@ -1023,11 +1067,14 @@ function openMissingESTEditor(poId){
 }
 function renderPODetails(){
 const root=$("po-details"),p=invoices.find(x=>x.id===openPO);
-if(!p){root.innerHTML="";root.dataset.draftOwner="";return;}root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
-root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO No. '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · Draft · pending inspection</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
+if(!p){root.innerHTML="";root.dataset.draftOwner="";window.InspectionOrderOverview.sync('draft',root,false);return;}
+const folded=window.InspectionOrderOverview.capture(root,p.id);root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
+root.innerHTML='<div class="po-details-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'</div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="order-counts"><span>PO: '+p.rows.length+' item lines</span></div><details class="order-lines" data-order-fold="po"><summary>PO items ('+p.rows.length+')</summary><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
  return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
- }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p);
+ }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p)+'</details><section id="draft-delivery-overview"></section>';
+window.InspectionCloud.renderDraftDeliveries?.(document.getElementById('draft-delivery-overview'),p);
+window.InspectionOrderOverview.restore(root,folded);window.InspectionOrderOverview.sync('draft',root,true,()=>{openPO=null;existingPOAccepted=false;renderPOArchive();});
 if(window.InspectionCloud.isAdministrator()&&p.rows.some(r=>!String(r.plant||'').trim())){const bulk=document.createElement('button');bulk.id='po-fill-missing-est';bulk.className='btn primary';bulk.textContent='Fill missing ESTs';bulk.onclick=()=>openMissingESTEditor(p.id);root.querySelector('.po-add-row').after(bulk);}
 $('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
 $('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(window.InspectionProduct.classLabel(demo.find(x=>x.item===r.item)?.category))+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
@@ -1860,7 +1907,7 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 <style>
 #lookup-view .worklog{margin-top:9px;overflow:hidden}
 #lookup-view .worklog .section-head{padding:10px 12px;gap:10px}
-:is(#lookup-view,#purchase-orders-view) .worklog .section-head h3,:is(#lookup-view,#purchase-orders-view) .po-archive .section-head h3{font-size:13px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .worklog .section-head h3,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive .section-head h3{font-size:13px}
 #lookup-view .worklog th,#lookup-view .worklog td{padding:6px 8px;font-size:11px}
 #lookup-view .worklog td input{width:100%;max-width:none;min-width:65px;padding:5px 6px;font-size:11px}
 #lookup-view .worklog td:nth-child(2) input{max-width:105px}
@@ -1868,20 +1915,20 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 #lookup-view .worklog .log-actions{gap:5px}
 #lookup-view .worklog .log-actions .btn{font-size:10px;padding:5px 7px}
 #lookup-view .po-inline-hint{padding:8px 12px;font-size:10px}
-:is(#lookup-view,#purchase-orders-view) .po-archive{margin-top:9px;padding:10px 12px}
-:is(#lookup-view,#purchase-orders-view) .po-archive .section-head{margin-bottom:7px}
-:is(#lookup-view,#purchase-orders-view) .po-list-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 5px;border-bottom:1px solid #e2eaf0;font-size:11px}
-:is(#lookup-view,#purchase-orders-view) .po-list-row:last-child{border-bottom:0}
-:is(#lookup-view,#purchase-orders-view) .po-list-row .row{gap:4px;flex:none}
-:is(#lookup-view,#purchase-orders-view) .po-details-head{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#edf5fb;border:1px solid #dce9f3;padding:9px 10px;margin:10px 0 5px;border-radius:6px;font-size:12px}
-:is(#lookup-view,#purchase-orders-view) #po-details th,:is(#lookup-view,#purchase-orders-view) #po-details td{font-size:11px;padding:7px}
-:is(#lookup-view,#purchase-orders-view) #po-details input{font-size:11px;padding:5px 6px;min-width:95px;width:100%}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive{margin-top:9px;padding:10px 12px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive .section-head{margin-bottom:7px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 5px;border-bottom:1px solid #e2eaf0;font-size:11px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row:last-child{border-bottom:0}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row .row{gap:4px;flex:none}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-details-head{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#edf5fb;border:1px solid #dce9f3;padding:9px 10px;margin:10px 0 5px;border-radius:6px;font-size:12px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details th,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details td{font-size:11px;padding:7px}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details input{font-size:11px;padding:5px 6px;min-width:95px;width:100%}
 #lookup-view .po-actions{white-space:nowrap}
 #lookup-view .po-actions .btn{font-size:10px;padding:5px 6px}
 #lookup-view .po-verified{font-size:10px;color:#23794f;font-weight:700}
-@media(max-width:800px){:is(#lookup-view,#purchase-orders-view) .po-details-head{flex-direction:column;align-items:flex-start}:is(#lookup-view,#purchase-orders-view) .po-list-row{flex-wrap:wrap}}
+@media(max-width:800px){:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-details-head{flex-direction:column;align-items:flex-start}:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row{flex-wrap:wrap}}
 </style>
-<style>:is(#lookup-view,#purchase-orders-view) .po-add-row{display:flex;align-items:center;gap:7px;margin:9px 0 11px;flex-wrap:wrap}:is(#lookup-view,#purchase-orders-view) .po-add-row input{max-width:230px;flex:1}#lookup-view [data-po-item]{max-width:95px}#lookup-view [data-po-desc]{min-width:145px}#lookup-view [data-po-remove]{color:#a34242}</style><style>
+<style>:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-add-row{display:flex;align-items:center;gap:7px;margin:9px 0 11px;flex-wrap:wrap}:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-add-row input{max-width:230px;flex:1}#lookup-view [data-po-item]{max-width:95px}#lookup-view [data-po-desc]{min-width:145px}#lookup-view [data-po-remove]{color:#a34242}</style><style>
 #history-view>#history-quick-panel{display:none!important}
 #history-view>.panel:last-child{display:none!important}
 #history-view .est-change-stats{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:9px 0 13px;padding:9px 11px;background:#f1f7fc;border-radius:7px;font-size:11px}
@@ -1896,10 +1943,10 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 #lookup-view .po-fixed-toggle{font-size:9px;padding:3px 5px;margin-top:4px;color:#60798b}
 #lookup-view .po-verified{font-size:9px;margin-top:3px}
 </style><style>
-:is(#lookup-view,#purchase-orders-view) .po-priority{display:inline-block;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:750;line-height:1.25;white-space:nowrap}
-:is(#lookup-view,#purchase-orders-view) .po-priority.low{background:#e7f5ec;color:#14784c}
-:is(#lookup-view,#purchase-orders-view) .po-priority.medium{background:#fff0d7;color:#a6650d}
-:is(#lookup-view,#purchase-orders-view) .po-priority.high{background:#ffebec;color:#a32735}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority{display:inline-block;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:750;line-height:1.25;white-space:nowrap}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.low{background:#e7f5ec;color:#14784c}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.medium{background:#fff0d7;color:#a6650d}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.high{background:#ffebec;color:#a32735}
 #lookup-view .po-est-weeks{color:#40566b;font-size:11px;font-weight:650}
 #lookup-view .po-est-never{color:#a32735}
 </style><style>
@@ -1927,11 +1974,11 @@ html,body{width:100%;max-width:100%;margin:0}
 .main{flex:1 1 0;min-width:0;max-width:none;width:auto}
 .main>section,.main .panel,.main .layout,.main .est-summary,.main .est-summary-grid,.main .est-summary-card{min-width:0;max-width:100%}
 .sidebar{height:100dvh;min-height:100vh;position:sticky;top:0;align-self:flex-start;flex-shrink:0}
-:is(#lookup-view,#purchase-orders-view) .po-archive,:is(#lookup-view,#purchase-orders-view) #po-details{min-width:0;max-width:100%}
-:is(#lookup-view,#purchase-orders-view) #po-details .tablewrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-:is(#lookup-view,#purchase-orders-view) #po-details table{width:max-content;min-width:100%}
-:is(#lookup-view,#purchase-orders-view) .po-add-row{min-width:0}
-:is(#lookup-view,#purchase-orders-view) .po-add-row input{min-width:0}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details{min-width:0;max-width:100%}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details .tablewrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details table{width:max-content;min-width:100%}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-add-row{min-width:0}
+:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-add-row input{min-width:0}
 #product-lookup-workspace .est-summary .est-summary-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
 #product-lookup-workspace .est-summary .est-summary-card{min-width:0}
 #product-lookup-workspace .est-summary .est-summary-value{font-size:12px!important;font-weight:750!important;line-height:1.3!important;letter-spacing:0!important;overflow-wrap:anywhere}
@@ -1985,11 +2032,11 @@ html,body{width:100%;max-width:100%;margin:0}
  #product-lookup-workspace .est-summary .est-summary-card{padding:8px}
  #product-lookup-workspace .product-header>div:first-child{grid-template-columns:auto minmax(0,1fr)}
  #product-lookup-workspace .product-name{font-size:15px}
- :is(#lookup-view,#purchase-orders-view) .po-archive .section-head{flex-wrap:wrap;gap:8px}
- :is(#lookup-view,#purchase-orders-view) .po-archive .section-head>.row{flex-wrap:wrap}
- :is(#lookup-view,#purchase-orders-view) .po-details-head{flex-wrap:wrap}
- :is(#lookup-view,#purchase-orders-view) .po-details-head .row{flex-wrap:wrap}
- :is(#lookup-view,#purchase-orders-view) #po-details .tablewrap{overflow-x:auto}
+ :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive .section-head{flex-wrap:wrap;gap:8px}
+ :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-archive .section-head>.row{flex-wrap:wrap}
+ :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-details-head{flex-wrap:wrap}
+ :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-details-head .row{flex-wrap:wrap}
+ :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) #po-details .tablewrap{overflow-x:auto}
  .modal{max-width:calc(100vw - 20px);max-height:calc(100dvh - 32px);overflow:auto}
 }
 @media(max-width:370px){
@@ -2672,9 +2719,9 @@ count();draw();
 :root[data-skin="editorial"] .btn{font-weight:650}
 :root[data-skin="graphite"] .title{letter-spacing:-.035em;font-weight:750}
 :root[data-skin="graphite"] .sidebar .nav.active{box-shadow:inset 3px 0 0 var(--sk-accent)}
-:root[data-skin="graphite"] .po-priority.low,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view) .po-priority.low{background:#204838;color:#a1f1c4}
-:root[data-skin="graphite"] .po-priority.medium,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view) .po-priority.medium{background:#554329;color:#f2ce85}
-:root[data-skin="graphite"] .po-priority.high,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view) .po-priority.high{background:#5b3034;color:#ffb2b2}
+:root[data-skin="graphite"] .po-priority.low,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.low{background:#204838;color:#a1f1c4}
+:root[data-skin="graphite"] .po-priority.medium,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.medium{background:#554329;color:#f2ce85}
+:root[data-skin="graphite"] .po-priority.high,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.high{background:#5b3034;color:#ffb2b2}
 :root[data-skin="graphite"] .est-summary-value,:root[data-skin="graphite"] .est-summary-label{color:var(--sk-ink)}
 :root[data-skin="graphite"] .brand-card p,:root[data-skin="graphite"] .small{color:var(--sk-muted)}
 :root[data-skin="graphite"] #po-import-dialog .po-import-summary,:root[data-skin="graphite"] #po-import-dialog .po-import-grid,:root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-intro{color:var(--sk-ink)}
@@ -2788,12 +2835,12 @@ count();draw();
 :root[data-skin] #global-view .inspection-query-conditions-title strong{color:var(--sk-ink)}
 :root[data-skin] #history-view .est-change-stats strong{color:var(--sk-accent)}
 :root[data-skin] .stat-pill{color:var(--sk-ink)}
-:root[data-skin] :is(#lookup-view,#purchase-orders-view) .po-details-head{background:var(--sk-surface2)}
-:root[data-skin] :is(#lookup-view,#purchase-orders-view) .po-list-row{border-color:var(--sk-border)}
+:root[data-skin] :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-details-head{background:var(--sk-surface2)}
+:root[data-skin] :is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-list-row{border-color:var(--sk-border)}
 :root[data-skin] #lookup-view .po-verified,:root[data-skin] #global-view .iq-photo-yes{color:var(--sk-positive-ink)}
-:root[data-skin] :is(.est-priority.low,:is(#lookup-view,#purchase-orders-view) .est-summary .est-priority.low,:is(#lookup-view,#purchase-orders-view) .po-priority.low,.ip-tag.new){background:var(--sk-positive-bg)!important;color:var(--sk-positive-ink)!important;border-color:var(--sk-positive-bg)!important;box-shadow:none!important}
-:root[data-skin] :is(.est-priority.medium,:is(#lookup-view,#purchase-orders-view) .est-summary .est-priority.medium,:is(#lookup-view,#purchase-orders-view) .po-priority.medium,.ip-tag.changed){background:var(--sk-warning-bg)!important;color:var(--sk-warning-ink)!important;border-color:var(--sk-warning-bg)!important;box-shadow:none!important}
-:root[data-skin] :is(.est-priority.high,:is(#lookup-view,#purchase-orders-view) .est-summary .est-priority.high,:is(#lookup-view,#purchase-orders-view) .po-priority.high,.ip-tag.duplicate,.ip-tag.invalid){background:var(--sk-negative-bg)!important;color:var(--sk-negative-ink)!important;border-color:var(--sk-negative-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.est-priority.low,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .est-summary .est-priority.low,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.low,.ip-tag.new){background:var(--sk-positive-bg)!important;color:var(--sk-positive-ink)!important;border-color:var(--sk-positive-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.est-priority.medium,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .est-summary .est-priority.medium,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.medium,.ip-tag.changed){background:var(--sk-warning-bg)!important;color:var(--sk-warning-ink)!important;border-color:var(--sk-warning-bg)!important;box-shadow:none!important}
+:root[data-skin] :is(.est-priority.high,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .est-summary .est-priority.high,:is(#lookup-view,#purchase-orders-view,#order-overview-dialog) .po-priority.high,.ip-tag.duplicate,.ip-tag.invalid){background:var(--sk-negative-bg)!important;color:var(--sk-negative-ink)!important;border-color:var(--sk-negative-bg)!important;box-shadow:none!important}
 :root[data-skin] :is(.ip-tag.same,.po-type.meat,.po-type.dairy){background:var(--sk-accent-soft);color:var(--sk-accent)}
 :root[data-skin] :is(#product-lookup-workspace .est-latest-number.low){color:var(--sk-positive-ink)!important}
 :root[data-skin] :is(#product-lookup-workspace .est-latest-number.medium){color:var(--sk-warning-ink)!important}
@@ -3293,11 +3340,12 @@ async function downloadDeliveryOriginal(d){
  try{const path=d.source_path.split('/').map(encodeURIComponent).join('/'),signed=await request('/storage/v1/object/sign/'+encodeURIComponent(d.source_bucket||'inspection-delivery-originals')+'/'+path,{method:'POST',body:{expiresIn:60,download:d.source_file}});const a=document.createElement('a');a.href=BASE+'/storage/v1'+signed.signedURL;a.download=d.source_file;a.click();}catch(error){alert('Original download failed: '+error.message);}
 }
 function renderPODeliveries(a){
- const root=document.getElementById('approved-po-deliveries');if(!root)return;const cache=poDeliveries.get(a.id);
- root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Only SAP delivery lines are included. Zero quantity means not received; a blank quantity remains blank. Items absent from this delivery are not exported. EST comes only from the approved PO, which stays unchanged.</p></div><div class="row"><button class="btn primary" id="sap-delivery-upload">Load delivery</button><button class="btn" id="sap-delivery-refresh">Refresh</button></div></div>'+(!cache?'<p>Loading…</p>':cache.error?'<p class="cloud-error">'+escapeHTML(cache.error)+'</p>':!cache.rows.length?'<p>No delivery loaded yet.</p>':cache.rows.map(d=>{
+ const root=document.getElementById('approved-po-deliveries');if(!root)return;const folded=window.InspectionOrderOverview.capture(root,a.id),cache=poDeliveries.get(a.id);
+ root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Delivery lines come from SAP; EST values come from this approved PO. Export omits quantity-zero and unresolved lines.</p></div><div class="row"><button class="btn primary" id="sap-delivery-upload">Load delivery</button><button class="btn" id="sap-delivery-refresh">Refresh</button></div></div>'+(!cache?'<p>Loading…</p>':cache.error?'<p class="cloud-error">'+escapeHTML(cache.error)+'</p>':!cache.rows.length?'<p>No delivery loaded yet.</p>':cache.rows.map(d=>{
  const current=deliveryCurrent(d,a),missing=d.rows.filter(r=>!r.matched&&!deliveryNotReceived(r)).length,notReceived=d.rows.filter(deliveryNotReceived).length;
- return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Del No. '+escapeHTML(d.delivery_number)+'</strong><p class="small muted">'+escapeHTML(d.source_file)+' · '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+d.id+'"'+(!current?' disabled':'')+'>'+((missing||notReceived)?'Export received summary':'Export summary')+'</button><button class="btn" data-delivery-original="'+d.id+'"'+(!d.source_path?' disabled':'')+'>Download original</button><button class="btn" data-delivery-update="'+d.id+'">Update / resolve</button></div></div>'+(!current?'<p class="cloud-error">Approved PO changed. Update the match before exporting.</p>':'')+(notReceived?'<p class="small muted">'+notReceived+' zero-quantity row(s): not received, excluded from export. The approved PO is unchanged.</p>':'')+(missing?'<p class="cloud-error">Partial summary: '+missing+' unresolved row(s). They stay visible and will be excluded from the matched export.</p>':'')+'<div class="tablewrap"><table data-layout-key="delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th></tr></thead><tbody>'+d.rows.map((r,i)=>'<tr class="'+(!r.matched?'delivery-unresolved':'')+'"><td>'+escapeHTML(r.item)+(deliveryNotReceived(r)?'<div class="small muted">Not received · quantity 0 · excluded from export</div>':!r.matched?'<div class="cloud-error small">Source line '+(i+1)+' · '+escapeHTML(r.match_status==='ambiguous'?'Ambiguous approved EST':'No valid PO match')+'</div>':'')+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight??'')+' '+escapeHTML(r.catchWeight!==''&&r.catchWeight!=null?r.weightUnit||d.weight_unit:'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div></article>';
+ return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Del No. '+escapeHTML(d.delivery_number)+'</strong><div class="order-counts"><span>PO: '+a.snapshot.rows.length+' item lines</span><span>Delivery: '+d.rows.length+' item lines</span></div><p class="small muted">'+escapeHTML(d.source_file)+' · '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+d.id+'"'+(!current?' disabled':'')+'>'+((missing||notReceived)?'Export received summary':'Export summary')+'</button><button class="btn" data-delivery-original="'+d.id+'"'+(!d.source_path?' disabled':'')+'>Download original</button><button class="btn" data-delivery-update="'+d.id+'">Update / resolve</button></div></div>'+(!current?'<p class="cloud-error">Approved PO changed. Update the match before exporting.</p>':'')+(notReceived?'<p class="small muted">'+notReceived+' zero-quantity row(s): not received, excluded from export. The approved PO is unchanged.</p>':'')+(missing?'<p class="cloud-error">Partial summary: '+missing+' unresolved row(s). They stay visible and will be excluded from the matched export.</p>':'')+'<details class="order-lines" data-order-fold="delivery-'+escapeHTML(d.id)+'"><summary>Delivery items ('+d.rows.length+')</summary><div class="tablewrap"><table data-layout-key="delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th></tr></thead><tbody>'+d.rows.map((r,i)=>'<tr class="'+(!r.matched?'delivery-unresolved':'')+'"><td>'+escapeHTML(r.item)+(deliveryNotReceived(r)?'<div class="small muted">Not received · quantity 0 · excluded from export</div>':!r.matched?'<div class="cloud-error small">Source line '+(i+1)+' · '+escapeHTML(r.match_status==='ambiguous'?'Ambiguous approved EST':'No valid PO match')+'</div>':'')+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight??'')+' '+escapeHTML(r.catchWeight!==''&&r.catchWeight!=null?r.weightUnit||d.weight_unit:'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div></details></article>';
  }).join(''));
+ window.InspectionOrderOverview.restore(root,folded);
  document.getElementById('sap-delivery-upload').onclick=()=>openSAPDelivery(a);document.getElementById('sap-delivery-refresh').onclick=()=>loadPODeliveries(a.id);
  root.querySelectorAll('[data-delivery-update]').forEach(b=>b.onclick=()=>openSAPDelivery(a,cache.rows.find(d=>d.id===b.dataset.deliveryUpdate)));
  root.querySelectorAll('[data-delivery-original]').forEach(b=>b.onclick=()=>downloadDeliveryOriginal(cache.rows.find(d=>d.id===b.dataset.deliveryOriginal)));
@@ -3348,6 +3396,16 @@ function intakeReferenceHTML(row){
 }
 document.getElementById('order-import-delivery').onclick=()=>openSAPDelivery(null);
 
+function renderDraftDeliveries(root,p){
+ if(!root)return;
+ const links=orderDirectoryMetadata.intakes.filter(d=>d.draft_id===p.id||p.deliveryIntakeId===d.id);
+ if(!links.length){root.innerHTML='<p class="small muted">No delivery associated.</p>';return;}
+ root.innerHTML='<h3>Delivery first · pending inspection</h3>'+links.map(link=>{
+  const d=deliveryIntakes.find(x=>x.id===link.id);
+  return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Del No. '+escapeHTML(link.delivery_number)+'</strong><div class="order-counts"><span>PO: '+p.rows.length+' item lines</span>'+(d?'<span>Delivery: '+d.source_rows.length+' item lines</span>':'')+'</div></div>'+(d?.source_path?'<div class="row"><button class="btn" data-draft-original="'+escapeHTML(d.id)+'">Download original</button></div>':'')+'</div>'+(d?'<details class="order-lines" data-order-fold="intake-'+escapeHTML(d.id)+'"><summary>Delivery items ('+d.source_rows.length+')</summary><div class="tablewrap"><table data-layout-key="pending-delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th></tr></thead><tbody>'+d.source_rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight)+' '+escapeHTML(r.catchWeight!==''?r.weightUnit:'')+'</td><td>'+escapeHTML(r.quantity)+'</td></tr>').join('')+'</tbody></table></div></details>':'<p class="small muted">Delivery line details are unavailable for this account.</p>')+'</article>';
+ }).join('');
+ root.querySelectorAll('[data-draft-original]').forEach(b=>b.onclick=()=>{const d=deliveryIntakes.find(x=>x.id===b.dataset.draftOriginal);if(d)downloadDeliveryOriginal({...d,source_bucket:'inspection-delivery-intakes'});});
+}
 async function saveDeliveryIntake(number,po,client,fileName,rows,file){
  if(!canEdit()||!file){deny();return false;}
  try{await commit();}catch(error){alert('Could not prepare the upload: '+error.message);return false;}if(!canEdit()||queueCount){alert('Resolve pending sends before creating this review PO.');return false;}
@@ -3373,11 +3431,13 @@ function renderApprovedPOs(){
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
  document.getElementById('approved-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.approved.map(approvedOrderEntry),{layoutKey:'purchase-order-approved',escape:escapeHTML,empty:term?'No matching POs approved for inspection.':'No POs in this stage.'});
  document.getElementById('delivery-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.withDelivery.map(approvedOrderEntry),{layoutKey:'purchase-order-delivery',escape:escapeHTML,empty:term?'No matching POs with delivery.':'No POs with delivery yet.'});
- const selected=approvedPOs.find(p=>p.id===selectedApproved),detailRoot=document.getElementById('approved-po-details');
- document.getElementById(selected&&deliveryOrderIDs.has(selected.id)?'delivery-po-panel':'approved-po-panel').appendChild(detailRoot);
+ const detailRoot=document.getElementById('approved-po-details');
+ const folded=window.InspectionOrderOverview.capture(detailRoot,selectedApproved||'');
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
  const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
- detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO No. '+escapeHTML(a.snapshot.po)+' - Approved for Inspection</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
+ const identity=a?orderSummary(a.snapshot,a.id):null,heading=identity?.po?'PO No. '+escapeHTML(identity.po)+' - Approved for Inspection':identity?.association==='unknown'?'PO association not recorded - Approved for Inspection':'No PO associated - Approved for Inspection';
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">'+heading+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div><div class="order-counts"><span>PO: '+a.snapshot.rows.length+' item lines</span></div><details class="order-lines" data-order-fold="po"><summary>PO items ('+a.snapshot.rows.length+')</summary>'+approvedRowsHTML(a.snapshot)+'</details><section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
+ window.InspectionOrderOverview.restore(detail,folded);window.InspectionOrderOverview.sync('approved',detail,!!a,()=>{selectedApproved=null;renderApprovedPOs();});
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
  document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST'],...a.snapshot.rows.map(r=>[r.item,r.description,window.InspectionProduct.classLabel(r.category),r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
@@ -3713,7 +3773,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='inspection-open-notifications')openOrderNotifications();if(event.data?.type==='inspection-notification-dismissed')refreshOrderNotifications();});
 notificationPanel();
 
-window.InspectionCloud={orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3935,7 +3995,7 @@ window.InspectionTableLayout={refresh};refresh();
 
 @media(max-width:800px){#po-details th,#po-details td{padding:8px}#po-details .btn{white-space:normal;min-height:40px}#po-details [data-po-ref]{font-size:16px}#po-details .po-details-head{flex-wrap:wrap}#sap-delivery-dialog{width:96vw;max-width:96vw}.client-suggestions .btn{min-height:40px}}
 @media print{body.print-draft>.shell,body.print-draft>dialog,body.print-draft>#cloud-banner,body.print-draft>#cloud-blocker{display:none!important}body.print-draft>#draft-print-sheet{display:block!important;background:white;color:black}body.print-draft td,body.print-draft th{white-space:normal;border:1px solid #bbb;color:black;background:white}}
-</style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#product-lookup-workspace:not(.show-history) .weekly-stats,#product-lookup-workspace:not(.show-history) .est-stats,#product-lookup-workspace:not(.show-history) .period-stats{display:none!important}#product-lookup-workspace.show-history .weekly-stats,#product-lookup-workspace.show-history .est-stats,#product-lookup-workspace.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
+</style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#product-lookup-workspace:not(.show-history) .weekly-stats,#product-lookup-workspace:not(.show-history) .est-stats,#product-lookup-workspace:not(.show-history) .period-stats{display:none!important}#product-lookup-workspace.show-history .weekly-stats,#product-lookup-workspace.show-history .est-stats,#product-lookup-workspace.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.order-lines>.po-review-table,#po-details:not(.mobile-table)>.order-lines>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.order-lines>.po-mobile-lines{display:none}}</style><script>
 window.addEventListener('inspection:cloud-ready',()=>{const header=document.querySelector('.product-header');if(!header||!window.InspectionCloud.isAdministrator()||document.getElementById('product-details-toggle'))return;const button=document.createElement('button');button.id='product-details-toggle';button.className='btn mini';button.textContent='Reference statistics';button.onclick=()=>{const view=document.getElementById('product-lookup-workspace');view.classList.toggle('show-history');button.textContent=view.classList.contains('show-history')?'Hide statistics':'Reference statistics';};header.appendChild(button);});
 </script><style>#product-lookup-workspace:not(.show-history) .est-summary,#product-lookup-workspace:not(.show-history) .est-variant,#product-lookup-workspace:not(.show-history) .stat-pill{display:none!important}#product-lookup-workspace.show-history .est-summary{display:block!important}#product-lookup-workspace.show-history .est-variant,#product-lookup-workspace.show-history .stat-pill{display:block!important}</style><style id="client-directory-picker-style">
 .client-picker{position:relative;min-width:0;width:100%}.client-picker>input{width:100%}.client-picker-hint{margin-top:5px;line-height:1.4}
