@@ -17,7 +17,7 @@ The reviewed sender is prepared at supabase/functions/inspection-push/index.ts w
 
 ## Device behavior
 
-Enable or disable separately in each browser/device after setup authorization. Enabling uses an explicit permission button. iPhone/iPad require the web app to be added to Home Screen and opened from there. The manifest uses standalone display. The service worker handles only notifications; it does not intercept fetch or cache the application/catalog.
+Enable or disable separately in each browser/device after setup authorization. Settings shows one device action: Enable notifications or Disable notifications. Each action explains its effect and asks for confirmation; cancel makes no change. Browser permission (Allowed, Blocked, Not requested or Unavailable) is displayed separately from actual device subscription and server delivery readiness. A browser permission alone is never reported as active push. Pending server setup, offline/error/unknown state and busy operations are explicit; unknown status disables the action until Refresh succeeds. Enabling requests browser permission directly after the synchronous user confirmation. iPhone/iPad require the web app to be added to Home Screen and opened from there. The manifest uses standalone display. The service worker handles only notifications; it does not intercept fetch or cache the application/catalog.
 
 The sender uses encrypted standards-based Web Push to the subscription's provider (Apple, Google, Mozilla or Microsoft). The worker requests requireInteraction and Open app / Close actions, but OS/browser support determines notification duration and available buttons. The in-app list provides reliable persistence until manual dismissal. Native Close actions are queued locally and applied to the correct account's inbox when the app next connects.
 
@@ -37,3 +37,8 @@ Notifications and subscriptions have owner-scoped RLS and no client write grants
 - Supabase security advisor: no new warning/error; private worker tables intentionally have RLS and no client policies. An existing leaked-password-protection warning is unrelated to this change.
 
 Native notification display, browser permission acceptance and end-to-end delivery remain untested on real devices. The sender deployment and payload authorization remain pending.
+
+
+## Device-control status check (2026-10-14)
+
+Code-only checks passed (no browser, screenshots or device notification sends). Both administrator and certificate preparer can read status/inbox RPCs. The server reported delivery_enabled=false, zero active subscriptions and two saved in-app notices. No Edge Functions were deployed. Native push is not operating; the in-app inbox is independent. The external sender remains pending the authorization described above. Tests: node tests/push-device-controls.cjs preview/index.html (public: index.html).

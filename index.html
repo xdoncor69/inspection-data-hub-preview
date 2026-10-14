@@ -3594,11 +3594,15 @@ const notificationRPC=(name,body={})=>request('/rest/v1/rpc/'+name,{method:'POST
 function notificationPanel(){
  let root=document.getElementById('push-notification-settings');if(root)return root;
  root=document.createElement('section');root.id='push-notification-settings';root.className='panel panel-pad';
- root.innerHTML='<div class="section-head"><div><h3>Order notifications</h3><p class="small muted">Pending approvals for the administrator. Approved orders and ready deliveries for the certificate preparer.</p></div><button class="btn mini" id="notifications-refresh">Refresh</button></div><p class="small" id="push-status" role="status" aria-live="polite">Connect to the official database to load notification settings.</p><div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="push-enable" disabled>Enable on this device</button><button class="btn" id="push-disable" disabled>Disable on this device</button></div><p class="small muted">Enable separately on your phone and computer to receive on both. On iPhone or iPad: Share → Add to Home Screen, open that app, then enable notifications. Notifications request manual dismissal; your browser and operating system control their duration and available buttons.</p><div id="certificate-notification-settings" hidden><label class="label" for="certificate-notification-user">Certificate preparer</label><div class="row" style="flex-wrap:wrap;gap:8px"><select class="input" id="certificate-notification-user" aria-label="Certificate preparer"></select><button class="btn" id="certificate-notification-save">Save recipient</button></div><p class="small muted">This selects who receives order notifications. Account permissions do not change.</p></div><h3 style="margin-top:18px">Notifications</h3><p class="small muted">These notices stay here until you select Close, even if your device hides a push notification.</p><div id="order-notification-inbox"></div>';
+ root.innerHTML='<div class="section-head"><div><h3>Order notifications</h3><p class="small muted">Pending approvals for the administrator. Approved orders and ready deliveries for the certificate preparer.</p></div><button class="btn mini" id="notifications-refresh">Refresh</button></div><p class="small" id="push-status" role="status" aria-live="polite">Connect to the official database to load notification settings.</p><div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="push-toggle" disabled>Enable notifications</button></div><p class="small muted">Enable separately on your phone and computer to receive on both. On iPhone or iPad: Share → Add to Home Screen, open that app, then enable notifications. Notifications request manual dismissal; your browser and operating system control their duration and available buttons.</p><div id="certificate-notification-settings" hidden><label class="label" for="certificate-notification-user">Certificate preparer</label><div class="row" style="flex-wrap:wrap;gap:8px"><select class="input" id="certificate-notification-user" aria-label="Certificate preparer"></select><button class="btn" id="certificate-notification-save">Save recipient</button></div><p class="small muted">This selects who receives order notifications. Account permissions do not change.</p></div><h3 style="margin-top:18px">Notifications</h3><p class="small muted">These notices stay here until you select Close, even if your device hides a push notification.</p><div id="order-notification-inbox"></div>';
  document.getElementById('settings-view').appendChild(root);
  root.querySelector('#notifications-refresh').onclick=()=>refreshOrderNotifications(true);
- root.querySelector('#push-enable').onclick=enableOrderPush;
- root.querySelector('#push-disable').onclick=disableOrderPush;
+ root.querySelector('#push-toggle').onclick=()=>{
+  const button=root.querySelector('#push-toggle');if(button.disabled)return;
+  if(button.dataset.action==='disable'){
+   if(confirm('Disable push notifications on this device?\n\nYou will no longer receive order alerts on this phone or computer. Notifications inside the app and other enabled devices will remain available. Your browser permission will not be changed.'))disableOrderPush();
+  }else if(confirm('Enable push notifications on this device?\n\nYou will receive the order alerts assigned to your account, including PO or delivery numbers and the customer name. Your browser will ask for permission if needed. Enable separately on each device.'))enableOrderPush();
+ };
  root.querySelector('#certificate-notification-save').onclick=async()=>{
   if(!administrator||!canConsult()||notificationBusy)return;
   const chosen=document.getElementById('certificate-notification-user').value;
@@ -3626,9 +3630,27 @@ async function notificationMessage(type,extra={}){
  const reg=await notificationWorker();if(!reg?.active)return null;
  return new Promise((resolve,reject)=>{const channel=new MessageChannel(),timer=setTimeout(()=>reject(Error('Notification worker is not responding.')),4000);channel.port1.onmessage=e=>{clearTimeout(timer);resolve(e.data);};reg.active.postMessage({type,...extra},[channel.port2]);});
 }
+function pushDeviceControl(state,{supported,permission,subscribed,enabled,busy=false}){
+ const action=subscribed?'disable':'enable',allowed=permission==='granted';
+ let message;
+ if(!state.eligible)message='Push notifications are off for this account. Order alerts are assigned to the administrator and certificate preparer.';
+ else if(!state.deliveryReady)message=enabled?'Push notifications are paused: this device is registered, but the sending service is not activated.':'Push notifications are off: the sending service is not activated.';
+ else if(!supported)message='Push notifications are unavailable in this browser. On iPhone or iPad, add the app to Home Screen and open it there.';
+ else if(permission==='denied')message='Push notifications are blocked. Allow notifications in your browser or device settings to enable them.';
+ else if(enabled&&allowed)message='Push notifications are enabled on this device. Order alerts assigned to your account can be delivered.';
+ else message='Push notifications are off on this device.';
+ const browser=({granted:'Allowed',denied:'Blocked',default:'Not requested',unavailable:'Unavailable'})[permission]||'Unknown';
+ return {action,label:subscribed?'Disable notifications':'Enable notifications',disabled:busy||(!subscribed&&(!state.eligible||!state.deliveryReady||!supported||permission==='denied')),message:message+' Browser permission: '+browser+'. In-app notices remain available.'};
+}
+function setPushBusy(label,message){
+ const button=document.getElementById('push-toggle');if(button){button.disabled=true;button.textContent=label;}
+ const status=document.getElementById('push-status');if(status)status.textContent=message;
+}
 function pushSupported(){return window.isSecureContext&&'Notification' in window&&'PushManager' in window&&'serviceWorker' in navigator;}
 async function refreshOrderNotifications(force=false){
- const root=notificationPanel();if(!session||!ready||offline||notificationLoading)return;
+ const root=notificationPanel();if(notificationLoading)return;
+ if(!session||!ready||offline){root.querySelector('#push-toggle').disabled=true;root.querySelector('#push-status').textContent='Push status could not be checked. Connect to the official database and select Refresh.';return;}
+ root.querySelector('#push-toggle').disabled=true;
  const owner=session.user.id;notificationLoading=true;
  try{
   if(force||!notificationState||notificationOwner!==owner){notificationState=await notificationRPC('inspection_push_status');notificationOwner=owner;}
@@ -3637,9 +3659,10 @@ async function refreshOrderNotifications(force=false){
   const reg=await notificationWorker(),subscription=await reg?.pushManager.getSubscription();
   const enabled=state.devices.some(d=>d.enabled&&d.endpoint===subscription?.endpoint);
   if(reg)await notificationMessage('bind-account',{uid:enabled?owner:null});
-  root.querySelector('#push-enable').disabled=!state.eligible||!state.deliveryReady||!pushSupported()||enabled||notificationBusy;
-  root.querySelector('#push-disable').disabled=!subscription||notificationBusy;
-  status.textContent=!state.eligible?'Order push notifications are configured for the administrator and certificate preparer.':!state.deliveryReady?'Push sending is awaiting setup authorization. The notification list below is available now.':!pushSupported()?'Push is unavailable in this browser. On iPhone or iPad, add the app to Home Screen and open it there.':Notification.permission==='denied'?'Notifications are blocked by this browser. Allow them in site settings, then retry.':enabled?'Push notifications enabled on this device.':'Push notifications disabled on this device.';
+  if(session?.user.id!==owner)return;
+  const control=pushDeviceControl(state,{supported:pushSupported(),permission:'Notification' in window?Notification.permission:'unavailable',subscribed:!!subscription,enabled,busy:notificationBusy});
+  const button=root.querySelector('#push-toggle');button.textContent=control.label;button.dataset.action=control.action;button.disabled=control.disabled;
+  button.classList.toggle('primary',control.action==='enable');status.textContent=control.message;
   const role=root.querySelector('#certificate-notification-settings');role.hidden=!state.administrator;
   if(state.administrator){const select=root.querySelector('#certificate-notification-user');select.innerHTML='<option value="">No recipient</option>'+state.accounts.map(a=>'<option value="'+escapeHTML(a.id)+'">'+escapeHTML(a.name)+(a.name!==a.email?' · '+escapeHTML(a.email):'')+'</option>').join('');select.value=state.certificateUser||'';}
   if(state.eligible){
@@ -3654,12 +3677,12 @@ async function refreshOrderNotifications(force=false){
    });
    const shortcut=document.getElementById('notification-shortcut');shortcut.hidden=false;shortcut.textContent='Notifications'+(rows.length?' ('+rows.length+')':'');
   }else{root.querySelector('#order-notification-inbox').innerHTML='';document.getElementById('notification-shortcut').hidden=true;}
- }catch(error){root.querySelector('#push-status').textContent='Notification settings could not be loaded: '+error.message;}
+ }catch(error){root.querySelector('#push-toggle').disabled=true;root.querySelector('#push-status').textContent='Push status is unknown. Select Refresh to retry. '+error.message;}
  finally{notificationLoading=false;}
 }
 async function enableOrderPush(){
  if(notificationBusy||!canConsult()||!notificationState?.eligible||!notificationState?.deliveryReady||!pushSupported())return;
- notificationBusy=true;let failure='';const owner=session.user.id,status=document.getElementById('push-status');
+ notificationBusy=true;setPushBusy('Enabling…','Enabling push notifications. Complete the browser permission prompt if shown.');let failure='';const owner=session.user.id,status=document.getElementById('push-status');
  try{
   // Ask from the explicit button click, before any network request, for iOS user-gesture requirements.
   const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notifications were not allowed. You can change this in browser settings.');
@@ -3673,9 +3696,9 @@ async function enableOrderPush(){
  finally{notificationBusy=false;await refreshOrderNotifications(true);if(failure)status.textContent=failure;}
 }
 async function disableOrderPush(){
- if(notificationBusy)return;notificationBusy=true;let failure='';const status=document.getElementById('push-status');
+ if(notificationBusy||!canConsult())return;notificationBusy=true;setPushBusy('Disabling…','Disabling push notifications on this device…');let failure='';const status=document.getElementById('push-status');
  try{const reg=await notificationWorker(),subscription=await reg?.pushManager.getSubscription();
-  if(subscription){await notificationRPC('inspection_push_disable',{endpoint:subscription.endpoint});await subscription.unsubscribe();}
+  if(subscription){await notificationRPC('inspection_push_disable',{endpoint:subscription.endpoint});if(!await subscription.unsubscribe())throw Error('The browser did not remove this subscription. Select Refresh and retry.');}
   await notificationMessage('bind-account',{uid:null});
  }catch(error){failure='Could not confirm push was disabled: '+error.message;}
  finally{notificationBusy=false;await refreshOrderNotifications(true);if(failure)status.textContent=failure;}
