@@ -98,7 +98,14 @@ window.InspectionTableTools={
  }
 };
 </script>
-<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-switch-style">#lookup-view .order-import-switch{display:flex;gap:8px;max-width:460px}#lookup-view .order-import-switch .btn{flex:1;min-height:42px}#order-import-panels{min-width:0}#order-import-panels>[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style><style id="shared-draft-access-style">#po-details.draft-readonly :is(#po-edit-details,#po-delete-active,.po-add-row,[data-draft-edit],[data-po-up],[data-po-down],[data-po-remove]){display:none!important}#po-details.draft-readonly .po-review-table th:last-child,#po-details.draft-readonly .po-review-table td:last-child{display:none!important}</style><style id="purchase-order-stages-style">#purchase-orders-view #delivery-po-panel{margin-top:0}#purchase-orders-view #delivery-po-panel .section-head h3{font-size:14px}</style><style id="purchase-order-directory-tables">
+<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-dialog-style">
+.order-import-actions{display:flex;gap:8px;flex-wrap:wrap}
+#po-import-dialog{width:900px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);overflow:auto}
+#po-import-dialog .section-head{gap:12px}
+#po-import-dialog .section-head>div{min-width:0}
+#po-import-dialog .po-import-grid label{margin:0}
+#po-import-dialog .tablewrap{max-width:100%;overflow-x:auto}
+</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style><style id="shared-draft-access-style">#po-details.draft-readonly :is(#po-edit-details,#po-delete-active,.po-add-row,[data-draft-edit],[data-po-up],[data-po-down],[data-po-remove]){display:none!important}#po-details.draft-readonly .po-review-table th:last-child,#po-details.draft-readonly .po-review-table td:last-child{display:none!important}</style><style id="purchase-order-stages-style">#purchase-orders-view #delivery-po-panel{margin-top:0}#purchase-orders-view #delivery-po-panel .section-head h3{font-size:14px}</style><style id="purchase-order-directory-tables">
 #purchase-orders-view .order-directory-table{font-size:12px}
 #purchase-orders-view .order-directory-table th,#purchase-orders-view .order-directory-table td{padding:7px 9px;line-height:1.4;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
 #purchase-orders-view .order-directory-actions{display:flex;align-items:flex-start;gap:5px}
@@ -123,9 +130,9 @@ window.InspectionTableTools={
 <dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
-<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="meat"><span class="ico">◈</span> Import Order</button><button class="nav" data-view="purchase-orders"><span class="ico">▤</span> Purchase Orders</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Customers</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
+<div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="purchase-orders"><span class="ico">▤</span> Purchase Orders</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Customers</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
 <main class="main">
-<div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Import Order</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
+<div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Purchase Orders</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
 <section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item Number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count" hidden>—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">EST</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Pack / Size</div><div class="value" id="d-pack">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
@@ -155,12 +162,10 @@ window.InspectionTableTools={
 </div>
 </section>
 <section id="clients-view" class="hidden"><div id="client-directory" class="panel panel-pad"></div></section>
-<section id="purchase-orders-view" class="hidden"><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO or delivery number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number, delivery number or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO and delivery numbers, customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden invoice-mode">
-<div class="order-import-switch" role="group" aria-label="Order import source"><button class="btn primary" type="button" id="order-import-po" aria-pressed="true" aria-controls="po-bulk-import">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-pressed="false" aria-controls="delivery-intakes-panel">Delivery First</button></div><div id="order-import-panels" data-import-mode="po">
-
-<div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
-<div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
-<div id="po-import-body" class="hidden">
+<section id="purchase-orders-view" class="hidden"><div class="order-import-actions" role="group" aria-label="Import orders"><button class="btn primary" type="button" id="order-import-po" aria-haspopup="dialog" aria-controls="po-import-dialog">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-haspopup="dialog" aria-controls="sap-delivery-dialog">Delivery First</button></div><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO or delivery number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number, delivery number or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO and delivery numbers, customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden"></section>
+<dialog id="po-import-dialog" class="online-dialog" aria-labelledby="po-import-title"><div class="po-bulk-import" id="po-bulk-import">
+<div class="section-head" style="margin-bottom:0"><div><h3 id="po-import-title">Import PO</h3><span class="hint">Build your PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn" id="po-import-close">Cancel</button></div>
+<div id="po-import-body">
 <div class="po-import-grid">
 <label><span class="label">PO Number</span><input class="input" id="po-import-number" maxlength="90" placeholder="e.g. 402824"></label>
 <label><span class="label">Customer</span><input class="input" id="po-import-customer" maxlength="120" placeholder="Customer / company name"></label>
@@ -177,10 +182,7 @@ window.InspectionTableTools={
 <div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Import again</button><button class="btn primary" type="button" id="po-import-create" disabled>Move to Drafts</button></div>
 <p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. </p>
-</div></div></div>
-<section class="panel panel-pad" id="delivery-intakes-panel" hidden></section></div>
-
-</section>
+</div></div></div></dialog>
 
 <section id="guide-view" class="hidden">
 <div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Import a PO or delivery, select a saved customer, review the EST values and publish the order as Approved for Inspection. Approval publishes the selected EST values.</p></div>
@@ -366,10 +368,10 @@ window.__inspectionSaveCatalog=function(){
   return true;
  }catch(error){console.error("Could not save local catalog changes",error);alert("Unable to save catalog edits to the official database.");return false;}
 };
-let view="meat",selected=null,history=[],photoName="";
+let view="purchase-orders",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a PO draft or start with a delivery"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(v==="meat")window.__inspectionResetOrderImport?.();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
+function navigate(v){if(v==="meat")v="purchase-orders";if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -729,21 +731,13 @@ window.InspectionCloud.bindClientInput(el("po-import-customer"));
 const norm=s=>clean(s).toLowerCase().replace(/[^a-z0-9]/g,"");
 const escHtml=s=>safe(String(s??""));
 const setStatus=(s,error=false)=>{el("po-import-status").textContent=s;el("po-import-status").style.color=error?"#ad4343":"";};
-const orderImportPanels=el("order-import-panels");
-function setOrderImportMode(mode){
- const delivery=mode==="delivery";
- orderImportPanels.dataset.importMode=delivery?"delivery":"po";
- el("po-bulk-import").hidden=delivery;
- el("delivery-intakes-panel").hidden=!delivery;
- for(const [id,active]of [["order-import-po",!delivery],["order-import-delivery",delivery]]){
-  const button=el(id);button.classList.toggle("primary",active);button.setAttribute("aria-pressed",String(active));
- }
-}
-el("order-import-po").onclick=()=>{resetOrderImport();setOrderImportMode("po");};
-el("order-import-delivery").onclick=()=>{resetOrderImport();setOrderImportMode("delivery");};
-setOrderImportMode("po");
-const toggle=el("po-import-toggle"),body=el("po-import-body");
-toggle.onclick=()=>{const opening=body.classList.contains("hidden");body.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"− Hide import":"↑ Import Excel / CSV";};
+const importDialog=el("po-import-dialog");
+el("order-import-po").onclick=()=>{
+ if(!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ resetOrderImport();importDialog.showModal();el("po-import-number").focus();
+};
+el("po-import-close").onclick=()=>{importDialog.close();resetOrderImport();};
+importDialog.addEventListener("cancel",resetOrderImport);
 function parseDelimited(text){
  text=String(text).replace(/^\uFEFF/,"");
  const firstLine=text.split(/\r?\n/).find(line=>line.trim())||"";
@@ -930,7 +924,11 @@ window.__inspectionIntakeHistory=statsFor;
 el("po-import-create").onclick=()=>{
  const number=clean(el("po-import-number").value),customer=clean(el("po-import-customer").value);
  if(!number){alert("Enter the PO number.");el("po-import-number").focus();return;}
- if(offerExistingPO(number,()=>{el("po-import-number").value="";el("po-import-number").focus();setStatus("Enter a different PO number to create a new draft. Your invoice preview is retained.");},()=>{sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Opened existing PO. The selected invoice was not imported.");}))return;
+ if(findExistingPO(number)||window.InspectionCloud.hasApprovedPO(number)){
+  importDialog.close();
+  offerExistingPO(number,()=>{el("po-import-number").value="";importDialog.showModal();el("po-import-number").focus();setStatus("Enter a different PO number. Your imported file is retained.");},resetOrderImport);
+  return;
+ }
  const existing=null;
  const client=window.InspectionCloud.requireClient(el("po-import-customer"));if(!client)return;
  const newItems=preview;
@@ -951,7 +949,7 @@ el("po-import-create").onclick=()=>{
  }
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unknown Items were kept with available source product data, without adding them to the catalog.":"")+".";
  setStatus("PO draft "+number+" prepared. Synchronization status is shown in the connection banner. Only the administrator can publish an PO Approved for Inspection.");
- el("po-import-body").classList.add("hidden");toggle.setAttribute("aria-expanded","false");toggle.textContent="↑ Import Excel / CSV";
+ importDialog.close();
  resetOrderImport();
 
  renderPOArchive();
@@ -2346,15 +2344,15 @@ body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
 #lookup-view>.panel:first-child>.toolbar #item-count{grid-column:1/-1;text-align:right;justify-self:end;margin:0}
 #lookup-view #lookup-filters,#lookup-view #filter-toggle{display:none!important}
 #lookup-view .po-bulk-import{min-width:0}
-#lookup-view .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
-#lookup-view .po-import-grid label{display:flex;flex-direction:column;gap:6px;min-width:0}
-#lookup-view .po-import-grid .input{width:100%;min-width:0}
-#lookup-view .po-import-grid .po-import-file{grid-column:1/-1}
-#lookup-view .po-import-summary{padding:11px 12px;margin:12px 0;background:#f1f7fb;border:1px solid #dce8f1;border-radius:8px;font-size:12px;color:#3e627d}
-#lookup-view #po-import-rows td{padding:8px 10px}
-#lookup-view #po-import-rows .po-import-missing{color:#a1433e;font-weight:700}
-#lookup-view #po-import-rows .po-import-found{color:#287452;font-weight:700}
-@media(max-width:620px){#lookup-view>.panel:first-child>.toolbar{grid-template-columns:minmax(0,1fr) auto;gap:8px}#lookup-view>.panel:first-child>.toolbar #lookup-btn{padding:0 12px}#lookup-view .po-import-grid{grid-template-columns:1fr}#lookup-view .po-import-grid .po-import-file{grid-column:1}}
+#po-import-dialog .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+#po-import-dialog .po-import-grid label{display:flex;flex-direction:column;gap:6px;min-width:0}
+#po-import-dialog .po-import-grid .input{width:100%;min-width:0}
+#po-import-dialog .po-import-grid .po-import-file{grid-column:1/-1}
+#po-import-dialog .po-import-summary{padding:11px 12px;margin:12px 0;background:#f1f7fb;border:1px solid #dce8f1;border-radius:8px;font-size:12px;color:#3e627d}
+#po-import-dialog #po-import-rows td{padding:8px 10px}
+#po-import-dialog #po-import-rows .po-import-missing{color:#a1433e;font-weight:700}
+#po-import-dialog #po-import-rows .po-import-found{color:#287452;font-weight:700}
+@media(max-width:620px){#lookup-view>.panel:first-child>.toolbar{grid-template-columns:minmax(0,1fr) auto;gap:8px}#lookup-view>.panel:first-child>.toolbar #lookup-btn{padding:0 12px}#po-import-dialog .po-import-grid{grid-template-columns:1fr}#po-import-dialog .po-import-grid .po-import-file{grid-column:1}}
 @media(max-width:365px){#lookup-view>.panel:first-child>.toolbar{grid-template-columns:1fr}#lookup-view>.panel:first-child>.toolbar #lookup-btn{width:100%}}
 </style><style>
 /* Distinct PO workflows within the same navigation section. */
@@ -2679,7 +2677,7 @@ count();draw();
 :root[data-skin="graphite"] .po-priority.high,:root[data-skin="graphite"] :is(#lookup-view,#purchase-orders-view) .po-priority.high{background:#5b3034;color:#ffb2b2}
 :root[data-skin="graphite"] .est-summary-value,:root[data-skin="graphite"] .est-summary-label{color:var(--sk-ink)}
 :root[data-skin="graphite"] .brand-card p,:root[data-skin="graphite"] .small{color:var(--sk-muted)}
-:root[data-skin="graphite"] #lookup-view .po-import-summary,:root[data-skin="graphite"] #lookup-view .po-import-grid,:root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-intro{color:var(--sk-ink)}
+:root[data-skin="graphite"] #po-import-dialog .po-import-summary,:root[data-skin="graphite"] #po-import-dialog .po-import-grid,:root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-intro{color:var(--sk-ink)}
 :root[data-skin="graphite"] #global-view .inspection-query-conditions,:root[data-skin="graphite"] #global-view .inspection-query-results,:root[data-skin="graphite"] #global-view .inspection-query-workspace{background:var(--sk-surface);border-color:var(--sk-border)}
 :root[data-skin="graphite"] #global-view .inspection-query-conditions label,:root[data-skin="graphite"] #global-view .inspection-query-conditions span{color:var(--sk-muted)}
 :root[data-skin="graphite"] #sync-view pre{background:var(--sk-surface2)!important;color:var(--sk-ink)}
@@ -3348,12 +3346,7 @@ function intakeReferenceHTML(row){
  const history=window.__inspectionIntakeHistory?.(row.item);
  return '<span>'+escapeHTML(ref)+'</span>';
 }
-function renderDeliveryIntakes(){
- if(!started)return;
- const root=document.getElementById('delivery-intakes-panel');if(!root)return;
- root.innerHTML='<div class="section-head"><div><h3>Import Delivery First</h3><p class="small muted">Choose a delivery file, review its lines, then move it to Drafts for inspection.</p></div><button class="btn primary" id="delivery-first-import">Import delivery</button></div>';
- root.querySelector('#delivery-first-import').onclick=()=>openSAPDelivery(null);
-}
+document.getElementById('order-import-delivery').onclick=()=>openSAPDelivery(null);
 
 async function saveDeliveryIntake(number,po,client,fileName,rows,file){
  if(!canEdit()||!file){deny();return false;}
@@ -3374,7 +3367,7 @@ function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-k
 }
 function approvedEvidenceHTML(){return '';}
 function renderApprovedPOs(){
- if(!started||!approvedPanel())return;renderDeliveryIntakes();
+ if(!started||!approvedPanel())return;
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
  const rows=approvedPOs.filter(a=>orderMatches(a.snapshot,term,a.id));
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
@@ -3576,7 +3569,7 @@ async function uploadPhotos(item,files){
 }
 
 const ADMIN_MUTATING='#po-fill-missing-est,#po-missing-est-save,[data-missing-est],[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-directory-delete],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='#delivery-first-import,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const MUTATING='#order-import-po,#order-import-delivery,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');const item=input?.value;if(official["inspection-data-hub-catalog-overrides-v1"]?.[item])window.__inspectionEditProductItem?.(item);else if(item)window.__inspectionOfferMissing?.(item);}
