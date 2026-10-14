@@ -146,7 +146,7 @@ window.InspectionTableTools={
 </div>
 </section>
 <section id="clients-view" class="hidden"><div id="client-directory" class="panel panel-pad"></div></section>
-<section id="purchase-orders-view" class="hidden"><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">Review the customer, status and Item count, then choose a PO to open.</p></div></section><section id="lookup-view" class="hidden invoice-mode">
+<section id="purchase-orders-view" class="hidden"><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO or delivery number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number, delivery number or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO and delivery numbers, customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden invoice-mode">
 <div class="order-import-switch" role="group" aria-label="Order import source"><button class="btn primary" type="button" id="order-import-po" aria-pressed="true" aria-controls="po-bulk-import">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-pressed="false" aria-controls="delivery-intakes-panel">Delivery First</button></div><div id="order-import-panels" data-import-mode="po">
 
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
@@ -371,6 +371,28 @@ window.InspectionTableTools={
 </section>
 
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
+<script id="order-directory-model">
+/* Display/search metadata only: never inspect PO-line verification evidence. */
+window.InspectionOrderDirectory=Object.freeze({
+ normalize(value){return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');},
+ summary(order,{approvedId=null,deliveries=[],intakes=[],withDelivery=false}={}){
+  const related=intakes.filter(d=>approvedId?d.approved_po_id===approvedId:d.draft_id===order.id||order.deliveryIntakeId===d.id);
+  const numbers=[...new Set([...deliveries.filter(d=>approvedId&&d.approved_po_id===approvedId),...related].map(d=>String(d.delivery_number??'').trim()).filter(Boolean))];
+  const storedPO=String(order.po??'').trim();
+  const origin=related.filter(d=>String(d.po_number??'').trim()===storedPO);
+  let association=storedPO?'linked':'none';
+  if(origin.length&&origin.every(d=>d.has_supplied_po===false))association='none';
+  else if(origin.some(d=>d.has_supplied_po==null&&storedPO==='D'+String(d.delivery_number??'').trim()))association='unknown';
+  return {po:association==='linked'?storedPO:'',association,deliveries:numbers,customer:String(order.customer||related[0]?.customer_name||'Customer not specified'),status:approvedId?(withDelivery||numbers.length?'Delivery available':'Approved for Inspection'):'Draft · pending inspection'};
+ },
+ matches(summary,query){const term=this.normalize(query);return !term||[summary.po,summary.customer,...summary.deliveries].some(value=>this.normalize(value).includes(term));},
+ identityHTML(summary,escape){
+  const po=summary.po?'PO '+escape(summary.po):summary.association==='unknown'?'PO association not recorded':'No PO associated';
+  return '<strong class="po-number">'+po+'</strong>'+(summary.deliveries.length?'<div class="order-directory-deliveries">Delivery '+summary.deliveries.map(escape).join(' · ')+'</div>':'')+'<div class="po-customer">'+escape(summary.customer)+'</div><div class="order-directory-status"><span class="pill">Status: '+escape(summary.status)+'</span></div>';
+ }
+});
+</script>
+<style id="order-directory-status-style">#purchase-orders-view .order-directory-deliveries{font-size:12px;font-weight:650;color:var(--sk-ink);overflow-wrap:anywhere;margin-top:3px}#purchase-orders-view .order-directory-status{margin:7px 0}#purchase-orders-view .order-directory-status .pill{display:inline-block;font-weight:700;white-space:normal}</style>
 <script id="product-field-policy">
 /* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
 window.InspectionProduct=Object.freeze({
@@ -1055,7 +1077,7 @@ $("po-save").onclick=closeActivePO;$("po-clear").onclick=closeActivePO;
 $("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.receivedQuantity||"",x.note||""])]);
 $("log-print").onclick=()=>printTable("log");
 function normalizePOSearch(value){return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");}
-function matchesPOSearch(po,query){const term=normalizePOSearch(query);return !term||normalizePOSearch(po.po).includes(term)||normalizePOSearch(po.customer).includes(term);}
+function matchesPOSearch(po,query){return window.InspectionCloud.orderMatches(po,query);}
 $("po-search-form").onsubmit=e=>{e.preventDefault();renderPOArchive();};
 $("po-search-input").oninput=()=>renderPOArchive();
 $("po-search-clear").onclick=()=>{$("po-search-input").value="";renderPOArchive();$("po-search-input").focus();};
@@ -1069,7 +1091,7 @@ root.classList.toggle("hidden",!!active);
 $("po-search-form").classList.toggle("hidden",!!active);
 const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
-root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+safe(p.po)+' <span class="pill">Draft · pending inspection</span></strong><div class="po-customer">'+safe(p.customer||"Customer not specified")+'</div><div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open draft</button>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini primary" data-po-approve="'+safe(p.id)+'">✓ Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'"'+(draftEditable(p)?"":" hidden")+'>Delete draft</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No POs match this number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No drafts yet. Import a PO or choose New draft.</div>');
+root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity">'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'<div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open draft</button>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini primary" data-po-approve="'+safe(p.id)+'">✓ Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'"'+(draftEditable(p)?"":" hidden")+'>Delete draft</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No orders match this PO number, delivery number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No drafts yet. Import a PO or choose New draft.</div>');
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{
@@ -3277,6 +3299,9 @@ async function buildPhotos(){
  const result={};for(const [item,list] of Object.entries(photoMetadata))result[item]=await Promise.all(list.map(signPhoto));
  replaceObject(photoDisplay,result);photoSignedAt=Date.now();
 }
+let orderDirectoryMetadata={deliveries:[],intakes:[]};
+function orderSummary(order,approvedId=null){return window.InspectionOrderDirectory.summary(order,{approvedId,...orderDirectoryMetadata,withDelivery:approvedId&&deliveryOrderIDs.has(approvedId)});}
+function orderMatches(order,query,approvedId=null){return window.InspectionOrderDirectory.matches(orderSummary(order,approvedId),query);}
 let approvedPOs=[],workspaceStamp='',selectedApproved=null;
 function approvedPanel(){
  let root=document.getElementById('approved-po-panel');if(root)return root;
@@ -3298,8 +3323,8 @@ function partitionApprovedOrders(rows,deliveryIDs){
  return {approved,withDelivery};
 }
 function approvedOrderCard(a){
- const withDelivery=deliveryOrderIDs.has(a.id);
- return '<div class="po-list-row"><div class="po-list-identity"><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items · '+(withDelivery?'PO with Delivery':'Approved for Inspection')+'</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">'+(withDelivery?'Open PO and deliveries':'Open approved PO')+'</button></div>';
+ const summary=orderSummary(a.snapshot,a.id);
+ return '<div class="po-list-row"><div class="po-list-identity">'+window.InspectionOrderDirectory.identityHTML(summary,escapeHTML)+'<div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">'+(summary.deliveries.length?'Open PO and deliveries':'Open approved PO')+'</button></div>';
 }
 // Delivery exports use the frozen inspector-approved PO, never screen column order or live catalog values.
 function deliveryNumber(value){
@@ -3459,7 +3484,7 @@ function deliveryCurrent(delivery,a){return JSON.stringify(delivery.po_snapshot)
 async function loadPODeliveries(id,redraw=true){
  if(!canConsult())return;if(deliveryLoads.has(id))return deliveryLoads.get(id);
  const owner=session.user.id;
- const task=(async()=>{try{const rows=await request('/rest/v1/rpc/inspection_read_deliveries',{method:'POST',body:{approved_id:id}});if(session?.user.id!==owner)return;poDeliveries.set(id,{rows});if(rows.length)deliveryOrderIDs.add(id);else deliveryOrderIDs.delete(id);}catch(error){if(session?.user.id!==owner)return;poDeliveries.set(id,{rows:[],error:error.message});}finally{deliveryLoads.delete(id);if(redraw&&selectedApproved===id)renderApprovedPOs();}})();
+ const task=(async()=>{try{const rows=await request('/rest/v1/rpc/inspection_read_deliveries',{method:'POST',body:{approved_id:id}});if(session?.user.id!==owner)return;poDeliveries.set(id,{rows});orderDirectoryMetadata.deliveries=orderDirectoryMetadata.deliveries.filter(d=>d.approved_po_id!==id).concat(rows.map(d=>({id:d.id,approved_po_id:id,delivery_number:d.delivery_number}))).sort((a,b)=>String(a.id).localeCompare(String(b.id)));if(rows.length)deliveryOrderIDs.add(id);else deliveryOrderIDs.delete(id);}catch(error){if(session?.user.id!==owner)return;poDeliveries.set(id,{rows:[],error:error.message});}finally{deliveryLoads.delete(id);if(redraw&&selectedApproved===id)renderApprovedPOs();}})();
  deliveryLoads.set(id,task);return task;
 }
 async function downloadDeliveryOriginal(d){
@@ -3522,7 +3547,7 @@ function intakeReferenceHTML(row){
 function renderDeliveryIntakes(){
  if(!started)return;let root=document.getElementById('delivery-intakes-panel');
  if(!root){const anchor=document.getElementById('order-import-panels');if(!anchor)return;root=document.createElement('section');root.id='delivery-intakes-panel';root.className='panel panel-pad';root.hidden=anchor.dataset.importMode!=='delivery';anchor.appendChild(root);}
- root.innerHTML='<div class="section-head"><div><h3>Import Delivery First</h3><p class="small muted">Import a delivery to create a draft PO pending inspection. Final ESTs and export become available after administrator approval.</p></div><button class="btn primary" id="delivery-first-import">Import delivery without PO</button></div>'+deliveryIntakes.map(d=>'<article class="subtlebox" style="margin-top:10px"><div class="section-head"><div><strong>Delivery '+escapeHTML(d.delivery_number)+'</strong><div>PO '+escapeHTML(d.po_number)+' · '+escapeHTML(d.customer_name)+'</div><span class="pill">'+(d.approved_po_id?'Delivery available':'Draft · pending inspection')+'</span></div><div class="row"><button class="btn mini" data-intake-original="'+d.id+'">Download original</button>'+(d.approved_po_id?'<button class="btn mini primary" data-intake-approved="'+d.approved_po_id+'">Open approved order</button>':administrator?'<button class="btn mini primary" data-intake-review="'+escapeHTML(d.draft_id)+'">Review PO</button>':'')+'</div></div><details><summary>Delivery lines ('+d.source_rows.length+')</summary><div class="tablewrap"><table data-layout-key="pending-delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th></tr></thead><tbody>'+d.source_rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight)+' '+escapeHTML(r.catchWeight!==''?r.weightUnit:'')+'</td><td>'+escapeHTML(r.quantity)+(deliveryNotReceived(r)?'<div class="small muted">Not received</div>':'')+'</td></tr>').join('')+'</tbody></table></div></details></article>').join('');
+ root.innerHTML='<div class="section-head"><div><h3>Import Delivery First</h3><p class="small muted">Import a delivery to create a draft PO pending inspection. Final ESTs and export become available after administrator approval.</p></div><button class="btn primary" id="delivery-first-import">Import delivery without PO</button></div>'+deliveryIntakes.map(d=>'<article class="subtlebox" style="margin-top:10px"><div class="section-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionOrderDirectory.summary({id:d.draft_id,po:d.po_number,customer:d.customer_name},{approvedId:d.approved_po_id,intakes:[d]}),escapeHTML)+'</div><div class="row"><button class="btn mini" data-intake-original="'+d.id+'">Download original</button>'+(d.approved_po_id?'<button class="btn mini primary" data-intake-approved="'+d.approved_po_id+'">Open approved order</button>':administrator?'<button class="btn mini primary" data-intake-review="'+escapeHTML(d.draft_id)+'">Review PO</button>':'')+'</div></div><details><summary>Delivery lines ('+d.source_rows.length+')</summary><div class="tablewrap"><table data-layout-key="pending-delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th></tr></thead><tbody>'+d.source_rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight)+' '+escapeHTML(r.catchWeight!==''?r.weightUnit:'')+'</td><td>'+escapeHTML(r.quantity)+(deliveryNotReceived(r)?'<div class="small muted">Not received</div>':'')+'</td></tr>').join('')+'</tbody></table></div></details></article>').join('');
  root.querySelector('#delivery-first-import').onclick=()=>openSAPDelivery(null);
  root.querySelectorAll('[data-intake-original]').forEach(b=>b.onclick=()=>{const d=deliveryIntakes.find(x=>x.id===b.dataset.intakeOriginal);downloadDeliveryOriginal({...d,source_bucket:'inspection-delivery-intakes'});});
  root.querySelectorAll('[data-intake-review]').forEach(b=>b.onclick=()=>{if(!administrator)return;const id=b.dataset.intakeReview;if(!official[PO_KEY]?.invoices?.some(p=>p.id===id)){alert('The review draft is no longer available. The original delivery remains retained.');return;}window.__inspectionOpenReviewPO?.(id);});
@@ -3549,7 +3574,7 @@ function approvedEvidenceHTML(p){if(!administrator)return '';return '<details cl
 function renderApprovedPOs(){
  if(!started||!approvedPanel())return;renderDeliveryIntakes();
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
- const rows=approvedPOs.filter(a=>!term||normalize(a.snapshot.po).includes(term)||normalize(a.snapshot.customer).includes(term));
+ const rows=approvedPOs.filter(a=>orderMatches(a.snapshot,term,a.id));
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
  document.getElementById('approved-po-list').innerHTML=groups.approved.map(approvedOrderCard).join('')||'<p class="muted">'+(term?'No matching POs approved for inspection.':'No POs in this stage.')+'</p>';
  document.getElementById('delivery-po-list').innerHTML=groups.withDelivery.map(approvedOrderCard).join('')||'<p class="muted">'+(term?'No matching POs with delivery.':'No POs with delivery yet.')+'</p>';
@@ -3655,8 +3680,8 @@ async function loadState({hydrate=true}={}){
  const workspaces=await request('/rest/v1/rpc/inspection_read_draft_workspace',{method:'POST',body:{}});
  if(Number(rows[0].revision)<catalogReadRevision)return rows[0];
  official=clone(rows[0].records);catalogGeneration=official[IMPORT_KEY]?.generation||'';official[PO_KEY]=clone(workspaces[0]?.workspace||{draft:[],invoices:[]});workspaceStamp=workspaces[0]?.updated_at||'';revision=rows[0].revision;
- deliveryIntakes=await request('/rest/v1/inspection_delivery_intakes?select=id,po_number,customer_name,delivery_number,source_file,source_path,source_rows,draft_id,approved_po_id&order=created_at.desc');
- approvedPOs=await request('/rest/v1/rpc/inspection_read_approved_pos',{method:'POST',body:{}});await loadClients();deliveryOrderIDs=new Set((await request('/rest/v1/inspection_deliveries?select=approved_po_id')).map(d=>d.approved_po_id));renderApprovedPOs();
+ deliveryIntakes=await request('/rest/v1/inspection_delivery_intakes?select=id,po_number,customer_name,delivery_number,source_file,source_path,source_rows,draft_id,approved_po_id,has_supplied_po&order=created_at.desc');
+ approvedPOs=await request('/rest/v1/rpc/inspection_read_approved_pos',{method:'POST',body:{}});await loadClients();orderDirectoryMetadata=await request('/rest/v1/rpc/inspection_read_order_directory',{method:'POST',body:{}});deliveryOrderIDs=new Set(orderDirectoryMetadata.deliveries.map(d=>d.approved_po_id));renderApprovedPOs();
  memory.clear();for(const [k,v]of Object.entries(official))memory.set(k,JSON.stringify(v));
  await buildPhotos();
  if(started&&hydrate){for(const [k,c]of collectors){const v=record(k);if(c.set)c.set(v||{});else replaceObject(c.get(),v||{});}window.__inspectionFullProductRefresh?.();window.__inspectionReloadCloudWorkspace?.();window.__inspectionGlobalRefresh?.();window.__inspectionWorkspaceRefresh?.();window.__inspectionRenderWeekly?.();window.__inspectionProductRefresh?.();}
@@ -3732,7 +3757,7 @@ async function logout(){
  }catch(error){signingOut=false;alert(error.message);return;}
  await Promise.race([clearOrderPushOnLogout(previous),new Promise(resolve=>setTimeout(resolve,2000))]);
  for(const controller of activeControllers)controller.abort();
- poDeliveries.clear();session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
+ poDeliveries.clear();orderDirectoryMetadata={deliveries:[],intakes:[]};deliveryOrderIDs.clear();session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
  // Best-effort server sign-out; local sign-out remains available without internet.
  if(previous?.access_token&&navigator.onLine){fetch(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+previous.access_token},keepalive:true,signal:AbortSignal.timeout(3000)}).catch(()=>{});}
  location.reload();
@@ -3870,7 +3895,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='inspection-open-notifications')openOrderNotifications();if(event.data?.type==='inspection-notification-dismissed')refreshOrderNotifications();});
 notificationPanel();
 
-window.InspectionCloud={refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -3908,7 +3933,7 @@ document.getElementById('required-login-button').onclick=openLogin;document.getE
 window.addEventListener('storage',e=>{if(e.key===SESSION_KEY){const next=JSON.parse(e.newValue||'null');if(!next||next.user.id!==session?.user.id)location.reload();else session=next;}});
  document.getElementById('online-account-close').onclick=()=>document.getElementById('online-account-dialog').close();document.getElementById('online-account-logout').onclick=logout;
 new MutationObserver(()=>updateRole()).observe(document.body,{childList:true,subtree:true});
-setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved,deliveries]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/rpc/inspection_draft_workspace_stamp',{method:'POST',body:{}}),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc'),request('/rest/v1/inspection_deliveries?select=approved_po_id')]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))||JSON.stringify([...new Set(deliveries.map(d=>d.approved_po_id))].sort())!==JSON.stringify([...deliveryOrderIDs].sort())){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No database connection. Try again.');}},15000);
+setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||signingIn||queuePromise||!navigator.onLine)return;try{if(!ready||offline){await connect();return;}await drainQueue();if(administrator)await loadRequests();const [rows,own,approved,deliveries]=await Promise.all([request('/rest/v1/inspection_official_state?id=eq.official&select=revision'),request('/rest/v1/rpc/inspection_draft_workspace_stamp',{method:'POST',body:{}}),request('/rest/v1/inspection_approved_pos?select=id,approved_at&order=approved_at.desc'),request('/rest/v1/rpc/inspection_read_order_directory',{method:'POST',body:{}})]);if(!ready||offline||rows[0]?.revision!==revision||(own[0]?.updated_at||'')!==workspaceStamp||JSON.stringify(approved.map(x=>[x.id,x.approved_at]))!==JSON.stringify(approvedPOs.map(x=>[x.id,x.approved_at]))||JSON.stringify(deliveries)!==JSON.stringify(orderDirectoryMetadata)){await loadState();unblock();message('Official database refreshed.');}else if(Date.now()-photoSignedAt>2700000){await buildPhotos();window.__inspectionPhotoRefresh?.();window.__inspectionGlobalRefresh?.();}if(selectedApproved)await loadPODeliveries(selectedApproved);}catch(error){ready=false;offline=true;updateRole();overlay('No database connection. Try again.');}},15000);
 let changeHistory=[],requestsLoading=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Product','product-notes':'Product notes','brand-notes':'Brand notes','est-references':'EST references','brand-profiles':'Brand profile','stability-overrides':'Stability','observations':'Physical EST observations','fixed-est':'Fixed EST','photos':'Photos'};
