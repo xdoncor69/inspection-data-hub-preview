@@ -1,6 +1,6 @@
 # Centralized Purchase Order drafts
 
-All signed-in accounts now see the same saved draft list in Purchase Orders. The UI uses “Drafts”, “Draft · pending inspection”, “Approved for Inspection” and “Approved · pending delivery”. Draft printouts remain “DRAFT — NOT APPROVED”.
+All signed-in accounts now see the same saved draft list in Purchase Orders. Purchase Orders has three exclusive sections in order: “Drafts”, “Approved for Inspection” and “POs with Delivery”. Approval moves the shared draft to Approved for Inspection; loading an associated delivery moves the PO into POs with Delivery. “Pending delivery” is not a separate stage or UI label. Draft printouts remain “DRAFT — NOT APPROVED”.
 
 The administrator can review, modify, delete and approve any shared draft. A normal user can view all drafts and edit/delete only drafts they created. Approval replaces the draft with the same approved PO reference for everyone. Catalog/customer master permissions and inspection-evidence privacy remain unchanged.
 
@@ -14,7 +14,7 @@ Authenticated reads use inspection_read_draft_workspace(). Administrators receiv
 
 The existing inspection_queued_commit() endpoint, account-owned pending queue, operation receipts, catalog generation guard and write lock order are reused. The workspace branch now merges changed draft IDs against the central record with optimistic conflict checks. Normal accounts cannot modify another creator's draft, spoof attribution or inject physical verification fields. Duplicate PO numbers are rejected. A delayed pending send cannot recreate a draft superseded by an approved PO. An unsupported nonempty legacy Item-by-Item scratch-log send remains explicitly pending for review rather than being silently dropped or presented as saved.
 
-inspection_draft_workspace_stamp() provides a safe change stamp used by the existing 15-second refresh loop, so an upload from another account becomes visible without switching accounts. Approval still uses the existing administrator RPC, now reading from the same shared workspace.
+inspection_draft_workspace_stamp() provides a safe change stamp used by the existing 15-second refresh loop, so a draft imported from another account becomes visible without switching accounts. The refresh loop also compares associated delivery PO IDs, so loading a delivery from another account moves the PO into the third section. All three sections share the PO search and use the same order details. Approval still uses the existing administrator RPC, now reading from the same shared workspace.
 
 Pending-order notices now originate from new drafts in the shared workspace and refer to the order the administrator can open. External Web Push remains disabled pending the separate authorization already requested; this change does not enable it.
 
@@ -25,3 +25,5 @@ Run tests/central-drafts.sql against the configured project: fixtures are transa
 The notification trigger regression test also passes against the central workspace. Inline JavaScript parsing and draft-edit permission checks passed. The security advisor reported no new warnings/errors (the pre-existing Auth password-protection warning remains outside this change). Native signed-in browser/mobile interaction was not exercised in this task.
 
 Database migration: centralize_drafts_with_admin_only_evidence. database/central-drafts.sql is reference for the already-applied migration and must not be run blindly.
+
+Stage UI validation: exclusive approved/delivery lists, leading-zero identifiers, shared search, details in the correct section, transition after delivery load, and preservation of the last known stage after a delivery-query error passed. A read-only SQL check confirmed identical shared draft IDs for David and Ariadna and the global duplicate-number guard. No database migration or data changes were needed for the three-section UI.
