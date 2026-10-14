@@ -175,119 +175,45 @@ window.InspectionTableTools={
 <div class="po-import-summary" id="po-import-summary"></div>
 <div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
-<p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. EST values are references, not physical verification records.</p>
+<p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. </p>
 </div></div></div>
 <section class="panel panel-pad" id="delivery-intakes-panel" hidden></section></div>
 <div class="panel panel-pad inspection-invoice-workspace hidden" id="inspection-invoice-workspace">
-<div class="section-head"><div><h3>Invoice inspection overview</h3><span class="hint">Bulk EST references, verified history and review priorities for every Item</span></div>
+<div class="section-head"><div><h3>Invoice inspection overview</h3><span class="hint">EST references and review priorities</span></div>
 <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn mini" id="invoice-export" type="button">↓ Excel / CSV</button><button class="btn mini primary" id="invoice-print" type="button">⎙ Print invoice</button></div></div>
 <div class="row" style="flex-wrap:wrap;gap:10px;margin-bottom:12px"><label class="label" for="invoice-select">Saved PO</label><select class="input" id="invoice-select" style="min-width:180px;max-width:100%;flex:1"><option value="">Preview imported file / choose saved PO</option></select></div>
 <div class="po-import-summary" id="invoice-overview-summary">Import an Excel/CSV file to preview the invoice, or choose a saved PO.</div>
-<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:160px"><col style="width:100px"><col style="width:128px"><col style="width:130px"><col style="width:132px"><col style="width:170px"><col style="width:92px"><col style="width:100px"><col style="width:78px"></colgroup><thead><tr>
-<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="receivedQuantity"><button type="button" class="query-sort" data-label="Received quantity">Received quantity<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="latest"><button type="button" class="query-sort" data-label="Last confirmed">Last confirmed<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="recent"><button type="button" class="query-sort" data-label="Last 10 verified weeks">Last 10 verified weeks<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="common"><button type="button" class="query-sort" data-label="Most common (all time)">Most common (all time)<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="variants"><button type="button" class="query-sort" data-label="Known EST variants">Known EST variants<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="weeks"><button type="button" class="query-sort" data-label="Weeks since check">Weeks since check<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
-<th>Actions</th></tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="14" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
+<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:160px"><col style="width:100px"><col style="width:100px"><col style="width:78px"></colgroup><thead><tr>
+<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="receivedQuantity"><button type="button" class="query-sort" data-label="Received quantity">Received quantity<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
+<th>Actions</th></tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="8" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
 <div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current EST numbers. Printing includes Item, Description,Pack / Size, EST and Received quantity.</div>
 </div>
 </section>
 
 <section id="guide-view" class="hidden">
-<div class="panel panel-pad guide-intro" id="guide-overview">
-<div class="section-head"><h3>How to use Inspection Data Hub</h3><span class="pill">REFERENCE GUIDE</span></div>
-<p>The workflow is: prepare a shared PO draft, inspect the cases, verify only the Items physically checked, and let the inspector publish the PO as Approved for Inspection. User drafts and inspector approval are separate; approval of the PO does not imply that every Item was physically verified.</p>
-<div class="guide-steps"><div><strong>1 · Prepare</strong><span>Select a saved customer, add or import Item numbers in source order. All signed-in users can view the draft. Quantities and weights belong to the later delivery.</span></div><div><strong>2 · Inspect</strong><span>Use the phone to identify cases and check priority Items. Editing an EST does not verify it. The administrator records only the lines physically checked.</span></div><div><strong>3 · Approve</strong><span>The administrator publishes Item, description, class and selected EST. Approval does not physically verify unchecked lines.</span></div><div><strong>4 · Delivery</strong><span>Any signed-in user uploads the sales team's raw SAP Excel and enters the delivery number. The summary preserves delivery lines and uses only approved PO ESTs. Unresolved rows stay visible; partial exports identify omitted rows.</span></div></div>
-</div>
-<div class="panel panel-pad">
-<div class="section-head" id="guide-products"><h3>Understanding the product card</h3></div>
-<div class="guide-grid">
-<div class="guide-term"><strong>Latest confirmed EST</strong><p>The establishment value or values recorded at the most recent verification date. It does not claim every case on the pallet has that number.</p></div>
-<div class="guide-term"><strong>Last 10 verified weeks</strong><p>Frequency across the last 10 calendar weeks that contain actual observations, not simply the last 10 calendar weeks and not the last 10 searches.</p></div>
-<div class="guide-term"><strong>All-time history</strong><p>Frequency across every week with recorded observations for the Item. Old data remains in the history.</p></div>
-<div class="guide-term"><strong>All observed variants</strong><p>Every EST value confirmed for the Item, including older or uncommon values. More than one can be observed in a week.</p></div>
-<div class="guide-term"><strong>Days without verification</strong><p>Elapsed days since the last physically confirmed observation. Searching the Item does not reset this timer.</p></div>
-<div class="guide-term"><strong>Frequency percentage</strong><p>Weeks where an EST was observed ÷ total weeks with observations. If two ESTs appear in the same week, both count once, so percentages can add up to more than 100%.</p></div>
-</div>
-</div>
-<div class="panel panel-pad">
-<div class="section-head" id="guide-priorities"><h3>Suggested review priorities</h3><span class="hint">Default guide thresholds · not inspection policy</span></div>
-<div class="guide-grid">
-<div class="guide-rule"><span class="est-priority high">HIGH PRIORITY</span><strong>Normal products</strong><p>Never verified, more than 60 days since the last physical verification, or multiple distinct ESTs observed within the last 10 verified weeks.</p></div>
-<div class="guide-rule"><span class="est-priority medium">REVIEW ADVISED</span><strong>Normal products</strong><p>15–60 days without physical verification, provided no recent EST variation is recorded.</p></div>
-<div class="guide-rule"><span class="est-priority low">LOWER PRIORITY</span><strong>Normal products</strong><p>Verified within the last 14 days, with one EST in the recent verified history.</p></div>
-</div>
-<p>Imported reference notes can flag an Item for an initial physical check. Once a physical verification is recorded, review priority follows the actual verification history and the existing age and variation rules. Importing a note does not create a verified week or a frequency percentage.</p>
-<p class="guide-caution">A change means different EST values have been physically recorded within the last 10 verified weeks, not an automatically detected manufacturing change. This overrides even Highly Stable brand classifications and shows HIGH PRIORITY in red. Priority is guidance, not a substitute for required inspection procedures.</p>
-</div>
-<div class="panel panel-pad">
-<div class="section-head" id="guide-stability"><h3>Highly stable products</h3><span class="pill">MANUALLY CLASSIFIED</span></div>
-<p>Use <strong>Mark highly stable</strong> only for an Item with a well-established history of the same EST. This is a manual label, not an automatic claim that the establishment cannot change. It applies to an individual Item, not every product from the same brand.</p>
-<div class="guide-grid">
-<div class="guide-rule"><span class="est-priority low">LOWER PRIORITY</span><strong>Less than 6 months</strong><p>Since the last physical verification.</p></div>
-<div class="guide-rule"><span class="est-priority medium">REVIEW ADVISED</span><strong>6 to under 12 months</strong><p>Time to consider checking this Item again.</p></div>
-<div class="guide-rule"><span class="est-priority high">HIGH PRIORITY</span><strong>12 months or more</strong><p>A new physical verification is strongly recommended. Any EST variation within the last 10 verified weeks triggers HIGH PRIORITY sooner.</p></div>
-</div>
-<p class="guide-caution">A highly stable label does not override the normal requirement to verify products when necessary. If a different EST is observed, review whether the label is still appropriate; the application does not independently determine that a manufacturer changed plants.</p>
-</div>
-<div class="panel panel-pad">
-<div class="section-head" id="guide-frequency"><h3>Example: how weekly frequency works</h3></div>
-<p>Weekly frequency reflects the company's usual receiving cycle: most products arrive every week. Applegate and other meat brands are usually received on Thursdays, while other products arrive on other weekdays. Some orders arrive every two weeks or only once. Grouping confirmations by week reflects this work cycle and prevents repeated checks in the same week from increasing the frequency. Weeks without a physical check are not counted as verified weeks.</p>
-<div class="guide-example">
-<div><strong>Week 1</strong><span>EST 471 confirmed</span></div><div><strong>Week 2</strong><span>EST 471 confirmed three times → counted once</span></div><div><strong>Week 3</strong><span>No physical check → no observation</span></div><div><strong>Week 4</strong><span>EST 471 and 81B confirmed → both counted once</span></div>
-</div>
-<p>Result: <strong>471 appears in 3 of 3 verified weeks (100%)</strong> and <strong>81B appears in 1 of 3 (33%)</strong>. Week 3 does not count as an EST confirmation. These percentages describe only the observations that were entered.</p>
-</div>
-
-<div class="panel panel-pad" id="guide-brands">
-<div class="section-head"><h3>Brands · Profiles and stability inheritance</h3><span class="pill">BRAND RULES</span></div>
-<p>Brands are internal reference profiles for manufacturer descriptions, establishment numbers, notes and product types. Only enter plant facts that have been verified from reliable records; a brand's EST list is not an official guarantee about today's cases.</p>
-<div class="guide-grid">
-<div class="guide-term"><strong>Single fixed EST</strong><p>One known EST for the applicable Items. A brand can optionally assign Highly Stable to matching products when that fixed number is entered.</p></div>
-<div class="guide-term"><strong>Fixed EST by product type</strong><p>Assign separate EST references to Beef / Pork, Poultry or Other. Only matching product types with a configured number inherit Highly Stable.</p></div>
-<div class="guide-term"><strong>Variable / Item-specific</strong><p>Use each product's own verification history and standard review intervals. Brand-level stability inheritance is not applied.</p></div>
-<div class="guide-term"><strong>Item-level exceptions</strong><p>An administrator can override inherited stability for an individual Item. This takes precedence over the brand's general rule.</p></div>
-</div>
-<p class="guide-caution">A brand may have more than one EST yet remain historically stable by product type. Stability is a review scheduling aid, not proof that a plant cannot change. If an unexpected number appears, record what you actually saw and review the reference rule.</p>
-</div>
-<div class="panel panel-pad" id="guide-verification">
-<div class="section-head"><h3>Verification History · Fast workflow</h3></div>
-<div class="guide-steps">
-<div><strong>1 · Search or queue an Item</strong><span>Look up products normally or scan them into the quick queue. The queue shows each Item once even when searched repeatedly.</span></div>
-<div><strong>2 · Check the physical cases</strong><span>Use the checkbox only if you personally inspected that product. Searches alone do not count as physical verifications.</span></div>
-<div><strong>3 · Confirm matching ESTs</strong><span>Select checked Items with one latest confirmed EST and press Confirm selected. You must confirm that the physically seen EST matches.</span></div>
-<div><strong>4 · Record a different or mixed EST</strong><span>Use Different EST / mixed to choose several observed values or enter a new one. The date defaults to today.</span></div>
-</div>
-<p>The verification records table shows confirmed observations. The collapsible Search history is only a consultation log; it does not measure physical inspections. The queue is a temporary working list in this preview.</p>
-</div>
-<div class="panel panel-pad" id="guide-sync">
-<div class="section-head"><h3>Online database · User accounts and permissions</h3></div>
-<p>The application requires an account and uses the official Supabase database online. Users can create and import POs and organize PO lines. Users can consult catalog products, import PO drafts, view every shared draft, edit their own drafts, and upload or update deliveries. Only the administrator changes catalog data. Only the administrator can modify official records directly, record physical verifications, or view Change History . Your session remains on this device until you sign out. Submitted changes interrupted by a connection failure remain in a pending queue and are retried online.</p>
-</div>
-
-<div class="panel panel-pad" id="guide-faq"><div class="section-head"><h3>Common questions</h3></div>
-<details class="guide-faq"><summary>Does looking up an Item confirm its EST?</summary><p>No. Use Verify EST only after physically checking the cases. Only the administrator can record official physical EST verifications.</p></details>
-<details class="guide-faq"><summary>Can a product have two or three EST values?</summary><p>Yes. The card shows all confirmed variants. You can select multiple values in the verification popup if you physically observed them.</p></details>
-<details class="guide-faq"><summary>What if I only check a few cases from a large pallet?</summary><p>Record the ESTs you actually observed. The app does not assume that every case or every unexamined product matches your sample.</p></details>
-<details class="guide-faq"><summary>Can I correct an incorrectly entered observation?</summary><p>Yes. An administrator can open View / correct records. Edits are saved to the official Supabase database.</p></details>
-<details class="guide-faq"><summary>Is a highly stable product guaranteed not to change?</summary><p>No. The classification only adjusts the suggested review interval. Physical checks remain important.</p></details>
-<details class="guide-faq"><summary>Does the web preview save records permanently?</summary><p>Yes. Administrator changes, observations, stability labels and photographs are saved to the official Supabase database. Interrupted submissions are retained on this device for retry; an internet connection is required to use the database.</p></details>
-</div>
+<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Import a PO or delivery, select a saved customer, review the EST values and publish the order as Approved for Inspection. Approval publishes the selected EST values.</p></div>
+<div class="panel panel-pad" id="guide-products"><h3>Product identification</h3><p>Use the Item number, description, brand, Pack / Size, notes and photos to identify a product. Published delivery ESTs come from the approved PO version.</p></div>
+<div class="panel panel-pad" id="guide-priorities"><h3>Review priority</h3><p>High, Medium and Low priorities guide the administrator's review. Internal rules determine the priority; the interface does not display their underlying records.</p></div>
+<div class="panel panel-pad" id="guide-stability"><h3>Stable EST</h3><p>The administrator can manage stable-reference rules for products and brands.</p></div>
+<div class="panel panel-pad" id="guide-brands"><h3>Brand references</h3><p>Brand notes belong to the brand. Product notes belong to the individual Item.</p></div>
+<div class="panel panel-pad" id="guide-verification"><h3>Administrator entry</h3><p>Only the administrator can record an observed EST or approve an order. Selecting an EST and recording an observation are separate actions.</p></div>
+<div class="panel panel-pad" id="guide-sync"><h3>Connection and access</h3><p>Sign in to use the official online database. Interrupted sends remain pending on this device until confirmed by the server. Catalog and customer changes require administrator access.</p></div>
+<div class="panel panel-pad" id="guide-faq"><h3>Deliveries and export</h3><p>Keep the original SAP file. The summary uses its quantities and weights and the approved PO's EST values. Resolve ambiguous matches explicitly. Downloading a summary does not issue a certificate.</p></div>
 </section>
 
 <section id="history-view" class="hidden">
 <div id="approvals-view" class="hidden">
-<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Product field changes and physical EST verifications, with the effective changes, date and account.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="observations">EST verifications</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>User</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
+<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Catalog changes, with the effective values, date and account.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>User</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
 
 </div>
 <div class="panel panel-pad" id="history-quick-panel">
-<div class="section-head"><div><h3>Quick EST verification</h3><span class="hint">One row per searched Item · physical checks only</span></div><span class="pill">MANUAL CONFIRMATION</span></div>
+<div class="section-head"><div><h3>Record EST</h3><span class="hint">Administrator EST entry</span></div><span class="pill">ADMINISTRATOR</span></div>
 
 <div class="toolbar"><div class="field searchwide"><div class="label">Add Item to verification queue</div><input class="input" id="quick-queue-item" placeholder="Scan or type Item number"></div><button class="btn" id="quick-queue-add">Add Item</button><button class="btn primary" id="quick-confirm-selected">✓ Confirm selected</button></div>
 <div class="small muted" id="quick-queue-count" style="margin:10px 0">No Items queued</div>
-<div class="tablewrap"><table><thead><tr><th>Checked</th><th>Item</th><th>Brand / Description</th><th>Latest confirmed EST</th><th>Last verified</th><th>Action</th></tr></thead><tbody id="quick-queue-rows"></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Select</th><th>Item</th><th>Brand / Description</th><th>EST</th><th>Action</th></tr></thead><tbody id="quick-queue-rows"></tbody></table></div>
 
 </div>
-<div class="panel panel-pad"><div class="section-head"><h3>Verification records</h3><span class="hint">Physically recorded observations · editable by Admin</span></div>
-<div class="toolbar"><input class="input" id="verification-filter" placeholder="Filter changes by Item or EST" style="min-width:220px"><input class="input" type="date" id="verification-date" aria-label="Filter verification date"><button class="btn" id="verification-clear">Clear</button></div>
-<div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>Brand</th><th>EST</th><th>Note</th><th>Action</th></tr></thead><tbody id="verification-rows"></tbody></table></div></div>
 <div class="panel panel-pad"><details><summary style="cursor:pointer;font-weight:700">Search history (consultations only)</summary><div class="section-head"><h3>Previous searches</h3><button class="btn mini" id="demo-export">Export</button></div><div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Item</th><th>Category</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="history-rows"></tbody></table></div></details></div>
 </section>
 <section id="brands-view" class="hidden">
@@ -617,7 +543,7 @@ renderCatalogValidationProfile();
 const x=selected, info=x?(estInfo[x.item]||{primary:x.plant,others:[],trend:"No recent observations recorded."}):null;
 $("est-extras-title").textContent="Known EST references";
 $("est-tags").innerHTML=x?'<span class="est-tag main">'+safe(info.primary)+' · usual</span>'+info.others.map(s=>'<span class="est-tag">'+safe(s)+' · alternative</span>').join(""):'<span class="muted small">Select a product to see historical references</span>';
-$("est-trend").textContent=x?info.trend:"Historical reference only — verify actual cases on arrival.";
+$("est-trend").textContent="";
 $("product-note-display").textContent=x?(productNotes[x.item]||"No product-specific notes yet."):"Select a product to view reference notes.";
 $("brand-note-display").textContent=x?"Brand note: "+(defaultNotes[x.brand]||"None"):"";
 $("plant-value").textContent=x?(info.primary||x.plant):"—";
@@ -627,13 +553,13 @@ renderPhotos();
 $("edit-est").onclick=()=>{
 if(!selected){alert("Select a product first.");return;}
 const x=selected,info=estInfo[x.item]||{primary:x.plant,others:[],trend:""};
-modal('<h2>Manage known '+"EST numbers"+'</h2><p>Historical references for faster checking, not a substitute for inspecting actual cases.</p><div class="label">Usual / most common</div><input id="ref-primary" class="input" style="width:100%" value="'+safe(info.primary)+'"><div class="label" style="margin-top:12px">Alternatives (comma-separated)</div><input id="ref-others" class="input" style="width:100%" value="'+safe(info.others.join(", "))+'"><div class="label" style="margin-top:12px">Observation / recent trend</div><textarea class="input" id="ref-trend">'+safe(info.trend)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-refs">Save / request references</button></div>');
-$("save-refs").onclick=async()=>{const value={primary:$("ref-primary").value,others:$("ref-others").value.split(",").map(s=>s.trim()).filter(Boolean),trend:$("ref-trend").value};if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}estInfo[x.item]=value;closeModal();updateProductExtras();};
+modal('<h2>Manage known '+"EST numbers"+'</h2><p>Historical references for faster checking, not a substitute for inspecting actual cases.</p><div class="label">Usual / most common</div><input id="ref-primary" class="input" style="width:100%" value="'+safe(info.primary)+'"><div class="label" style="margin-top:12px">Alternatives (comma-separated)</div><input id="ref-others" class="input" style="width:100%" value="'+safe(info.others.join(", "))+'"><div style="margin-top:12px"><button class="btn primary" id="save-refs">Save / request references</button></div>');
+$("save-refs").onclick=async()=>{const value={primary:$("ref-primary").value,others:$("ref-others").value.split(",").map(s=>s.trim()).filter(Boolean),trend:info.trend||""};if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}estInfo[x.item]=value;closeModal();updateProductExtras();};
 };
 $("edit-product-note").onclick=()=>{
 if(!selected){alert("Select a product first.");return;}
 const x=selected;
-modal('<h2>Product reference notes</h2><p>Example: "Last five deliveries used EST 81J". These are informal notes, not SAP records.</p><textarea class="input" id="product-note-editor">'+safe(productNotes[x.item]||"")+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-product-note">Save note</button></div>');
+modal('<h2>Product reference notes</h2><p>Product identification notes.</p><textarea class="input" id="product-note-editor">'+safe(productNotes[x.item]||"")+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-product-note">Save note</button></div>');
 $("save-product-note").onclick=async()=>{const value=$("product-note-editor").value;if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}productNotes[x.item]=value;closeModal();updateProductExtras();};
 };
 const photoPanel=$("product-lookup-workspace").querySelector(".panel.photo");
@@ -731,17 +657,14 @@ if(!recent)return null;
 const days=Math.max(0,Math.floor((new Date(localDate()+"T12:00:00")-new Date(recent.date+"T12:00:00"))/86400000));
 return Math.floor(days/7);
 }
-function estStatus(item){
-const weeks=weeksSinceEST(item);
-return weeks===null?'<span class="po-est-never">Never verified</span>':'<span class="po-est-weeks">'+weeks+' '+(weeks===1?'week':'weeks')+' since check</span>';
-}
+function estStatus(){return '';}
 function estPriorityCell(item){
-if(fixedEST(item))return '<span class="po-priority low" title="Fixed EST classification. Weeks since the last physical verification are displayed separately.">Stable</span>';
+if(fixedEST(item))return '<span class="po-priority low" title="Stable EST reference">Stable</span>';
 const p=window.__inspectionItemPriority?.(item);
 if(!p)return '<span class="po-priority high">High</span>';
 const level=["low","medium","high"].includes(p.level)?p.level:"high";
 const label={low:"Low",medium:"Medium",high:"High"}[level];
-return '<span class="po-priority '+level+'" title="'+safe(p.reason)+'">'+label+'</span>';
+return '<span class="po-priority '+level+'">'+label+'</span>';
 }
 window.__inspectionFixedESTOverride=item=>Object.prototype.hasOwnProperty.call(fixedESTOverrides,item)?fixedESTOverrides[item]:null;
 function setFixedEST(item,value){
@@ -1027,8 +950,8 @@ function renderInvoiceOverview(){
  const data=invoiceData();
  const displayRows=invoiceSortKey?window.InspectionTableTools.sort(data.rows,invoiceSortKey,invoiceSortDirection,(r,k)=>k==="latest"?r.s.latest:k==="priority"?({low:0,stable:0,medium:1,high:2}[r.level]):r[k]):data.rows;
  window.InspectionTableTools.headers(el("invoice-query-table"),invoiceSortKey,invoiceSortDirection);
- el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items · EST history from physically verified observations";
- el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td><td><button type="button" class="btn mini" data-invoice-edit="'+escHtml(r.item)+'">Edit</button></td></tr>').join("")||'<tr><td colspan="13" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
+ el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items";
+ el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td><span class="po-priority '+escHtml(r.level)+'">'+escHtml(({high:"High",medium:"Medium",low:"Low",stable:"Stable"})[r.level]||"High")+'</span></td><td><button type="button" class="btn mini" data-invoice-edit="'+escHtml(r.item)+'">Edit</button></td></tr>').join("")||'<tr><td colspan="8" class="empty">Import a file or select a saved PO.</td></tr>';
 }
 el("invoice-query-table").querySelector("thead").addEventListener("click",e=>{
  const button=e.target.closest(".query-sort");if(!button)return;
@@ -1042,8 +965,8 @@ el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").
 el("invoice-export").onclick=()=>{
  const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
  saveCSV("PO_Inspection_Overview_"+String(data.po).replace(/[^a-z0-9_-]/gi,"_")+".csv",[
- ["PO","Customer","Item","Brand","EST","Description","Pack / Size","Received quantity","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
- ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.receivedQuantity||"",r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
+ ["PO","Customer","Item","Brand","EST","Description","Pack / Size","Received quantity","Review priority"],
+ ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.receivedQuantity||"",({high:"High",medium:"Medium",low:"Low",stable:"Stable"})[r.level]||"High"])
  ]);
 };
 el("invoice-print").onclick=()=>{
@@ -1114,9 +1037,8 @@ root.innerHTML=window.InspectionOrderDirectory.tableHTML(filtered.map(p=>({
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{
- const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;const admin=window.InspectionCloud.isAdministrator();
- const headers=["PO","Customer","Item","Type","Description","EST",...(admin?["Verification date","Physically observed ESTs","Note"]:[])];
- saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[headers,...p.rows.map(x=>[p.po,p.customer||"",x.item,x.category||demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,...(admin?[x.verifiedAt||"",x.verifiedEsts?.join(", ")||"",x.note||""]:[])])]);
+ const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;const headers=["PO","Customer","Item","Type","Description","EST"];
+ saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[headers,...p.rows.map(x=>[p.po,p.customer||"",x.item,x.category||demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant])]);
 });
 root.querySelectorAll("[data-po-delete]").forEach(b=>b.onclick=()=>deletePrivateDraft(b.dataset.poDelete));
 renderPODetails();
@@ -1130,7 +1052,7 @@ function deletePrivateDraft(id){
 }
 function poCatalogBadge(row,index){if(demo.some(p=>p.item===row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
 function poDisplayProduct(row){return demo.find(p=>p.item===row.item)||row.importedProduct||{};}
-function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+estPriorityCell(r.item)+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<p class="small">'+(checked?'Physically checked '+safe(r.verifiedAt):'Not physically checked')+'</p>':'')+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
+function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+estPriorityCell(r.item)+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
 function openMissingESTEditor(poId){
  const cloud=window.InspectionCloud;
  if(!cloud.isAdministrator()||!cloud.canEdit()){cloud.deny();return;}
@@ -1157,9 +1079,9 @@ function openMissingESTEditor(poId){
 function renderPODetails(){
 const root=$("po-details"),p=invoices.find(x=>x.id===openPO);
 if(!p){root.innerHTML="";root.dataset.draftOwner="";return;}root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
-root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · Draft · pending inspection</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Physical check</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
+root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · Draft · pending inspection</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
- return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(checked?'<div class="po-verified">Physically checked · '+safe(x.verifiedAt)+'</div>':'<span class="muted">Not physically checked</span>')+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
  }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p);
 if(window.InspectionCloud.isAdministrator()&&p.rows.some(r=>!String(r.plant||'').trim())){const bulk=document.createElement('button');bulk.id='po-fill-missing-est';bulk.className='btn primary';bulk.textContent='Fill missing ESTs';bulk.onclick=()=>openMissingESTEditor(p.id);root.querySelector('.po-add-row').after(bulk);}
 $('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
@@ -1202,7 +1124,7 @@ const x=p.rows[Number(el.dataset.poItem)],value=el.value.trim(),product=demo.fin
 if(!value){alert("Item number cannot be empty.");renderPODetails();return;}
 if(p.rows.some(z=>z!==x&&z.item===value)){alert("This Item is already in this PO.");renderPODetails();return;}
 
-if(x.item!==value){if(x.verifiedAt&&!confirm("Changing this Item removes its verification status on this PO. Continue?")){renderPODetails();return;}x.item=value;x.description=product?.description||"";x.plant=product?initialEST(product):"";x.expectedEst=x.plant;x.verifiedAt="";x.verifiedEsts=[];x.changeFrom="";x.changeTo="";}
+if(x.item!==value){if(!confirm("Change this Item number on the PO?")){renderPODetails();return;}x.item=value;x.description=product?.description||"";x.plant=product?initialEST(product):"";x.expectedEst=x.plant;x.verifiedAt="";x.verifiedEsts=[];x.changeFrom="";x.changeTo="";}
 persistPOWorkspace();renderPODetails();
 });
 root.querySelectorAll("[data-po-weight]").forEach(el=>el.onchange=()=>{p.rows[Number(el.dataset.poWeight)].catchWeight=el.value.trim();persistPOWorkspace();});
@@ -1303,7 +1225,7 @@ return true;
 const panel=document.createElement("div");
 panel.className="weekly-stats";
 panel.id="weekly-observation-panel";
-panel.innerHTML='<div class="section-head" style="margin:0 0 10px"><div><h3 id="weekly-title">EST observation history</h3><div class="hint" style="margin-top:4px">Counts confirmed observation weeks, never product searches</div></div><button class="btn mini primary" id="weekly-record">＋ Record observation</button></div><div id="weekly-stat-content"></div><div style="margin-top:12px"><button class="btn mini" id="weekly-review">View / correct observations</button></div>';
+panel.hidden=true;panel.innerHTML='<span id="weekly-title"></span><button id="weekly-record" hidden>Record EST</button><div id="weekly-stat-content"></div><button id="weekly-review" hidden>Records</button>';
 $("est-extras").insertAdjacentElement("afterend",panel);
 function statsFor(item){
 const all=(observations[item]||[]).filter(r=>!window.__inspectionPeriodStart || r.date>=window.__inspectionPeriodStart());
@@ -1317,26 +1239,8 @@ const latestWeek=latest?weekKey(latest.date):null;
 const latestEsts=latestWeek?[...groups.get(latestWeek)]:[];
 return {all,groups,counts,ranked,latest,latestEsts,weeks:groups.size};
 }
-function renderWeekly(){
-const x=selected;
-$("weekly-title").textContent="EST observation history";
-const content=$("weekly-stat-content");
-if(!x){content.innerHTML='<div class="muted small">Select a product to view its observed establishment history.</div>';return;}
-const s=statsFor(x.item);
-if(!s.weeks){
-content.innerHTML='<div class="muted small">No confirmed weekly observations recorded. Historical reference above is not a measured frequency.</div>';
-return;
-}
-const [primary,count]=s.ranked[0];
-const pct=Math.round(count/s.weeks*100);
-const alternatives=s.ranked.slice(1);
-const changed=s.latestEsts.some(est=>est!==primary);
-const last=s.latest?.date||"—";
-const explanation=changed
-?'Recent variation: '+s.latestEsts.join(" + ")+' observed in the latest recorded week ('+last+'). The historical leader is '+primary+'.'
-:'Latest recorded week ('+last+'): '+s.latestEsts.join(" + ")+'. No change from the historical leader in that week.';
-content.innerHTML='<div class="stat-head"><div><div class="label">Most frequently observed</div><div class="stat-primary">'+esc(primary)+'</div><div class="stat-small">'+count+' of '+s.weeks+' distinct weeks</div></div><div><div class="stat-percent">'+pct+'%</div><div class="stat-small">of recorded weeks</div></div></div><div class="stat-pills">'+s.ranked.map(([est,n])=>'<span class="stat-pill">'+esc(est)+': '+n+' week'+(n===1?"":"s")+' ('+Math.round(n/s.weeks*100)+'%)</span>').join("")+'</div><div class="stat-comment">'+esc(explanation)+'<br><strong>Automatically generated from recorded observations, not searches.</strong></div>';
-}
+function renderWeekly(){const content=$("weekly-stat-content");if(content)content.replaceChildren();}
+
 function isEmployee(){
 const t=document.querySelector(".login-pill")?.textContent||"";
 return !window.InspectionCloud.canEdit();
@@ -1355,32 +1259,8 @@ closeModal();renderWeekly();
 if(added)window.dispatchEvent(new Event("inspection:local-change"));
 };
 }
-function reviewModal(){
-if(!selected){alert("Select a product first.");return;}
-const x=selected,records=[...(observations[x.item]||[])].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
-modal('<h2>Recorded observations · '+esc(x.item)+'</h2><p>Each Item + EST + calendar week is counted once. A week can include more than one EST. Confirmed online records.</p><div style="max-height:350px;overflow:auto"><table class="obs-table"><thead><tr><th>Date</th><th>Week of</th><th>EST</th><th>Note</th><th></th></tr></thead><tbody>'+records.map(r=>'<tr><td>'+esc(r.date)+'</td><td>'+esc(weekKey(r.date))+'</td><td><strong>'+esc(r.est)+'</strong></td><td>'+esc(r.note)+'</td><td><button class="btn mini" data-ob-edit="'+r.id+'">Edit</button> <button class="btn mini" data-ob-delete="'+r.id+'">Delete</button></td></tr>').join("")+'</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="ob-add-from-list">＋ Record new observation</button></div>');
-const root=$("modal-root");
-root.querySelectorAll("[data-ob-delete]").forEach(b=>b.onclick=()=>{
-if(isEmployee())return;
-const id=Number(b.dataset.obDelete);
-observations[x.item]=observations[x.item].filter(r=>r.id!==id);
-closeModal();renderWeekly();reviewModal();
-});
-root.querySelectorAll("[data-ob-edit]").forEach(b=>b.onclick=()=>{
-if(isEmployee())return;
-const r=observations[x.item].find(z=>z.id===Number(b.dataset.obEdit));
-if(!r)return;
-modal('<h2>Correct recorded observation</h2><p>Fix an entry without creating extra counted observations.</p><div class="label">Date</div><input type="date" class="input" id="ob-edit-date" style="width:100%" value="'+esc(r.date)+'"><div class="label" style="margin-top:12px">EST</div><input class="input" id="ob-edit-est" style="width:100%" value="'+esc(r.est)+'"><div class="label" style="margin-top:12px">Note</div><textarea class="input" id="ob-edit-note">'+esc(r.note)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="ob-edit-save">Save correction</button></div>');
-$("ob-edit-save").onclick=()=>{
-const d=$("ob-edit-date").value,est=$("ob-edit-est").value.trim().toUpperCase();
-if(!d||!est){alert("Date and EST are required.");return;}
-const duplicate=observations[x.item].some(z=>z.id!==r.id&&z.est===est&&weekKey(z.date)===weekKey(d));
-if(duplicate){alert("This Item and EST already has an observation in that week.");return;}
-r.date=d;r.est=est;r.note=$("ob-edit-note").value;closeModal();renderWeekly();reviewModal();
-};
-});
-$("ob-add-from-list").onclick=observationModal;
-}
+function reviewModal(){/* Historical evidence remains internal. */}
+
 $("weekly-record").onclick=observationModal;
 $("weekly-review").onclick=reviewModal;
 // Refresh when navigating, looking up or opening a result from Global Search.
@@ -1430,7 +1310,7 @@ const counts={};for(const ests of groups.values())for(const est of ests)counts[e
 const ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
 return {ranked,weeks:groups.size};
 }
-window.__inspectionPeriodLabel=x=>{const s=stats(x.item);return s.weeks?s.ranked[0][0]+" · "+Math.round(s.ranked[0][1]/s.weeks*100)+"%":"No observations";};
+window.__inspectionPeriodLabel=x=>x.plant||"—";
 const control=document.createElement("div");control.className="period-control";
 control.innerHTML='<label for="period-choice">◷ History range</label><select id="period-choice">'+options.map(([v,t])=>'<option value="'+v+'" '+(v===current?"selected":"")+'>'+t+'</option>').join("")+'</select>';
 const top=document.querySelector(".topright");top.insertBefore(control,top.firstChild);
@@ -1440,8 +1320,8 @@ const summary=document.createElement("div");summary.className="period-context";
 document.querySelector("#global-view .results .section-head").insertAdjacentElement("afterend",summary);
 function refresh(){
 const label=options.find(x=>x[0]===current)[1];
-context.textContent="EST statistics: "+label.toLowerCase()+" · based on observed weeks, not searches";
-summary.textContent="EST column: most frequent observed value during "+label.toLowerCase()+".";
+context.textContent="";
+summary.textContent="";
 if(window.__inspectionRenderWeekly)window.__inspectionRenderWeekly();
 if(typeof renderGlobal==="function")renderGlobal();
 }
@@ -1481,27 +1361,12 @@ const byDate=[...all].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
 const weekKeys=[...new Set(byDate.map(r=>weekKey(r.date)))].slice(0,10);
 return {latest:byDate[0]||null,recent:aggregate(all.filter(r=>weekKeys.includes(weekKey(r.date)))),historical:aggregate(all)};
 }
-function render(){
-const x=typeof selected!=="undefined"?selected:null;
-if(!$("est-summary-design"))return;
-if(!x){$("est-summary-design").innerHTML='<div class="muted small">Select an Item to see the last confirmed EST and weekly frequencies.</div>';return;}
-const s=calc(x.item),latest=s.latest;
-const main=latest?.est||"—";
-$("plant-value").textContent=main;
-const label=$("plant-label");
-label.textContent="MOST RECENT CONFIRMED EST";
-function tile(title,stat){
-if(!stat.top)return '<div class="est-summary-card"><div class="label">'+title+'</div><div class="est-summary-value">—</div><div class="est-summary-context">No recorded observations</div></div>';
-const [est,n]=stat.top,pct=Math.round(n/stat.weeks*100);
-return '<div class="est-summary-card"><div class="label">'+title+'</div><div class="est-summary-value">'+escapeText(est)+' · '+pct+'%</div><div class="est-summary-context">'+n+' of '+stat.weeks+' observed weeks</div></div>';
-}
-const mismatch=latest&&s.historical.top&&latest.est!==s.historical.top[0];
-$("est-summary-design").innerHTML='<div class="label">Latest human-confirmed observation</div><div class="row" style="justify-content:space-between;align-items:baseline"><strong style="font-size:19px;color:#246e9e">'+escapeText(main)+'</strong><span class="small muted">'+escapeText(latest?.date||"No confirmation recorded")+'</span></div><div class="est-summary-grid">'+tile("LAST 10 RECORDED WEEKS",s.recent)+tile("ALL-TIME HISTORY",s.historical)+'</div><div class="est-summary-note">'+(mismatch?"The latest confirmed observation differs from the most frequent historical EST. ":"")+'These statistics summarize human-recorded observations; the application does not independently detect or verify establishment changes. Always check the received cases.</div>';
-}
+function render(){const root=$("est-summary-design");if(root)root.replaceChildren();$("plant-label").textContent="EST";}
+
 const box=document.createElement("div");box.id="est-summary-design";box.className="est-summary";
 $("est-extras").insertAdjacentElement("beforebegin",box);
 const oldSummary=$("weekly-observation-panel");
-if(oldSummary){oldSummary.querySelector("#weekly-stat-content").style.display="none";const oldHead=oldSummary.querySelector(".section-head .hint");if(oldHead)oldHead.textContent="Manual confirmations only · observations can be corrected";}
+if(oldSummary){oldSummary.querySelector("#weekly-stat-content").style.display="none";const oldHead=oldSummary.querySelector(".section-head .hint");if(oldHead)oldHead.textContent="";}
 const originalShow=showProduct;showProduct=function(){originalShow();render();};
 const originalNavigate=navigate;navigate=function(v){originalNavigate(v);render();};
 const originalLookup=lookup;lookup=async function(){await originalLookup();render();};
@@ -1509,8 +1374,8 @@ $("lookup-btn").onclick=lookup;$("item-input").onkeydown=e=>{if(e.key==="Enter")
 $("weekly-record").addEventListener("click",()=>setTimeout(render,0));
 $("weekly-review").addEventListener("click",()=>setTimeout(render,0));
 const root=$("modal-root");new MutationObserver(()=>render()).observe(root,{childList:true,subtree:true});
-const p=document.querySelector(".period-context");if(p)p.textContent="Latest human-confirmed EST · last 10 recorded weeks · all-time history";
-window.__inspectionPeriodLabel=x=>{const s=calc(x.item);return s.latest?s.latest.est+" · latest confirmed":"Not confirmed";};
+const p=document.querySelector(".period-context");if(p)p.textContent="";
+window.__inspectionPeriodLabel=x=>x.plant||"—";
 if(typeof renderGlobal==="function")renderGlobal();
 render();
 })();
@@ -1586,36 +1451,23 @@ const [est,n]=data.ranked[0];
 return '<div class="est-summary-card"><div class="label">'+title+'</div><div class="est-summary-value">'+esc(est)+' · '+Math.round(100*n/data.weeks)+'%</div><div class="est-summary-context">'+n+' of '+data.weeks+' verified weeks</div></div>';
 }
 function render(){
-const x=typeof selected==="undefined"?null:selected;
-const root=$("est-summary-design");if(!root)return;
-if(!x){root.innerHTML='<div class="muted small">Search an Item to see confirmed EST history.</div>';return;}
-const s=summary(x.item),p=priority(s,x.item),age=s.latest?daysSince(s.latest.date):null;
-const newest=s.latest? s.all.filter(r=>r.date===s.latest.date).map(r=>r.est):[];
-const lastEst=[...new Set(newest)].join(" + ")||"—";
-$("plant-value").textContent=s.latest?lastEst:(x.plant||"—");
-$("plant-label").textContent=s.latest?"MOST RECENT CONFIRMED EST":"EST REFERENCE · NOT VERIFIED";
-const variants=s.historical.ranked.map(([est,n])=>{
-const badges=[];
-if(newest.includes(est))badges.push("Latest confirmed");
-if(s.recent.ranked[0]?.[0]===est)badges.push("Recent leader");
-if(!badges.length)badges.push("Historical variant");
-return '<div class="est-variant"><strong>'+esc(est)+'</strong><small>'+n+' of '+s.historical.weeks+' verified weeks · '+Math.round(100*n/s.historical.weeks)+'%</small><em>'+esc(badges.join(" · "))+'</em></div>';
-}).join("");
-const note=s.latest?"Last physically confirmed "+age+" day"+(age===1?"":"s")+" ago. "+(s.recent.ranked.length>1?"Multiple establishments have been observed in the last 10 recorded weeks. ":"")+"Historical statistics reflect sampled, manually recorded observations—not every received case.":"No physical confirmations recorded for this Item. Historical reference fields are not verification.";
-root.innerHTML='<div class="est-latest-block"><div class="label">LATEST HUMAN-CONFIRMED OBSERVATION</div><div class="est-latest-number '+p.level+'">'+esc(lastEst)+'</div><span class="est-priority '+p.level+'">'+p.label+'</span><div class="est-summary-context">'+esc(s.latest?.date||"Never verified")+(age!==null?" · "+age+" days without verification":"")+'</div></div>'+'<div class="est-summary-grid">'+tile("LAST 10 VERIFIED WEEKS",s.recent)+tile("ALL-TIME HISTORY",s.historical)+'</div><div class="est-variants"><div class="est-variants-title">Known EST references · physically verified frequency</div><div class="est-variants-grid">'+(variants||'<div class="small muted">No physical EST verifications yet</div>')+'</div></div><div class="est-summary-note"><strong>Review guidance:</strong> '+esc(p.reason)+'<br>'+esc(note)+'</div><div class="est-verify-actions"><button class="btn primary" id="est-verify-now">✓ Verify EST</button><button class="btn" id="est-review-observations">View / correct records</button><button class="btn" id="est-toggle-stable">'+((window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item))?"★ Highly stable · override":"☆ Mark highly stable")+'</button></div><div class="est-verify-foot">Highly stable is a manual classification, not a guarantee that the EST cannot change. Suggested priority is informational only and does not replace required inspection procedures. Verifying sampled boxes does not verify the entire pallet.</div>';
-$("est-verify-now").disabled=!admin();
-$("est-review-observations").disabled=false;
-$("est-toggle-stable").disabled=!admin();
-$("est-toggle-stable").onclick=()=>{if(!admin())return;if(window.__inspectionSetItemStable)window.__inspectionSetItemStable(x.item,!(window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item)));else if(stableItems.has(x.item))stableItems.delete(x.item);else stableItems.add(x.item);render();};
-$("est-verify-now").onclick=verifyModal;
-$("est-review-observations").onclick=()=>{$("weekly-review").click();};
+ const x=typeof selected==="undefined"?null:selected,root=$("est-summary-design");if(!root)return;
+ $("plant-label").textContent="EST";if(!x){root.replaceChildren();return;}
+ const s=summary(x.item),latest=s.latest?s.all.filter(r=>r.date===s.latest.date).map(r=>r.est):[];
+ $("plant-value").textContent=[...new Set(latest)].join(" + ")||x.plant||"—";
+ if(!admin()){root.replaceChildren();return;}
+ const p=priority(s,x.item),label={high:"High",medium:"Medium",low:"Low"}[p.level]||"High";
+ root.innerHTML='<span class="est-priority '+esc(p.level)+'">'+label+' priority</span><div class="est-verify-actions"><button class="btn primary" id="est-verify-now">Record observed EST</button><button class="btn" id="est-toggle-stable">'+((window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item))?"Stable EST · change":"Mark stable EST")+'</button></div>';
+ $("est-toggle-stable").onclick=()=>{if(!admin())return;if(window.__inspectionSetItemStable)window.__inspectionSetItemStable(x.item,!(window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item)));else if(stableItems.has(x.item))stableItems.delete(x.item);else stableItems.add(x.item);render();};
+ $("est-verify-now").onclick=verifyModal;
 }
+
 function verifyModal(){
 const x=typeof selected==="undefined"?null:selected;if(!x||!admin())return;
 const s=summary(x.item),variants=[...new Set([...s.historical.ranked.map(([e])=>e),...(window.__inspectionGetAlternativeRefs?.(x.item)||"").split(",").map(e=>e.trim()).filter(Boolean),x.plant].filter(Boolean))];
 const latest=s.latest?.est||"";
-const options=variants.map(e=>'<label class="est-verify-choice"><input type="checkbox" name="est-verified-choice" value="'+esc(e)+'"><span><strong>'+esc(e)+'</strong>'+(e===latest?' <small class="muted">· last confirmed</small>':'')+'</span></label>').join("");
-modal('<h2>Verify '+("EST")+' · '+esc(x.item)+'</h2><p>Select every EST number physically observed. Select several values when they appear in the same reception.</p><div id="est-known-options">'+(options||'<div class="small muted">No previously confirmed variants</div>')+'</div><label class="est-verify-choice"><input type="checkbox" id="est-new-choice">＋ New EST number</label><input id="est-new-value" class="input" placeholder="e.g. 81J" style="width:100%" disabled><div style="margin-top:12px"><div class="label">Verification date</div><input class="input" type="date" id="est-verify-date" style="width:100%"></div><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="est-verify-note" placeholder="e.g. mixed EST values observed" style="width:100%"></textarea><div class="est-verify-foot">Each Item + EST + calendar week counts once. Record only what you physically checked.</div><div style="margin-top:15px"><button class="btn primary" id="est-confirm-save">Save verification</button></div>');
+const options=variants.map(e=>'<label class="est-verify-choice"><input type="checkbox" name="est-verified-choice" value="'+esc(e)+'"><span><strong>'+esc(e)+'</strong>'+'</span></label>').join("");
+modal('<h2>Verify '+("EST")+' · '+esc(x.item)+'</h2><p>Select every EST number physically observed. Select several values when they appear in the same reception.</p><div id="est-known-options">'+(options||'<div class="small muted">No additional EST references</div>')+'</div><label class="est-verify-choice"><input type="checkbox" id="est-new-choice">＋ New EST number</label><input id="est-new-value" class="input" placeholder="e.g. 81J" style="width:100%" disabled><div style="margin-top:12px"><div class="label">Verification date</div><input class="input" type="date" id="est-verify-date" style="width:100%"></div><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="est-verify-note" placeholder="e.g. mixed EST values observed" style="width:100%"></textarea><div class="est-verify-foot">Each Item + EST + calendar week counts once. Record only what you physically checked.</div><div style="margin-top:15px"><button class="btn primary" id="est-confirm-save">Save verification</button></div>');
 $("est-verify-date").value=today();
 $("est-new-choice").onchange=()=>{$("est-new-value").disabled=!$("est-new-choice").checked;};
 $("est-confirm-save").onclick=()=>{
@@ -1646,7 +1498,7 @@ new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>
 const login=document.querySelector(".login-pill");
 if(login)login.addEventListener("click",()=>setTimeout(render,0));
 const roleBtn=$("auth-enter");if(roleBtn)roleBtn.addEventListener("click",()=>setTimeout(render,0));
-window.__inspectionPeriodLabel=x=>{const s=summary(x.item);return s.latest?s.latest.est+" · last confirmed":"Not verified";};
+window.__inspectionPeriodLabel=x=>x.plant||"—";
 if(typeof renderGlobal==="function")renderGlobal();
 render();
 })();
@@ -1737,7 +1589,7 @@ return false;
 window.__inspectionEffectiveStable=effectiveStable;
 window.__inspectionSetItemStable=(item,value)=>{overrides.set(item,!!value);refresh();};
 function latest(item){return [...(records[item]||[])].sort((a,b)=>b.date.localeCompare(a.date)||Number(b.id)-Number(a.id))[0]||null;}
-function allLatest(item){const l=latest(item);return l?[...new Set((records[item]||[]).filter(r=>r.date===l.date).map(r=>r.est))]:[];}
+function allLatest(item){return [...new Set(String(demo.find(p=>p.item===item)?.plant||"").split(",").map(v=>v.trim()).filter(Boolean))];}
 function refresh(){renderQueue();renderRecords();renderBrands();}
 window.__inspectionWorkspaceRefresh=refresh;
 function queuedItems(){
@@ -1747,12 +1599,12 @@ return [...ids].filter(id=>demo.some(x=>x.item===id)).map(id=>demo.find(x=>x.ite
 function renderQueue(){
 const root=$("quick-queue-rows");if(!root)return;
 const items=queuedItems(),ids=new Set(items.map(x=>x.item));for(const id of checked)if(!ids.has(id))checked.delete(id);
-$("quick-queue-count").textContent=items.length+" unique Items · "+checked.size+" selected for physical confirmation";
+$("quick-queue-count").textContent=items.length+" unique Items · "+checked.size+" selected";
 root.innerHTML=items.map(x=>{
 const l=latest(x.item),values=allLatest(x.item),date=l?.date||"Never",valid=values.length===1;
-return '<tr><td><input type="checkbox" data-quick-check="'+esc(x.item)+'" '+(checked.has(x.item)?"checked":"")+' '+(!valid||!admin()?"disabled":"")+' title="'+(valid?"I physically checked this Item and its single latest EST matches":"Use Different EST / mixed to choose observed values")+'"></td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'<div class="small muted">'+esc(x.description)+'</div></td><td><strong>'+esc(values.join(" + ")||"Not confirmed")+'</strong></td><td>'+esc(date)+'</td><td><button class="btn mini" data-quick-change="'+esc(x.item)+'" '+(!admin()?"disabled":"")+'>Different EST / mixed</button></td></tr>';
-}).join("")||'<tr><td colspan="6" class="empty">No searched Items yet. Search a product or add an Item number above.</td></tr>';
-root.querySelectorAll("[data-quick-check]").forEach(el=>el.onchange=()=>{if(el.checked)checked.add(el.dataset.quickCheck);else checked.delete(el.dataset.quickCheck);$("quick-queue-count").textContent=items.length+" unique Items · "+checked.size+" selected for physical confirmation";$("quick-confirm-selected").disabled=!admin()||!checked.size;});
+return '<tr><td><input type="checkbox" data-quick-check="'+esc(x.item)+'" '+(checked.has(x.item)?"checked":"")+' '+(!valid||!admin()?"disabled":"")+' title="Select EST to record"></td><td class="strong">'+esc(x.item)+'</td><td>'+esc(x.brand)+'<div class="small muted">'+esc(x.description)+'</div></td><td><strong>'+esc(values.join(" + ")||"—")+'</strong></td><td><button class="btn mini" data-quick-change="'+esc(x.item)+'" '+(!admin()?"disabled":"")+'>Different EST / mixed</button></td></tr>';
+}).join("")||'<tr><td colspan="5" class="empty">No searched Items yet. Search a product or add an Item number above.</td></tr>';
+root.querySelectorAll("[data-quick-check]").forEach(el=>el.onchange=()=>{if(el.checked)checked.add(el.dataset.quickCheck);else checked.delete(el.dataset.quickCheck);$("quick-queue-count").textContent=items.length+" unique Items · "+checked.size+" selected";$("quick-confirm-selected").disabled=!admin()||!checked.size;});
 root.querySelectorAll("[data-quick-change]").forEach(el=>el.onclick=()=>changeModal(el.dataset.quickChange));
 $("quick-confirm-selected").disabled=!admin()||!checked.size;
 }
@@ -1790,8 +1642,8 @@ $("quick-confirm-selected").onclick=()=>{
 if(!admin())return;
 const items=[...checked].map(id=>({id,ests:allLatest(id)})).filter(x=>x.ests.length);
 if(!items.length)return;
-if(!confirm("Confirm that you physically checked "+items.length+" selected Items and that each matched its latest confirmed EST values? Only checked Items will be recorded."))return;
-for(const x of items)save(x.id,x.ests,today(),"Quick verification · physically checked; matches latest recorded values");
+if(!confirm("Record the shown EST values as observed for "+items.length+" selected Items?"))return;
+for(const x of items)save(x.id,x.ests,today(),"Administrator EST entry");
 afterSave();
 };
 function changeModal(item){
@@ -1806,27 +1658,9 @@ if(!ests.length||ests.some(v=>!v)||!$("q-date").value||$("q-date").value>today()
 save(item,ests,$("q-date").value,$("q-note").value.trim());closeModal();afterSave();
 };
 }
-function renderRecords(){
-const root=$("verification-rows");if(!root)return;
-const q=$("verification-filter").value.trim().toLowerCase(),date=$("verification-date").value;
-const changes=window.__inspectionPOChanges?.()||[];
-const rows=changes.filter(r=>(!date||r.date===date)&&(!q||[r.item,r.from,r.to,r.description].some(v=>String(v||"").toLowerCase().includes(q))));
-const panel=root.closest(".panel");
-const head=panel?.querySelector(".section-head h3"),hint=panel?.querySelector(".section-head .hint");
-if(head)head.textContent="EST Change History";
-if(hint)hint.textContent="Only physically confirmed EST differences · all POs combined";
-const cols=root.closest("table")?.querySelector("thead");
-if(cols)cols.innerHTML="<tr><th>Date</th><th>Item</th><th>Previous reference</th><th>Physically confirmed EST</th><th>Change</th></tr>";
-let stats=$("est-change-stats");
-if(!stats&&panel){stats=document.createElement("div");stats.id="est-change-stats";stats.className="est-change-stats";panel.querySelector(".toolbar")?.insertAdjacentElement("beforebegin",stats);}
-const distinct=new Set(changes.map(x=>x.item)).size,grouped=new Map();
-for(const c of changes){const k=c.from+" → "+c.to;grouped.set(k,(grouped.get(k)||0)+1);}
-const top=[...grouped].sort((a,b)=>b[1]-a[1]).slice(0,3);
-if(stats)stats.innerHTML='<span><strong>'+changes.length+'</strong> confirmed EST changes</span><span><strong>'+distinct+'</strong> affected Items</span><span><strong>'+grouped.size+'</strong> change patterns</span>'+(top.length?'<span class="small">Most common: '+top.map(([k,v])=>esc(k)+' ('+v+')').join(" · ")+'</span>':"");
-root.innerHTML=rows.map(r=>'<tr><td>'+esc(r.date)+'</td><td class="strong">'+esc(r.item)+'</td><td>'+esc(r.from)+'</td><td><strong>'+esc(r.to)+'</strong></td><td><span class="est-change-indicator">EST changed</span></td></tr>').join("")||'<tr><td colspan="5" class="empty">No confirmed EST changes match the filters. Unchanged confirmations still count in product statistics.</td></tr>';
-}
-$("verification-filter").oninput=renderRecords;$("verification-date").onchange=renderRecords;
-$("verification-clear").onclick=()=>{$("verification-filter").value="";$("verification-date").value="";renderRecords();};
+function renderRecords(){/* Inspection history presentation retired; stored records are unchanged. */}
+
+
 function renderBrands(){
 const root=$("brand-directory");if(!root)return;
 const names=[...new Set([...demo.map(x=>x.brand),...Object.keys(profiles)])].filter(n=>n.toLowerCase().includes($("brand-filter").value.toLowerCase())).sort();
@@ -3564,7 +3398,7 @@ function intakeReferenceHTML(row){
  const ref=row.plant||'No catalog reference';
  if(!administrator)return '<span>'+escapeHTML(ref)+' · pending approval</span>';
  const history=window.__inspectionIntakeHistory?.(row.item);
- return '<span>'+escapeHTML(ref)+'</span>'+(history?.date?'<div class="small muted">Last observed: '+escapeHTML(history.latest)+' · '+escapeHTML(history.date)+'</div>':'<div class="small muted">No recorded observations</div>');
+ return '<span>'+escapeHTML(ref)+'</span>';
 }
 function renderDeliveryIntakes(){
  if(!started)return;let root=document.getElementById('delivery-intakes-panel');
@@ -3592,7 +3426,7 @@ async function saveSAPDelivery(a,number,fileName,rows,previous,sourceBlob,source
 }
 function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-key="approved-po"><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(window.InspectionProduct.classLabel(r.category))+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div>';
 }
-function approvedEvidenceHTML(p){if(!administrator)return '';return '<details class="inspection-evidence"><summary>Inspection evidence</summary>'+p.rows.map(r=>'<p>'+escapeHTML(r.item)+' · '+(isPORowVerified(r)?'Physically checked '+escapeHTML(r.verifiedAt)+' · '+escapeHTML(actorLabel(r.verifiedBy||r.verified_by)):'Not individually verified')+'</p>').join('')+'</details>';}
+function approvedEvidenceHTML(){return '';}
 function renderApprovedPOs(){
  if(!started||!approvedPanel())return;renderDeliveryIntakes();
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
@@ -3604,7 +3438,7 @@ function renderApprovedPOs(){
  document.getElementById(selected&&deliveryOrderIDs.has(selected.id)?'delivery-po-panel':'approved-po-panel').appendChild(detailRoot);
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
  const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
- detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+' - Approved for Inspection</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+approvedEvidenceHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+' - Approved for Inspection</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
  document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST'],...a.snapshot.rows.map(r=>[r.item,r.description,window.InspectionProduct.classLabel(r.category),r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
@@ -3612,7 +3446,7 @@ function renderApprovedPOs(){
 }
 async function manageApprovedPO(a,replacement){
  if(!administrator||!canEdit()){deny();return false;}
- const text=replacement?'Publish the edited version of PO '+a.snapshot.po+' for all users? Changed Item / EST values lose their per-PO verification status until physically checked again.':'Delete approved PO '+a.snapshot.po+' for all users? This cannot be undone. Product data and physical verification history will remain.';
+ const text=replacement?'Publish the edited version of PO '+a.snapshot.po+' for all users? Associated deliveries may need their matching updated.':'Delete approved PO '+a.snapshot.po+' for all users? This cannot be undone. Product data and physical verification history will remain.';
  if(!confirm(text))return false;
  try{
   await commit();if(!ready||offline||queueCount)throw Error('Resolve pending sends before changing an approved PO.');
@@ -3967,7 +3801,7 @@ function historyValue(value){
  return Object.entries(value).filter(([k])=>!['id','operation_id','path','generation'].includes(k)).map(([k,v])=>(historyFieldNames[k]||({est:'EST',date:'Date',note:'Note',primary:'Primary EST',others:'Alternative references',name:'Name'}[k])||k)+': '+historyValue(v)).join(' · ')||'—';
 }
 function productHistoryRows(){
- const domains=['catalog-overrides','product-notes','est-references','observations','fixed-est','photos','stability-overrides'];
+ const domains=['catalog-overrides','product-notes','est-references','fixed-est','photos','stability-overrides'];
  return changeHistory.filter(r=>domains.includes(r.domain)).flatMap(row=>{
   if(row.domain==='est-references')return ['primary','others'].filter(k=>JSON.stringify(row.before_value?.[k])!==JSON.stringify(row.after_value?.[k])).map(k=>({...row,field_name:k==='primary'?'plant':'Alternative EST',before_value:row.before_value?.[k],after_value:row.after_value?.[k]}));
   if(row.domain==='observations'){
@@ -3988,7 +3822,7 @@ function renderChangeHistory(){
 }
 async function loadRequests(){
  if(!administrator||requestsLoading)return;requestsLoading=true;
- try{changeHistory=await request('/rest/v1/inspection_change_history?select=*&order=changed_at.desc,id.desc&limit=1000');renderChangeHistory();}catch(error){message('Could not load Change History: '+error.message,true);}finally{requestsLoading=false;}
+ try{changeHistory=await request('/rest/v1/inspection_change_history?select=*&domain=neq.observations&order=changed_at.desc,id.desc&limit=1000');renderChangeHistory();}catch(error){message('Could not load Change History: '+error.message,true);}finally{requestsLoading=false;}
 }
 document.getElementById('change-history-search').oninput=renderChangeHistory;
 document.getElementById('change-history-domain').onchange=renderChangeHistory;
