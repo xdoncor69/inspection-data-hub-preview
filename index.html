@@ -118,7 +118,7 @@ window.InspectionTableTools={
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
-<section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search" selected>Search only</option><option value="po">Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
+<section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item Number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count" hidden>—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Supplier / Source Group</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div><div><div class="label">Sales unit</div><div class="value" id="d-salesUnit">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></div><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
@@ -729,16 +729,12 @@ existingPOAccepted=true;
 }
 p.rows.push(rowFor(x));persistPOWorkspace();renderPOArchive();
 }
-const purpose=$("item-lookup-purpose");
-window.__inspectionSearchOnly=()=>purpose.value==="search";
-function updateLookupPurpose(){const only=window.__inspectionSearchOnly();$("product-lookup-workspace").classList.toggle("search-only-mode",only);$("item-create-po").hidden=only;$("item-purpose-hint").textContent=only?"View Items without creating a PO or recording searches.":"Look up Items to add them to your private PO draft.";}
-purpose.onchange=updateLookupPurpose;updateLookupPurpose();
-$("item-create-po").onclick=()=>createPOFlow();
+window.__inspectionSearchOnly=()=>true;
 function findExistingPO(number){return invoices.find(p=>p.po.trim().toLowerCase()===number.trim().toLowerCase())||null;}
 function offerExistingPO(number,onNew,onOpen=()=>{}){
  const existing=findExistingPO(number),approved=window.InspectionCloud.hasApprovedPO(number);if(!existing&&!approved)return false;
  modal('<h2>This PO already exists</h2><p>PO '+safe(number)+' already exists'+(existing?' in your private drafts.':' as a PO Approved for Inspection.')+' Open it to view its existing Items, or create a new PO using a different number. This lookup/import will not add Items to the existing PO.</p><div class="row" style="gap:10px;margin-top:15px"><button class="btn primary" id="po-existing-open">Open existing PO</button><button class="btn" id="po-existing-new">Create new PO</button></div>');
- $("po-existing-open").onclick=()=>{closeModal();onOpen();purpose.value="po";updateLookupPurpose();if(existing)activatePO(existing.id,true);else window.InspectionCloud.openApprovedPO(number);};
+ $("po-existing-open").onclick=()=>{closeModal();onOpen();if(existing)activatePO(existing.id,true);else window.InspectionCloud.openApprovedPO(number);};
  $("po-existing-new").onclick=()=>{closeModal();onNew();};return true;
 }
 function createPOFlow(pendingItem=null,initial={},after=()=>{}){
@@ -752,10 +748,10 @@ const client=window.InspectionCloud.requireClient($("po-customer"));if(!client)r
 const saved={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer,clientId:client.id,savedAt:new Date().toISOString(),rows:log.map(x=>({...x,verifiedAt:"",verifiedEsts:[]}))};
 if(pendingItem&&!saved.rows.some(r=>r.item===pendingItem.item))saved.rows.push(rowFor(pendingItem));
 invoices.unshift(saved);if(!persistPOWorkspace()){invoices.shift();return;}
-log=[];persistPOWorkspace();closeModal();purpose.value="po";updateLookupPurpose();activatePO(saved.id,false);renderLog();after();
+log=[];persistPOWorkspace();closeModal();activatePO(saved.id,false);renderLog();after();
 };
 }
-window.__inspectionOnLookup=(x,after=()=>{})=>{if(window.__inspectionSearchOnly()){after();return;}if(!window.InspectionCloud.canEdit()||!x?.item)return;if(!openPO){createPOFlow(x,{},after);return;}addItemToActivePO(x);after();};
+window.__inspectionOnLookup=(x,after=()=>{})=>after();
 
 /* Spreadsheet invoice importer: preview and map source columns, never auto-confirm EST. */
 (function initPOSpreadsheetImport(){
@@ -1017,7 +1013,7 @@ el("po-import-create").onclick=()=>{
   const po={id:"po-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),po:number,customer:client.name,clientId:client.id,savedAt:new Date().toISOString(),rows:newItems.map(importRow)};
   invoices.unshift(po);
   if(!persistPOWorkspace()){invoices.shift();return;}
-  purpose.value="po";updateLookupPurpose();activatePO(po.id,false);
+  activatePO(po.id,false);
  }
  el("po-import-summary").textContent="Imported "+newItems.length+" Items to PO "+number+(unknown.length?". "+unknown.length+" unknown Items were kept with available source product data, without adding them to the catalog.":"")+".";
  setStatus("Private PO draft "+number+" prepared. Synchronization status is shown in the connection banner. Only the administrator can publish an PO Approved for Inspection.");
