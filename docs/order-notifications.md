@@ -2,12 +2,12 @@
 
 The web interface now has Settings → Order notifications and a Notifications shortcut. Notices are created from committed database events; there is no historical backfill. The list remains until Close is selected.
 
-- Non-administrator uploads a nonempty private PO draft: administrator receives a pending-approval summary, once per draft ID. Editing or retrying does not emit duplicate events.
+- Non-administrator uploads a nonempty shared PO draft: administrator receives a pending-approval summary, once per draft ID. Editing or retrying does not emit duplicate events.
 - Delivery first: administrator receives the delivery number, optional explicitly supplied PO number, and customer. No fabricated PO identifier is shown as a user-supplied reference.
 - Administrator approves a PO: the certificate preparer receives its approval notice. If the same transaction also creates an associated ready delivery, the single notice includes that delivery.
 - A ready delivery saved against an approved PO: the certificate preparer receives “Delivery available · ready to process.” This does not claim a separate administrator delivery approval. Unresolved or stale matches do not generate a ready notice.
 
-Ariadna's existing Auth account is the initial certificate recipient. Only an administrator can change that recipient in Settings; this changes notification routing only. Existing catalog, private-draft, file and inspection-evidence permissions remain. A private-draft notice contains a summary and does not grant access to another user's draft contents.
+Ariadna's existing Auth account is the initial certificate recipient. Only an administrator can change that recipient in Settings; this changes notification routing only. Drafts are centralized: all signed-in users can view the shared list, normal users edit or delete their own drafts, and the administrator can inspect and approve any draft. Inspection evidence stays administrator-only in backend responses and exports. The pending notice refers to this same shared draft.
 
 ## Current activation state
 

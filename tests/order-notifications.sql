@@ -7,7 +7,8 @@ begin
  select id into normal_id from auth.users where lower(email)='ariadna.cabeza@hapcor.com';
  select user_id into admin_id from public.inspection_admins limit 1;
  select id into customer_id from public.inspection_clients where deleted_at is null limit 1;
- update public.inspection_po_workspaces set workspace=jsonb_set(workspace,'{invoices}',coalesce(workspace->'invoices','[]')||jsonb_build_array(jsonb_build_object('id',draft_id,'po','000-PUSH-TEST','customer','Notification fixture','rows',jsonb_build_array(jsonb_build_object('item','fixture'))))) where user_id=normal_id;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',normal_id,'role','authenticated')::text,true);
+ update public.inspection_po_workspaces set workspace=jsonb_set(workspace,'{invoices}',coalesce(workspace->'invoices','[]')||jsonb_build_array(jsonb_build_object('id',draft_id,'createdBy',normal_id,'po','000-PUSH-TEST','customer','Notification fixture','rows',jsonb_build_array(jsonb_build_object('item','fixture'))))) where user_id=admin_id;
  update public.inspection_po_workspaces set updated_at=clock_timestamp() where user_id=normal_id;
  select count(*) into event_count from public.inspection_notifications where recipient_id=admin_id and event_key='draft:'||normal_id||':'||draft_id;
  if event_count<>1 then raise exception 'Draft notice must be generated once, got %',event_count;end if;
