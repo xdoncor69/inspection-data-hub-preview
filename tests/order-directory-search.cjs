@@ -30,9 +30,30 @@ Object.assign(context,{$:node,safe:esc,escapeHTML:esc,normalizePOSearch:v=>model
 context.window.InspectionCloud={isAdministrator:()=>false,orderSummary:p=>model.summary(p,{intakes:[intake]}),orderMatches:(p,q)=>model.matches(model.summary(p,{intakes:[intake]}),q)};
 vm.runInContext(html.match(/function matchesPOSearch\(po,query\)\{[^\n]+/)[0],context);
 const start=html.indexOf('function renderPOArchive(){'),end=html.indexOf('\nfunction deletePrivateDraft',start);vm.runInContext(html.slice(start,end),context);
-node('po-search-input').value='003001';vm.runInContext('renderPOArchive()',context);assert(node('po-list').innerHTML.includes('PO 00402824'));assert(node('po-list').innerHTML.includes('Delivery 003001'));assert(node('po-list').innerHTML.includes('Status: Draft'));
-vm.runInContext(html.match(/function approvedOrderCard\(a\)\{[\s\S]*?\n\}/)[0],context);
+node('po-search-input').value='003001';vm.runInContext('renderPOArchive()',context);assert(node('po-list').innerHTML.includes('00402824'));assert(node('po-list').innerHTML.includes('003001'));assert(node('po-list').innerHTML.includes('Draft · pending inspection'));
+vm.runInContext(html.match(/function approvedOrderEntry\(a\)\{[\s\S]*?\n\}/)[0],context);
 context.approved={id:'approved1',snapshot:po,approved_email:'admin@example.invalid',approved_at:'2026-10-14T12:00:00Z'};
-card=vm.runInContext('approvedOrderCard(approved)',context);assert(card.includes('Delivery 003001 · 003002'));assert(card.includes('Status: Delivery available'));assert(!card.includes('verifiedAt'));assert(!card.includes('private'));
+card=model.tableHTML([vm.runInContext('approvedOrderEntry(approved)',context)],{layoutKey:'test',escape:esc});assert(card.includes('003001 · 003002'));assert(card.includes('Delivery available'));assert(!card.includes('verifiedAt'));assert(!card.includes('private'));
 assert(html.includes('inspection_read_order_directory'));assert(html.includes('JSON.stringify(deliveries)!==JSON.stringify(orderDirectoryMetadata)'));
 console.log('PASS: '+scripts.length+' scripts compile; PO/delivery/customer search, all three statuses, multiple deliveries, leading zeros, standalone and legacy references, safe card output, draft/approved integration and nonmutation. No browser used.');
+
+// The directory tables have the requested fixed initial order, safe text and one row per order.
+const entries=Array.from({length:60},(_,i)=>({summary:{...model.summary({...po,id:'draft'+i,po:'00'+i}),salesTeam:i%2?'CSR1':'7'},actions:'<button>Open</button>'}));
+const table=model.tableHTML(entries,{layoutKey:'purchase-order-drafts',escape:esc});
+assert.equal((table.match(/<tr>/g)||[]).length,61);
+const headings=[...table.matchAll(/<th [^>]+>([^<]+)<\/th>/g)].map(m=>m[1]);
+assert.equal(headings.join('|'),'Delivery No.|PO No.|Customer|Sales team|Status|Actions');
+assert(table.includes('data-layout-key="purchase-order-drafts"'));assert(!table.includes('po-list-row'));assert(!table.includes('<input'));
+assert(table.includes('CSR1'));assert(table.includes('>7<'));
+const empty=model.tableHTML([],{layoutKey:'purchase-order-approved',escape:esc});assert(empty.includes('colspan="6"'));
+const separate=model.tableHTML([{summary:standalone,actions:''}],{layoutKey:'purchase-order-drafts',escape:esc});assert(separate.includes('No PO associated'));assert(separate.includes('003001'));
+const unsafe=model.tableHTML([{summary:{...standalone,customer:'<img src=x>',salesTeam:'<script>'},actions:''}],{layoutKey:'safe',escape:esc});assert(!unsafe.includes('<img'));assert(!unsafe.includes('<script>'));
+// Customer ID has precedence; fallback by name must be unique, with no fuzzy assignment.
+context.orderDirectoryMetadata={deliveries:[],intakes:[]};context.clients=[{id:'customer1',name:'Budget Food',sales_team:'CSR1'},{id:'customer2',name:'Other',sales_team:'7'}];
+vm.runInContext(html.slice(html.indexOf('function orderSummary(order,approvedId=null){'),html.indexOf('\nfunction orderMatches(')),context);
+context.order={...po,clientId:'customer1'};assert.equal(vm.runInContext('orderSummary(order).salesTeam',context),'CSR1');
+context.order={...po,clientId:'missing'};assert.equal(vm.runInContext('orderSummary(order).salesTeam',context),'');
+context.order=po;assert.equal(vm.runInContext('orderSummary(order).salesTeam',context),'CSR1');
+context.clients.push({id:'duplicate',name:'Budget Food',sales_team:'3'});assert.equal(vm.runInContext('orderSummary(order).salesTeam',context),'');
+assert(html.includes("layoutKey:'purchase-order-approved'"));assert(html.includes("layoutKey:'purchase-order-delivery'"));
+console.log('PASS: 60 compact directory rows, six ordered headers, separate stage layout keys, standalone draft delivery and safe Sales team matching.');

@@ -98,7 +98,16 @@ window.InspectionTableTools={
  }
 };
 </script>
-<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-switch-style">#lookup-view .order-import-switch{display:flex;gap:8px;max-width:460px}#lookup-view .order-import-switch .btn{flex:1;min-height:42px}#order-import-panels{min-width:0}#order-import-panels>[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style><style id="shared-draft-access-style">#po-details.draft-readonly :is(#po-edit-details,#po-delete-active,.po-add-row,[data-draft-edit],[data-po-up],[data-po-down],[data-po-remove]){display:none!important}#po-details.draft-readonly .po-review-table th:last-child,#po-details.draft-readonly .po-review-table td:last-child{display:none!important}</style><style id="purchase-order-stages-style">#purchase-orders-view #delivery-po-panel{margin-top:0}#purchase-orders-view #delivery-po-panel .section-head h3{font-size:14px}</style></head><body><style id="online-workspace-style">
+<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-switch-style">#lookup-view .order-import-switch{display:flex;gap:8px;max-width:460px}#lookup-view .order-import-switch .btn{flex:1;min-height:42px}#order-import-panels{min-width:0}#order-import-panels>[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style><style id="shared-draft-access-style">#po-details.draft-readonly :is(#po-edit-details,#po-delete-active,.po-add-row,[data-draft-edit],[data-po-up],[data-po-down],[data-po-remove]){display:none!important}#po-details.draft-readonly .po-review-table th:last-child,#po-details.draft-readonly .po-review-table td:last-child{display:none!important}</style><style id="purchase-order-stages-style">#purchase-orders-view #delivery-po-panel{margin-top:0}#purchase-orders-view #delivery-po-panel .section-head h3{font-size:14px}</style><style id="purchase-order-directory-tables">
+#purchase-orders-view .order-directory-table{font-size:12px}
+#purchase-orders-view .order-directory-table th,#purchase-orders-view .order-directory-table td{padding:7px 9px;line-height:1.4;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
+#purchase-orders-view .order-directory-actions{display:flex;align-items:flex-start;gap:5px}
+#purchase-orders-view .order-directory-actions .btn{white-space:nowrap;min-height:30px}
+#purchase-orders-view .order-directory-more{margin:0}
+#purchase-orders-view .order-directory-more>summary{list-style:none;cursor:pointer}
+#purchase-orders-view .order-directory-more>summary::-webkit-details-marker{display:none}
+#purchase-orders-view .order-directory-more>div{display:flex;flex-direction:column;gap:5px;margin-top:5px}
+</style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
 #cloud-banner{position:sticky;top:0;z-index:35;padding:8px 15px;background:var(--sk-accent-soft);color:var(--sk-ink);border-bottom:1px solid var(--sk-border);font-size:11px}
@@ -386,6 +395,13 @@ window.InspectionOrderDirectory=Object.freeze({
   return {po:association==='linked'?storedPO:'',association,deliveries:numbers,customer:String(order.customer||related[0]?.customer_name||'Customer not specified'),status:approvedId?(withDelivery||numbers.length?'Delivery available':'Approved for Inspection'):'Draft · pending inspection'};
  },
  matches(summary,query){const term=this.normalize(query);return !term||[summary.po,summary.customer,...summary.deliveries].some(value=>this.normalize(value).includes(term));},
+ tableHTML(entries,{layoutKey,escape,empty='No orders in this stage.'}){
+  const columns=[['delivery','Delivery No.',130],['po','PO No.',130],['customer','Customer',250],['salesTeam','Sales team',100],['status','Status',190],['actions','Actions',160]];
+  return '<div class="tablewrap"><table class="order-directory-table" data-layout-key="'+escape(layoutKey)+'"><colgroup>'+columns.map(c=>'<col style="width:'+c[2]+'px">').join('')+'</colgroup><thead><tr>'+columns.map(c=>'<th data-sort="'+c[0]+'">'+c[1]+'</th>').join('')+'</tr></thead><tbody>'+entries.map(({summary:s,actions})=>{
+   const po=s.po|| (s.association==='unknown'?'PO association not recorded':'No PO associated');
+   return '<tr><td>'+escape(s.deliveries.join(' · ')||'—')+'</td><td>'+escape(po)+'</td><td>'+escape(s.customer)+'</td><td>'+escape(s.salesTeam||'Not assigned')+'</td><td>'+escape(s.status)+'</td><td><div class="order-directory-actions">'+actions+'</div></td></tr>';
+  }).join('')+(entries.length?'':'<tr><td colspan="6" class="empty">'+escape(empty)+'</td></tr>')+'</tbody></table></div>';
+ },
  identityHTML(summary,escape){
   const po=summary.po?'PO '+escape(summary.po):summary.association==='unknown'?'PO association not recorded':'No PO associated';
   return '<strong class="po-number">'+po+'</strong>'+(summary.deliveries.length?'<div class="order-directory-deliveries">Delivery '+summary.deliveries.map(escape).join(' · ')+'</div>':'')+'<div class="po-customer">'+escape(summary.customer)+'</div><div class="order-directory-status"><span class="pill">Status: '+escape(summary.status)+'</span></div>';
@@ -1091,7 +1107,10 @@ root.classList.toggle("hidden",!!active);
 $("po-search-form").classList.toggle("hidden",!!active);
 const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
-root.innerHTML=filtered.map(p=>'<div class="po-list-row"><div class="po-list-identity">'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'<div class="muted small po-list-meta">'+p.rows.length+' Items · '+safe(new Date(p.savedAt).toLocaleString())+'</div></div><div class="row"><button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open draft</button>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini primary" data-po-approve="'+safe(p.id)+'">✓ Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">↓ CSV</button><button class="btn mini" data-po-delete="'+safe(p.id)+'"'+(draftEditable(p)?"":" hidden")+'>Delete draft</button></div></div>').join("")||(normalizePOSearch(query)?'<div class="empty" style="padding:12px">No orders match this PO number, delivery number or customer name. Try a shorter part of the name or clear the search.</div>':'<div class="empty" style="padding:12px">No drafts yet. Import a PO or choose New draft.</div>');
+root.innerHTML=window.InspectionOrderDirectory.tableHTML(filtered.map(p=>({
+ summary:window.InspectionCloud.orderSummary(p),
+ actions:'<button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open</button><details class="order-directory-more"><summary class="btn mini" aria-label="More actions for draft '+safe(p.po)+'">More</summary><div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-approve="'+safe(p.id)+'">Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">CSV</button>'+(draftEditable(p)?'<button class="btn mini" data-po-delete="'+safe(p.id)+'">Delete draft</button>':'')+'</div></details>'
+})),{layoutKey:'purchase-order-drafts',escape:safe,empty:normalizePOSearch(query)?'No drafts match this PO number, delivery number or customer.':'No drafts yet.'});
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{
@@ -3300,7 +3319,11 @@ async function buildPhotos(){
  replaceObject(photoDisplay,result);photoSignedAt=Date.now();
 }
 let orderDirectoryMetadata={deliveries:[],intakes:[]};
-function orderSummary(order,approvedId=null){return window.InspectionOrderDirectory.summary(order,{approvedId,...orderDirectoryMetadata,withDelivery:approvedId&&deliveryOrderIDs.has(approvedId)});}
+function orderSummary(order,approvedId=null){
+ const summary=window.InspectionOrderDirectory.summary(order,{approvedId,...orderDirectoryMetadata,withDelivery:approvedId&&deliveryOrderIDs.has(approvedId)});
+ const candidates=order.clientId?clients.filter(c=>c.id===order.clientId):clients.filter(c=>window.InspectionOrderDirectory.normalize(c.name)===window.InspectionOrderDirectory.normalize(summary.customer));
+ return {...summary,salesTeam:candidates.length===1?String(candidates[0].sales_team||''):''};
+}
 function orderMatches(order,query,approvedId=null){return window.InspectionOrderDirectory.matches(orderSummary(order,approvedId),query);}
 let approvedPOs=[],workspaceStamp='',selectedApproved=null;
 function approvedPanel(){
@@ -3322,9 +3345,8 @@ function partitionApprovedOrders(rows,deliveryIDs){
  for(const po of rows)(deliveryIDs.has(po.id)?withDelivery:approved).push(po);
  return {approved,withDelivery};
 }
-function approvedOrderCard(a){
- const summary=orderSummary(a.snapshot,a.id);
- return '<div class="po-list-row"><div class="po-list-identity">'+window.InspectionOrderDirectory.identityHTML(summary,escapeHTML)+'<div class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · '+a.snapshot.rows.length+' Items</div></div><button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">'+(summary.deliveries.length?'Open PO and deliveries':'Open approved PO')+'</button></div>';
+function approvedOrderEntry(a){
+ return {summary:orderSummary(a.snapshot,a.id),actions:'<button class="btn mini primary" data-approved-open="'+escapeHTML(a.id)+'">Open</button>'};
 }
 // Delivery exports use the frozen inspector-approved PO, never screen column order or live catalog values.
 function deliveryNumber(value){
@@ -3576,8 +3598,8 @@ function renderApprovedPOs(){
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
  const rows=approvedPOs.filter(a=>orderMatches(a.snapshot,term,a.id));
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
- document.getElementById('approved-po-list').innerHTML=groups.approved.map(approvedOrderCard).join('')||'<p class="muted">'+(term?'No matching POs approved for inspection.':'No POs in this stage.')+'</p>';
- document.getElementById('delivery-po-list').innerHTML=groups.withDelivery.map(approvedOrderCard).join('')||'<p class="muted">'+(term?'No matching POs with delivery.':'No POs with delivery yet.')+'</p>';
+ document.getElementById('approved-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.approved.map(approvedOrderEntry),{layoutKey:'purchase-order-approved',escape:escapeHTML,empty:term?'No matching POs approved for inspection.':'No POs in this stage.'});
+ document.getElementById('delivery-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.withDelivery.map(approvedOrderEntry),{layoutKey:'purchase-order-delivery',escape:escapeHTML,empty:term?'No matching POs with delivery.':'No POs with delivery yet.'});
  const selected=approvedPOs.find(p=>p.id===selectedApproved),detailRoot=document.getElementById('approved-po-details');
  document.getElementById(selected&&deliveryOrderIDs.has(selected.id)?'delivery-po-panel':'approved-po-panel').appendChild(detailRoot);
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
