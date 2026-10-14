@@ -98,7 +98,7 @@ window.InspectionTableTools={
  }
 };
 </script>
-<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-switch-style">#lookup-view .order-import-switch{display:flex;gap:8px;max-width:460px}#lookup-view .order-import-switch .btn{flex:1;min-height:42px}#order-import-panels{min-width:0}#order-import-panels>[hidden]{display:none!important}</style></head><body><style id="online-workspace-style">
+<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style><style id="order-import-switch-style">#lookup-view .order-import-switch{display:flex;gap:8px;max-width:460px}#lookup-view .order-import-switch .btn{flex:1;min-height:42px}#order-import-panels{min-width:0}#order-import-panels>[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
 #cloud-banner{position:sticky;top:0;z-index:35;padding:8px 15px;background:var(--sk-accent-soft);color:var(--sk-ink);border-bottom:1px solid var(--sk-border);font-size:11px}
@@ -403,7 +403,7 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Find private drafts and POs Approved for Inspection"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a private PO draft or start with a delivery"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+function navigate(v){if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Find private drafts and POs Approved for Inspection"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a private PO draft or start with a delivery"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -3692,6 +3692,7 @@ async function logout(){
   const jobs=await ownJobs();
   if(jobs.length&&!confirm(jobs.length+' pending send(s) will stay on this device for '+(previous?.user.email||'this account')+'. They will retry only when this account signs in again. Sign out?')){signingOut=false;return;}
  }catch(error){signingOut=false;alert(error.message);return;}
+ await Promise.race([clearOrderPushOnLogout(previous),new Promise(resolve=>setTimeout(resolve,2000))]);
  for(const controller of activeControllers)controller.abort();
  poDeliveries.clear();session=null;administrator=false;ready=false;verifiedIdentityUser='';connectedDatabaseUser='';persistSession();clearLogin();
  // Best-effort server sign-out; local sign-out remains available without internet.
@@ -3721,6 +3722,116 @@ for(const event of ['click','change'])document.addEventListener(event,e=>{if(can
 window.addEventListener('inspection:local-change',scheduleSave);
 window.addEventListener('offline',()=>{if(session&&started&&!saving&&!photoBusy&&dirtyDomains.size)commit().catch(()=>{});offline=true;ready=false;updateRole();overlay('Offline. The database is unavailable. Pending sends will be retained.');});
 window.addEventListener('online',()=>{if(!saving)connect()});
+// Runs inside the authenticated online runtime; no passwords or server secrets are stored here.
+let notificationState=null,notificationOwner='',notificationBusy=false,notificationLoading=false,notificationTimer=null;
+let notificationSW=null;
+const notificationRPC=(name,body={})=>request('/rest/v1/rpc/'+name,{method:'POST',body});
+function notificationPanel(){
+ let root=document.getElementById('push-notification-settings');if(root)return root;
+ root=document.createElement('section');root.id='push-notification-settings';root.className='panel panel-pad';
+ root.innerHTML='<div class="section-head"><div><h3>Order notifications</h3><p class="small muted">Pending approvals for the administrator. Approved orders and ready deliveries for the certificate preparer.</p></div><button class="btn mini" id="notifications-refresh">Refresh</button></div><p class="small" id="push-status" role="status" aria-live="polite">Connect to the official database to load notification settings.</p><div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="push-enable" disabled>Enable on this device</button><button class="btn" id="push-disable" disabled>Disable on this device</button></div><p class="small muted">Enable separately on your phone and computer to receive on both. On iPhone or iPad: Share → Add to Home Screen, open that app, then enable notifications. Notifications request manual dismissal; your browser and operating system control their duration and available buttons.</p><div id="certificate-notification-settings" hidden><label class="label" for="certificate-notification-user">Certificate preparer</label><div class="row" style="flex-wrap:wrap;gap:8px"><select class="input" id="certificate-notification-user" aria-label="Certificate preparer"></select><button class="btn" id="certificate-notification-save">Save recipient</button></div><p class="small muted">This selects who receives order notifications. Account permissions do not change.</p></div><h3 style="margin-top:18px">Notifications</h3><p class="small muted">These notices stay here until you select Close, even if your device hides a push notification.</p><div id="order-notification-inbox"></div>';
+ document.getElementById('settings-view').appendChild(root);
+ root.querySelector('#notifications-refresh').onclick=()=>refreshOrderNotifications(true);
+ root.querySelector('#push-enable').onclick=enableOrderPush;
+ root.querySelector('#push-disable').onclick=disableOrderPush;
+ root.querySelector('#certificate-notification-save').onclick=async()=>{
+  if(!administrator||!canConsult()||notificationBusy)return;
+  const chosen=document.getElementById('certificate-notification-user').value;
+  notificationBusy=true;
+  try{await notificationRPC('inspection_notification_set_certificate_user',{user_id:chosen||null});await refreshOrderNotifications(true);}
+  catch(error){document.getElementById('push-status').textContent=error.message;}
+  finally{notificationBusy=false;await refreshOrderNotifications(true);}
+ };
+ let shortcut=document.getElementById('notification-shortcut');if(!shortcut){shortcut=document.createElement('button');shortcut.id='notification-shortcut';shortcut.className='btn mini';shortcut.textContent='Notifications';shortcut.hidden=true;shortcut.onclick=openOrderNotifications;document.querySelector('.topright').prepend(shortcut);}
+ return root;
+}
+async function notificationWorker(register=false){
+ if(!('serviceWorker' in navigator))return null;
+ if(notificationSW)return notificationSW;
+ const script=new URL('notification-sw.js',location.href),scope=new URL('./',script).href;
+ notificationSW=register?await navigator.serviceWorker.register(script.href,{scope,updateViaCache:'none'}):await navigator.serviceWorker.getRegistration(scope);
+ if(register&&notificationSW&&!notificationSW.active){await new Promise((resolve,reject)=>{
+  const worker=notificationSW.installing||notificationSW.waiting;const timeout=setTimeout(()=>reject(Error('Notification setup timed out. Try again.')),12000);
+  if(!worker){clearTimeout(timeout);resolve();return;}
+  worker.addEventListener('statechange',()=>{if(worker.state==='activated'){clearTimeout(timeout);resolve();}else if(worker.state==='redundant'){clearTimeout(timeout);reject(Error('Notification worker did not activate.'));}});
+ });}
+ return notificationSW;
+}
+async function notificationMessage(type,extra={}){
+ const reg=await notificationWorker();if(!reg?.active)return null;
+ return new Promise((resolve,reject)=>{const channel=new MessageChannel(),timer=setTimeout(()=>reject(Error('Notification worker is not responding.')),4000);channel.port1.onmessage=e=>{clearTimeout(timer);resolve(e.data);};reg.active.postMessage({type,...extra},[channel.port2]);});
+}
+function pushSupported(){return window.isSecureContext&&'Notification' in window&&'PushManager' in window&&'serviceWorker' in navigator;}
+async function refreshOrderNotifications(force=false){
+ const root=notificationPanel();if(!session||!ready||offline||notificationLoading)return;
+ const owner=session.user.id;notificationLoading=true;
+ try{
+  if(force||!notificationState||notificationOwner!==owner){notificationState=await notificationRPC('inspection_push_status');notificationOwner=owner;}
+  if(session?.user.id!==owner)return;
+  const state=notificationState,status=root.querySelector('#push-status');
+  const reg=await notificationWorker(),subscription=await reg?.pushManager.getSubscription();
+  const enabled=state.devices.some(d=>d.enabled&&d.endpoint===subscription?.endpoint);
+  if(reg)await notificationMessage('bind-account',{uid:enabled?owner:null});
+  root.querySelector('#push-enable').disabled=!state.eligible||!state.deliveryReady||!pushSupported()||enabled||notificationBusy;
+  root.querySelector('#push-disable').disabled=!subscription||notificationBusy;
+  status.textContent=!state.eligible?'Order push notifications are configured for the administrator and certificate preparer.':!state.deliveryReady?'Push sending is awaiting setup authorization. The notification list below is available now.':!pushSupported()?'Push is unavailable in this browser. On iPhone or iPad, add the app to Home Screen and open it there.':Notification.permission==='denied'?'Notifications are blocked by this browser. Allow them in site settings, then retry.':enabled?'Push notifications enabled on this device.':'Push notifications disabled on this device.';
+  const role=root.querySelector('#certificate-notification-settings');role.hidden=!state.administrator;
+  if(state.administrator){const select=root.querySelector('#certificate-notification-user');select.innerHTML='<option value="">No recipient</option>'+state.accounts.map(a=>'<option value="'+escapeHTML(a.id)+'">'+escapeHTML(a.name)+(a.name!==a.email?' · '+escapeHTML(a.email):'')+'</option>').join('');select.value=state.certificateUser||'';}
+  if(state.eligible){
+   const dismissed=await notificationMessage('get-dismissals',{uid:owner})||[];
+   for(const row of dismissed){await notificationRPC('inspection_notification_close',{notification_id:row.id});await notificationMessage('forget-dismissal',{uid:owner,id:row.id});}
+   const rows=await notificationRPC('inspection_notification_inbox');if(session?.user.id!==owner)return;
+   root.querySelector('#order-notification-inbox').innerHTML=rows.map(n=>'<article class="subtlebox order-notice"><div><strong>'+escapeHTML(n.title)+'</strong><p>'+escapeHTML(n.body)+'</p><span class="small muted">'+escapeHTML(new Date(n.created_at).toLocaleString())+'</span></div><button class="btn mini" data-notification-close="'+escapeHTML(n.id)+'">Close</button></article>').join('')||'<p class="small muted">No open notifications.</p>';
+   root.querySelectorAll('[data-notification-close]').forEach(button=>button.onclick=async()=>{
+    button.disabled=true;
+    try{await notificationRPC('inspection_notification_close',{notification_id:button.dataset.notificationClose});const reg=await notificationWorker();for(const n of await reg?.getNotifications({tag:'inspection-'+button.dataset.notificationClose})||[])n.close();await refreshOrderNotifications();}
+    catch(error){button.disabled=false;status.textContent='Could not close this notification: '+error.message;}
+   });
+   const shortcut=document.getElementById('notification-shortcut');shortcut.hidden=false;shortcut.textContent='Notifications'+(rows.length?' ('+rows.length+')':'');
+  }else{root.querySelector('#order-notification-inbox').innerHTML='';document.getElementById('notification-shortcut').hidden=true;}
+ }catch(error){root.querySelector('#push-status').textContent='Notification settings could not be loaded: '+error.message;}
+ finally{notificationLoading=false;}
+}
+async function enableOrderPush(){
+ if(notificationBusy||!canConsult()||!notificationState?.eligible||!notificationState?.deliveryReady||!pushSupported())return;
+ notificationBusy=true;let failure='';const owner=session.user.id,status=document.getElementById('push-status');
+ try{
+  // Ask from the explicit button click, before any network request, for iOS user-gesture requirements.
+  const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notifications were not allowed. You can change this in browser settings.');
+  const reg=await notificationWorker(true);let subscription=await reg.pushManager.getSubscription();
+  if(!subscription){const key=notificationState.publicKey,padded=(key+'='.repeat((4-key.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/');subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(atob(padded),c=>c.charCodeAt(0))});}
+  if(session?.user.id!==owner)throw Error('Account changed during notification setup.');
+  try{await notificationRPC('inspection_push_subscribe',{subscription:subscription.toJSON(),device_label:(navigator.platform||'Browser')+' · '+new Date().toLocaleDateString()});}
+  catch(error){await subscription.unsubscribe().catch(()=>{});throw error;}
+  await notificationMessage('bind-account',{uid:owner});
+ }catch(error){failure='Push was not enabled: '+error.message;}
+ finally{notificationBusy=false;await refreshOrderNotifications(true);if(failure)status.textContent=failure;}
+}
+async function disableOrderPush(){
+ if(notificationBusy)return;notificationBusy=true;let failure='';const status=document.getElementById('push-status');
+ try{const reg=await notificationWorker(),subscription=await reg?.pushManager.getSubscription();
+  if(subscription){await notificationRPC('inspection_push_disable',{endpoint:subscription.endpoint});await subscription.unsubscribe();}
+  await notificationMessage('bind-account',{uid:null});
+ }catch(error){failure='Could not confirm push was disabled: '+error.message;}
+ finally{notificationBusy=false;await refreshOrderNotifications(true);if(failure)status.textContent=failure;}
+}
+async function clearOrderPushOnLogout(previous){
+ try{const reg=await notificationWorker(),subscription=await reg?.pushManager.getSubscription();
+  await notificationMessage('bind-account',{uid:null});
+  if(subscription){
+   if(previous?.access_token)fetch(BASE+'/rest/v1/rpc/inspection_push_disable',{method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+previous.access_token,'Content-Type':'application/json'},body:JSON.stringify({endpoint:subscription.endpoint}),keepalive:true}).catch(()=>{});
+   await subscription.unsubscribe();
+  }
+ }catch{}
+ notificationState=null;notificationOwner='';clearInterval(notificationTimer);
+}
+function openOrderNotifications(){window.__inspectionNavigate?.('settings');notificationPanel().hidden=false;refreshOrderNotifications(true);notificationPanel().scrollIntoView?.({block:'start'});}
+window.__inspectionNotificationsRoute=route=>{const panel=notificationPanel();panel.hidden=route!=='settings';if(route==='settings')refreshOrderNotifications(true);};
+window.addEventListener('inspection:cloud-ready',()=>{refreshOrderNotifications(true);if(new URLSearchParams(location.search).has('notifications'))openOrderNotifications();clearInterval(notificationTimer);notificationTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshOrderNotifications();},60000);});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshOrderNotifications(true);});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='inspection-open-notifications')openOrderNotifications();if(event.data?.type==='inspection-notification-dismissed')refreshOrderNotifications();});
+notificationPanel();
+
 window.InspectionCloud={refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
@@ -3745,7 +3856,7 @@ async function connectOnce(){
  started=true;renderApprovedPOs();
  window.dispatchEvent(new Event('inspection:cloud-ready'));
  }
- ready=true;offline=false;updateRole();message(queueCount?queueCount+' pending sends need review.':administrator?'Administrator · Official database connected.':'User · private drafts and read-only POs Approved for Inspection.');unblock();if(administrator)await loadRequests();
+ ready=true;offline=false;updateRole();refreshOrderNotifications(true);message(queueCount?queueCount+' pending sends need review.':administrator?'Administrator · Official database connected.':'User · private drafts and read-only POs Approved for Inspection.');unblock();if(administrator)await loadRequests();
  }catch(error){ready=false;offline=true;updateRole();message('Database unavailable: '+error.message,true);overlay(hasDatabaseConnection()?'The official database connection was interrupted. '+error.message:'You may be signed in, but the database connection is not established yet. No new pending send was created. Existing pending sends are retained for this account. Select Retry connection. '+error.message);if(!session)openLogin()}
 }
 document.getElementById('cloud-retry').onclick=connect;
