@@ -119,28 +119,28 @@ window.InspectionTableTools={
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Import Order</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
 <section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item Number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count" hidden>—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
-<div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Supplier / Source Group</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div><div><div class="label">Sales unit</div><div class="value" id="d-salesUnit">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
+<div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">EST</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Pack / Size</div><div class="value" id="d-pack">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></div><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
 <div id="inspection-query-conditions" class="inspection-query-conditions">
 <div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Choose a filter or enter a description to search. Use Edit on a result to change its fields.</span></div><div class="inspection-query-grid">
 <label><span class="label">Brand</span><select class="input" id="iq-brand"><option value="">Select brand…</option></select></label>
-<label><span class="label">Product type</span><select class="input" id="iq-category"><option value="">Select product type…</option><option value="__inspection_blank__">Blank field</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option><option value="Dairy">Dairy</option></select></label>
+<label><span class="label">Product type</span><select class="input" id="iq-category"><option value="">Select product type…</option><option value="__inspection_blank__">Blank field</option><option value="Meat">Meat</option><option value="Poultry">Poultry</option></select></label>
 <label><span class="label">Product family</span><select class="input" id="iq-family"><option value="">Select product family…</option></select></label>
-<label><span class="label">Case / Pack</span><select class="input" id="iq-pack"><option value="">Select case / pack…</option></select></label>
-<label><span class="label">Size / Unit</span><select class="input" id="iq-size"><option value="">Select size / unit…</option></select></label>
+<label><span class="label">Pack / Size</span><select class="input" id="iq-pack"><option value="">Select pack / size…</option></select></label>
+
 <label><span class="label">Case photo</span><select class="input" id="iq-photo"><option value="">Select photo status…</option><option value="with">With photo</option><option value="without">Without photo</option></select></label>
-<label><span class="label">EST / Plant</span><select class="input" id="iq-plant"><option value="">Select EST / Plant…</option></select></label>
+<label><span class="label">EST</span><select class="input" id="iq-plant"><option value="">Select EST…</option></select></label>
 <label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">Select description status…</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
 <label style="display:block;margin:12px 0"><span class="label">Exact Item numbers · one per line</span><textarea class="input" id="iq-items" rows="2" style="width:100%" placeholder="110790-631&#10;272316"></textarea><span class="small muted">Exact Item searches use the complete catalog and ignore the filters above.</span></label><div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results hidden">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
-<div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST / Plant</option><option value="brand">Brand</option><option value="pack">Case / Pack</option><option value="size">Size / Unit</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
+<div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST</option><option value="brand">Brand</option><option value="pack">Pack / Size</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <div class="muted small iq-edit-note">Select Edit to unlock an Item’s fields, then Save or Cancel. Select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
-<p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:64px"><col style="width:104px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:126px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST / Plant">EST / Plant<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Case / Pack">Case / Pack<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="size"><button type="button" class="query-sort" data-label="Size">Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Actions</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
+<p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:160px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:126px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Actions</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
-<input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select><select id="f-producer"></select>
+<input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select>
 <button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
 <div class="results"><div class="section-head"></div><table><tbody id="global-rows"></tbody></table></div>
 </div>
@@ -162,9 +162,9 @@ window.InspectionTableTools={
 <div class="po-import-grid">
 <label><span class="label">Item Number column</span><select class="input" id="po-import-item-col"></select></label>
 <label><span class="label">Description column (optional)</span><select class="input" id="po-import-desc-col"></select></label>
-</div><details><summary>Source fields for Items not in the catalog</summary><p class="small muted">Only unmatched Items use these source values. Review the detected columns. Missing fields remain blank; quantities, weights and prices are not imported.</p><div class="po-import-grid"><label><span class="label">Brand (optional)</span><select class="input" id="po-import-brand-col"></select></label><label><span class="label">Class / Type (optional)</span><select class="input" id="po-import-category-col"></select></label><label><span class="label">Family (optional)</span><select class="input" id="po-import-family-col"></select></label><label><span class="label">Case / Pack (optional)</span><select class="input" id="po-import-pack-col"></select></label><label><span class="label">Size / Unit (optional)</span><select class="input" id="po-import-size-col"></select></label><label><span class="label">Sales unit (optional)</span><select class="input" id="po-import-salesUnit-col"></select></label><label><span class="label">Supplier / Source Group (optional)</span><select class="input" id="po-import-producer-col"></select></label><label><span class="label">EST / Plant (optional)</span><select class="input" id="po-import-plant-col"></select></label><label><span class="label">Alternative EST / Plant references (optional)</span><select class="input" id="po-import-alternativeEst-col"></select></label><label><span class="label">Notes (optional)</span><select class="input" id="po-import-notes-col"></select></label></div></details>
+</div><details><summary>Source fields for Items not in the catalog</summary><p class="small muted">Only unmatched Items use these source values. Review the detected columns. Missing fields remain blank; quantities, weights and prices are not imported.</p><div class="po-import-grid"><label><span class="label">Brand (optional)</span><select class="input" id="po-import-brand-col"></select></label><label><span class="label">Class / Type (optional)</span><select class="input" id="po-import-category-col"></select></label><label><span class="label">Family (optional)</span><select class="input" id="po-import-family-col"></select></label><label><span class="label">Pack / Size (optional)</span><select class="input" id="po-import-pack-col"></select></label><label><span class="label">Additional size column (optional)</span><select class="input" id="po-import-size-col"></select></label><label><span class="label">EST (optional)</span><select class="input" id="po-import-plant-col"></select></label><label><span class="label">Alternative EST references (optional)</span><select class="input" id="po-import-alternativeEst-col"></select></label><label><span class="label">Notes (optional)</span><select class="input" id="po-import-notes-col"></select></label></div></details>
 <div class="po-import-summary" id="po-import-summary"></div>
-<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST / Plant reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>Source row</th><th>Item</th><th>Source description</th><th>Catalog description</th><th>EST reference</th><th>Status</th><th id="po-catalog-heading" hidden>Catalog actions</th></tr></thead><tbody id="po-import-rows"></tbody></table></div>
 <div class="row" style="justify-content:flex-end;flex-wrap:wrap;margin-top:12px"><button class="btn" type="button" id="po-catalog-edit-all" hidden>Edit all missing</button><button class="btn primary" type="button" id="po-catalog-add-all" hidden>Add all edited to catalog</button><button class="btn" type="button" id="po-import-cancel">Clear file</button><button class="btn primary" type="button" id="po-import-create" disabled>Create PO from invoice Items</button></div>
 <p class="muted small" style="margin-top:10px">All Item numbers and source lines are kept. Catalog matches use catalog data. Unknown Items use available source product fields and are labeled Not in catalog. Only the administrator can choose to add them to the catalog. Quantities and weights are loaded later from the SAP delivery. EST values are references, not physical verification records.</p>
 </div></div></div>
@@ -174,10 +174,10 @@ window.InspectionTableTools={
 <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn mini" id="invoice-export" type="button">↓ Excel / CSV</button><button class="btn mini primary" id="invoice-print" type="button">⎙ Print invoice</button></div></div>
 <div class="row" style="flex-wrap:wrap;gap:10px;margin-bottom:12px"><label class="label" for="invoice-select">Saved PO</label><select class="input" id="invoice-select" style="min-width:180px;max-width:100%;flex:1"><option value="">Preview imported file / choose saved PO</option></select></div>
 <div class="po-import-summary" id="invoice-overview-summary">Import an Excel/CSV file to preview the invoice, or choose a saved PO.</div>
-<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:64px"><col style="width:104px"><col style="width:100px"><col style="width:128px"><col style="width:130px"><col style="width:132px"><col style="width:170px"><col style="width:92px"><col style="width:100px"><col style="width:78px"></colgroup><thead><tr>
-<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST / Plant">EST / Plant<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Case / Pack">Case / Pack<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="size"><button type="button" class="query-sort" data-label="Size / Unit">Size / Unit<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="receivedQuantity"><button type="button" class="query-sort" data-label="Received quantity">Received quantity<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="latest"><button type="button" class="query-sort" data-label="Last confirmed">Last confirmed<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="recent"><button type="button" class="query-sort" data-label="Last 10 verified weeks">Last 10 verified weeks<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="common"><button type="button" class="query-sort" data-label="Most common (all time)">Most common (all time)<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="variants"><button type="button" class="query-sort" data-label="Known EST variants">Known EST variants<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="weeks"><button type="button" class="query-sort" data-label="Weeks since check">Weeks since check<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
+<div class="tablewrap"><table class="invoice-overview-table" id="invoice-query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:300px"><col style="width:160px"><col style="width:100px"><col style="width:128px"><col style="width:130px"><col style="width:132px"><col style="width:170px"><col style="width:92px"><col style="width:100px"><col style="width:78px"></colgroup><thead><tr>
+<th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="receivedQuantity"><button type="button" class="query-sort" data-label="Received quantity">Received quantity<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="latest"><button type="button" class="query-sort" data-label="Last confirmed">Last confirmed<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="recent"><button type="button" class="query-sort" data-label="Last 10 verified weeks">Last 10 verified weeks<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="common"><button type="button" class="query-sort" data-label="Most common (all time)">Most common (all time)<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="variants"><button type="button" class="query-sort" data-label="Known EST variants">Known EST variants<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="weeks"><button type="button" class="query-sort" data-label="Weeks since check">Weeks since check<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="priority"><button type="button" class="query-sort" data-label="Review priority">Review priority<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th>
 <th>Actions</th></tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="14" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
-<div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current plant numbers. Printing includes Item, Description, Case / Pack, Size / Unit, EST / Plant and Received quantity.</div>
+<div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current EST numbers. Printing includes Item, Description,Pack / Size, EST and Received quantity.</div>
 </div>
 </section>
 
@@ -185,15 +185,15 @@ window.InspectionTableTools={
 <div class="panel panel-pad guide-intro" id="guide-overview">
 <div class="section-head"><h3>How to use Inspection Data Hub</h3><span class="pill">REFERENCE GUIDE</span></div>
 <p>The workflow is: prepare a shared PO draft, inspect the cases, verify only the Items physically checked, and let the inspector publish the PO as Approved for Inspection. User drafts and inspector approval are separate; approval of the PO does not imply that every Item was physically verified.</p>
-<div class="guide-steps"><div><strong>1 · Prepare</strong><span>Select a saved customer, add or import Item numbers in source order. All signed-in users can view the draft. Quantities and weights belong to the later delivery.</span></div><div><strong>2 · Inspect</strong><span>Use the phone to identify cases and check priority Items. Editing an EST does not verify it. The administrator records only the lines physically checked.</span></div><div><strong>3 · Approve</strong><span>The administrator publishes Item, description, class and selected EST / Plant. Approval does not physically verify unchecked lines.</span></div><div><strong>4 · Delivery</strong><span>Any signed-in user uploads the sales team's raw SAP Excel and enters the delivery number. The summary preserves delivery lines and uses only approved PO ESTs. Unresolved rows stay visible; partial exports identify omitted rows.</span></div></div>
+<div class="guide-steps"><div><strong>1 · Prepare</strong><span>Select a saved customer, add or import Item numbers in source order. All signed-in users can view the draft. Quantities and weights belong to the later delivery.</span></div><div><strong>2 · Inspect</strong><span>Use the phone to identify cases and check priority Items. Editing an EST does not verify it. The administrator records only the lines physically checked.</span></div><div><strong>3 · Approve</strong><span>The administrator publishes Item, description, class and selected EST. Approval does not physically verify unchecked lines.</span></div><div><strong>4 · Delivery</strong><span>Any signed-in user uploads the sales team's raw SAP Excel and enters the delivery number. The summary preserves delivery lines and uses only approved PO ESTs. Unresolved rows stay visible; partial exports identify omitted rows.</span></div></div>
 </div>
 <div class="panel panel-pad">
 <div class="section-head" id="guide-products"><h3>Understanding the product card</h3></div>
 <div class="guide-grid">
-<div class="guide-term"><strong>Latest confirmed EST / Plant</strong><p>The establishment value or values recorded at the most recent verification date. It does not claim every case on the pallet has that number.</p></div>
+<div class="guide-term"><strong>Latest confirmed EST</strong><p>The establishment value or values recorded at the most recent verification date. It does not claim every case on the pallet has that number.</p></div>
 <div class="guide-term"><strong>Last 10 verified weeks</strong><p>Frequency across the last 10 calendar weeks that contain actual observations, not simply the last 10 calendar weeks and not the last 10 searches.</p></div>
 <div class="guide-term"><strong>All-time history</strong><p>Frequency across every week with recorded observations for the Item. Old data remains in the history.</p></div>
-<div class="guide-term"><strong>All observed variants</strong><p>Every EST / Plant value confirmed for the Item, including older or uncommon values. More than one can be observed in a week.</p></div>
+<div class="guide-term"><strong>All observed variants</strong><p>Every EST value confirmed for the Item, including older or uncommon values. More than one can be observed in a week.</p></div>
 <div class="guide-term"><strong>Days without verification</strong><p>Elapsed days since the last physically confirmed observation. Searching the Item does not reset this timer.</p></div>
 <div class="guide-term"><strong>Frequency percentage</strong><p>Weeks where an EST was observed ÷ total weeks with observations. If two ESTs appear in the same week, both count once, so percentages can add up to more than 100%.</p></div>
 </div>
@@ -232,7 +232,7 @@ window.InspectionTableTools={
 <p>Brands are internal reference profiles for manufacturer descriptions, establishment numbers, notes and product types. Only enter plant facts that have been verified from reliable records; a brand's EST list is not an official guarantee about today's cases.</p>
 <div class="guide-grid">
 <div class="guide-term"><strong>Single fixed EST</strong><p>One known EST for the applicable Items. A brand can optionally assign Highly Stable to matching products when that fixed number is entered.</p></div>
-<div class="guide-term"><strong>Fixed EST by product type</strong><p>Assign separate EST references to Beef / Pork, Poultry, Dairy or Other. Only matching product types with a configured number inherit Highly Stable.</p></div>
+<div class="guide-term"><strong>Fixed EST by product type</strong><p>Assign separate EST references to Beef / Pork, Poultry or Other. Only matching product types with a configured number inherit Highly Stable.</p></div>
 <div class="guide-term"><strong>Variable / Item-specific</strong><p>Use each product's own verification history and standard review intervals. Brand-level stability inheritance is not applied.</p></div>
 <div class="guide-term"><strong>Item-level exceptions</strong><p>An administrator can override inherited stability for an individual Item. This takes precedence over the brand's general rule.</p></div>
 </div>
@@ -265,7 +265,7 @@ window.InspectionTableTools={
 
 <section id="history-view" class="hidden">
 <div id="approvals-view" class="hidden">
-<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Product field changes and physical EST / Plant verifications, with the effective changes, date and account.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="observations">EST / Plant verifications</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>User</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
+<div class="panel panel-pad"><div class="section-head"><h3>Product Change History</h3><span class="pill" id="change-history-count">0 cambios</span></div><p class="muted small">Product field changes and physical EST verifications, with the effective changes, date and account.</p><div class="row"><input class="input" type="search" id="change-history-search" placeholder="Buscar Item, marca o campo modificado" aria-label="Buscar en el historial de cambios"><select class="input" id="change-history-domain" aria-label="Tipo de cambio"><option value="">All product changes</option><option value="catalog-overrides">Product fields</option><option value="observations">EST verifications</option><option value="photos">Photos</option></select></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>What changed</th><th>Before</th><th>After</th><th>User</th></tr></thead><tbody id="change-history-rows"></tbody></table></div></div>
 
 </div>
 <div class="panel panel-pad" id="history-quick-panel">
@@ -278,7 +278,7 @@ window.InspectionTableTools={
 </div>
 <div class="panel panel-pad"><div class="section-head"><h3>Verification records</h3><span class="hint">Physically recorded observations · editable by Admin</span></div>
 <div class="toolbar"><input class="input" id="verification-filter" placeholder="Filter changes by Item or EST" style="min-width:220px"><input class="input" type="date" id="verification-date" aria-label="Filter verification date"><button class="btn" id="verification-clear">Clear</button></div>
-<div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>Brand</th><th>EST / Plant</th><th>Note</th><th>Action</th></tr></thead><tbody id="verification-rows"></tbody></table></div></div>
+<div class="tablewrap"><table><thead><tr><th>Date</th><th>Item</th><th>Brand</th><th>EST</th><th>Note</th><th>Action</th></tr></thead><tbody id="verification-rows"></tbody></table></div></div>
 <div class="panel panel-pad"><details><summary style="cursor:pointer;font-weight:700">Search history (consultations only)</summary><div class="section-head"><h3>Previous searches</h3><button class="btn mini" id="demo-export">Export</button></div><div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Item</th><th>Category</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="history-rows"></tbody></table></div></details></div>
 </section>
 <section id="brands-view" class="hidden">
@@ -326,13 +326,13 @@ window.InspectionTableTools={
 <div id="ip-manual">
 <div class="ip-fields">
 <label><span class="label">Item Number *</span><input class="input" id="ip-item" placeholder="e.g. 272319" autocomplete="off"></label>
-<label><span class="label">Product type *</span><select class="input" id="ip-category"><option>Meat</option><option>Poultry</option><option>Dairy</option></select></label>
+<label><span class="label">Product type *</span><select class="input" id="ip-category"><option>Meat</option><option>Poultry</option></select></label>
 <label><span class="label">Brand *</span><input class="input" id="ip-brand" list="ip-brands" placeholder="Choose or enter a brand"></label>
 <label><span class="label">Product family</span><input class="input" id="ip-family" placeholder="e.g. Deli Turkey"></label>
 <label><span class="label">Description *</span><input class="input" id="ip-description" placeholder="Product description"></label>
-<label><span class="label">Case / Pack</span><input class="input" id="ip-pack" placeholder="e.g. 12 × 7"></label>
-<label><span class="label">Size / Unit</span><input class="input" id="ip-size" placeholder="e.g. 7 OZ"></label>
-<label><span class="label">EST / Plant reference</span><input class="input" id="ip-plant" placeholder="e.g. P-1029"></label>
+<label><span class="label">Pack / Size</span><input class="input" id="ip-pack" placeholder="e.g. 12 × 7 OZ"></label>
+
+<label><span class="label">EST reference</span><input class="input" id="ip-plant" placeholder="e.g. P-1029"></label>
 </div><datalist id="ip-brands"></datalist>
 <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn primary" id="ip-stage-manual">Review Product</button><button type="button" class="btn" id="ip-manual-clear">Clear fields</button></div>
 </div>
@@ -344,10 +344,10 @@ window.InspectionTableTools={
 <label><span class="label">Brand column</span><select class="input" id="ip-map-brand"></select></label>
 <label><span class="label">Product type column</span><select class="input" id="ip-map-category"></select></label>
 <label><span class="label">Product family column</span><select class="input" id="ip-map-family"></select></label>
-<label><span class="label">Case / Pack column</span><select class="input" id="ip-map-pack"></select></label>
-<label><span class="label">Size / Unit column</span><select class="input" id="ip-map-size"></select></label>
-<label><span class="label">EST / Plant column</span><select class="input" id="ip-map-plant"></select></label>
-<label><span class="label">Default product type (when missing)</span><select class="input" id="ip-default-category"><option>Meat</option><option>Poultry</option><option>Dairy</option></select></label>
+<label><span class="label">Pack / Size column</span><select class="input" id="ip-map-pack"></select></label>
+<label><span class="label">Additional size column</span><select class="input" id="ip-map-size"></select></label>
+<label><span class="label">EST column</span><select class="input" id="ip-map-plant"></select></label>
+<label><span class="label">Default product type (when missing)</span><select class="input" id="ip-default-category"><option>Meat</option><option>Poultry</option></select></label>
 </div>
 <p class="muted small" style="margin-top:12px">Map only the columns needed by Inspection Data Hub. Price, weight, cost and all other SAP columns are ignored. Empty mapped cells do not erase existing values.</p>
 <div class="row" style="margin-top:12px;gap:10px;flex-wrap:wrap"><button type="button" class="btn primary" id="ip-stage-file" disabled>Compare spreadsheet with catalog</button><button type="button" class="btn" id="ip-file-clear">Clear file</button></div>
@@ -371,17 +371,27 @@ window.InspectionTableTools={
 </section>
 
 <footer class="app-footer">Inspection Data Hub <span aria-hidden="true">·</span> Powered by <a href="https://crecerget.com" target="_blank" rel="noopener noreferrer">Crecerget</a></footer></main></div><div id="modal-root"></div>
+<script id="product-field-policy">
+/* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
+window.InspectionProduct=Object.freeze({
+ dairyEnabled:false,
+ visible(product){return this.dairyEnabled||String(product?.category||'').trim().toLowerCase()!=='dairy';},
+ classLabel(category){return !this.dairyEnabled&&String(category||'').trim().toLowerCase()==='dairy'?'':String(category||'');},
+ packSize(pack,size){const values=[];for(const part of [pack,size])for(const value of String(part??'').split(' · ')){const v=value.trim();if(v&&!values.some(x=>x.toLowerCase()===v.toLowerCase()))values.push(v);}return values.join(' · ');},
+ catalog(product){const out={...product};out.pack=this.packSize(out.pack,out.size);delete out.size;delete out.salesUnit;delete out.producer;return out;}
+});
+</script>
 <script type="application/inspection-script">
 const demo=Object.entries(window.InspectionCloud.record("inspection-data-hub-catalog-overrides-v1")||{}).map(([item,p])=>({item,...p}));
-/* Persist catalog edits in this browser; no backend and no physical verification implied. */
+/* Official Supabase catalog with account-bound pending sends. */
 const CATALOG_STORAGE_KEY="inspection-data-hub-catalog-overrides-v1";
 try{
  const overrides=JSON.parse(localStorage.getItem(CATALOG_STORAGE_KEY)||"{}");
  for(const [item,o] of Object.entries(overrides)){
   if(!o||typeof o!=="object"||!/^[-A-Za-z0-9_.]+$/.test(item))continue;
   let product=demo.find(p=>p.item===item);
-  if(!product){product={item,category:"Meat",brand:"Other",description:"",pack:"",plant:"",producer:"Other",size:""};demo.push(product);}
-  for(const key of ["category","brand","family","description","pack","plant","producer","size","salesUnit"])if(typeof o[key]==="string")product[key]=o[key];
+  if(!product){product={item,category:"Meat",brand:"Other",description:"",pack:"",plant:"",};demo.push(product);}
+  for(const key of ["category","brand","family","description","pack","plant"])if(typeof o[key]==="string")product[key]=o[key];
  }
 }catch(error){console.warn("Could not load local catalog overrides",error);}
 function productDescription(description,brand){
@@ -391,11 +401,11 @@ function productDescription(description,brand){
  return rest.replace(/^[\s:–—-]+/,"").trim()||text;
 }
 window.__inspectionProductDescription=productDescription;
-for(const p of demo)p.description=productDescription(p.description,p.brand);
+for(const p of demo){Object.assign(p,window.InspectionProduct.catalog(p));delete p.size;delete p.producer;delete p.salesUnit;p.description=productDescription(p.description,p.brand);}
 window.__inspectionSaveCatalog=function(){
  try{
   const entries={};
-  for(const product of demo)entries[product.item]={category:product.category,brand:product.brand,description:productDescription(product.description,product.brand),pack:product.pack,plant:product.plant,producer:product.producer,size:product.size,family:product.family||"",salesUnit:product.salesUnit||""};
+  for(const product of demo)entries[product.item]={category:product.category,brand:product.brand,description:productDescription(product.description,product.brand),pack:window.InspectionProduct.packSize(product.pack,product.size),plant:product.plant,family:product.family||""};
   localStorage.setItem(CATALOG_STORAGE_KEY,JSON.stringify(entries));window.dispatchEvent(new Event("inspection:local-change"));
   return true;
  }catch(error){console.error("Could not save local catalog changes",error);alert("Unable to save catalog edits to the official database.");return false;}
@@ -403,12 +413,12 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a PO draft or start with a delivery"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
+function navigate(v){if(v==="dairy")v="global";if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["Import Order","Import a PO draft or start with a delivery"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
-function showProduct(){let x=selected;$("product-lookup-workspace").classList.toggle("has-product",!!x);$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
+function showProduct(){let x=selected;$("product-lookup-workspace").classList.toggle("has-product",!!x);$("plant-label").textContent="EST";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(window.InspectionProduct.classLabel(x.category)||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","description"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-pack").textContent=window.InspectionProduct.packSize(x?.pack,x?.size)||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
 let lookupSequence=0;
 async function lookup(){
  if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}
@@ -420,11 +430,12 @@ async function lookup(){
  if(!products){status.textContent='Search superseded by another catalog query. Press Find Item to retry.';return;}
  if(q!==window.InspectionCloud.itemKey($("item-input").value)){status.textContent='Item number changed. Press Find Item to search.';return;}
  selected=window.InspectionCloud.exactCatalogItem(products,q);
+ if(selected&&!window.InspectionProduct.visible(selected)){selected=null;showProduct();status.textContent='This product type is currently inactive.';return;}
  status.textContent=selected?'Found in the official catalog.':'No exact Item found in the official catalog. Check the complete identifier, including suffixes and leading zeros.';
  if(!selected){
   const suggestions=products.filter(p=>String(p.item).startsWith(q+'-'));
   if(suggestions.length){modal('<h2>No exact Item match</h2><p>The catalog contains these full identifiers. Select the correct Item explicitly.</p>'+suggestions.map((p,i)=>'<button class="btn" data-exact-choice="'+i+'">'+esc(p.item)+' · '+esc(p.description)+'</button>').join(''));document.querySelectorAll('[data-exact-choice]').forEach(b=>b.onclick=()=>{$('item-input').value=suggestions[Number(b.dataset.exactChoice)].item;closeModal();lookup();});return;}
-  const blank={item:q,category:"",brand:"",description:"",producer:"",family:"",plant:"",pack:"",size:"",salesUnit:"",missing:true};selected=blank;showProduct();
+  const blank={item:q,category:"",brand:"",description:"",family:"",plant:"",pack:"",missing:true};selected=blank;showProduct();
   const ask=()=>window.__inspectionOfferMissing(q);
   if(window.__inspectionSearchOnly?.())ask();else window.__inspectionOnLookup?.(blank,ask);
   return;
@@ -444,13 +455,13 @@ function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this 
 window.__inspectionEditProductItem=item=>{const x=demo.find(p=>String(p.item)===String(item));if(!x)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}selected=x;$("edit-btn").onclick();};
 function editCatalogProduct(x,isNew=false,done=()=>{}){
  if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}
- const data={category:"Meat",brand:"",description:"",producer:"",plant:"",family:"",pack:"",size:"",salesUnit:"",...x};
- modal('<h2>'+(isNew?'Add product':'Edit product')+'</h2><p>Only the administrator edits catalog products. Editing a catalog reference does not record physical verification.</p><div class="edit-grid"><label><span class="label">Product type</span><select class="input" id="edit-category">'+'<option value="">Select class</option>'+["Meat","Poultry","Dairy"].map(v=>'<option'+(v===data.category?' selected':'')+'>'+v+'</option>').join("")+'</select></label>'+[["item","Item number"],["plant","EST / Plant"],["brand","Brand"],["family","Product family"],["producer","Supplier / Source Group"],["salesUnit","Sales unit"],["description","Description"],["pack","Case / Pack"],["size","Size / Unit"]].map(([k,label])=>'<label><span class="label">'+label+'</span><input class="input" id="edit-'+k+'" value="'+esc(data[k])+'"></label>').join("")+'</div><label class="label" style="margin-top:12px">Alternative EST / Plant references</label><input class="input" id="edit-alternative-est" style="width:100%" value="'+esc(window.__inspectionGetAlternativeRefs?.(data.item)||data.alternativeEst||"")+'"><label class="label" style="margin-top:12px">Product notes</label><textarea class="input" id="edit-new-notes">'+esc(window.InspectionCloud.record("inspection-data-hub-product-notes-v1")?.[data.item]||data.notes||"")+'</textarea><div class="row" style="margin-top:18px"><button class="btn primary" id="save-demo">'+"Save product"+'</button><button class="btn" id="edit-product-cancel">Cancel</button></div>');
+ const data={category:"Meat",brand:"",description:"",plant:"",family:"",pack:"",...window.InspectionProduct.catalog(x)};
+ modal('<h2>'+(isNew?'Add product':'Edit product')+'</h2><p>Only the administrator edits catalog products. Editing a catalog reference does not record physical verification.</p><div class="edit-grid"><label><span class="label">Product type</span><select class="input" id="edit-category">'+'<option value="">Select class</option>'+["Meat","Poultry"].map(v=>'<option'+(v===data.category?' selected':'')+'>'+v+'</option>').join("")+'</select></label>'+[["item","Item number"],["plant","EST"],["brand","Brand"],["family","Product family"],["description","Description"],["pack","Pack / Size"]].map(([k,label])=>'<label><span class="label">'+label+'</span><input class="input" id="edit-'+k+'" value="'+esc(data[k])+'"></label>').join("")+'</div><label class="label" style="margin-top:12px">Alternative EST references</label><input class="input" id="edit-alternative-est" style="width:100%" value="'+esc(window.__inspectionGetAlternativeRefs?.(data.item)||data.alternativeEst||"")+'"><label class="label" style="margin-top:12px">Product notes</label><textarea class="input" id="edit-new-notes">'+esc(window.InspectionCloud.record("inspection-data-hub-product-notes-v1")?.[data.item]||data.notes||"")+'</textarea><div class="row" style="margin-top:18px"><button class="btn primary" id="save-demo">'+"Save product"+'</button><button class="btn" id="edit-product-cancel">Cancel</button></div>');
  const finish=()=>{closeModal();done();};$("edit-product-cancel").onclick=finish;
  $("save-demo").onclick=async()=>{
-  const obj={};["item","category","plant","brand","family","producer","salesUnit","description","pack","size"].forEach(k=>obj[k]=$("edit-"+k).value.trim());
+  const obj={};["item","category","plant","brand","family","description","pack"].forEach(k=>obj[k]=$("edit-"+k).value.trim());
   obj.description=productDescription(obj.description,obj.brand);
-  if(!/^[-A-Za-z0-9_.]+$/.test(obj.item)||!obj.category||!obj.brand||!obj.description){alert("Item number, class, brand and description are required.");return;}
+  if(!/^[-A-Za-z0-9_.]+$/.test(obj.item)||!["Meat","Poultry"].includes(obj.category)||!obj.brand||!obj.description){alert("Item number, class, brand and description are required.");return;}
   if(demo.some(p=>p.item===obj.item&&(isNew||p.item!==x.item))){alert("That Item number already exists.");return;}
   const refs=$("edit-alternative-est").value,notes=$("edit-new-notes").value;
   const i=demo.findIndex(p=>p.item===x.item);if(i>=0&&!isNew)demo[i]=obj;else demo.push(obj);
@@ -472,7 +483,7 @@ window.__inspectionOfferMissing=(item,done=()=>{})=>{
 $("edit-btn").onclick=()=>editCatalogProduct(selected||{item:""},!selected||!!selected.missing);
 
 ["demo-export","demo-backup","demo-sync"].forEach(id=>{const el=$(id);if(el)el.onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration.");});
-window.InspectionCloud.collect("inspection-data-hub-catalog-overrides-v1",()=>Object.fromEntries(demo.map(({item,...p})=>[item,p])),value=>{demo.splice(0,demo.length,...Object.entries(value).map(([item,p])=>({item,...p})));if(selected)selected=demo.find(x=>x.item===selected.item)||null;showProduct();});
+window.InspectionCloud.collect("inspection-data-hub-catalog-overrides-v1",()=>Object.fromEntries(demo.map(({item,...p})=>[item,window.InspectionProduct.catalog(p)])),value=>{demo.splice(0,demo.length,...Object.entries(value).map(([item,p])=>({item,...window.InspectionProduct.catalog(p)})));if(selected)selected=demo.find(x=>x.item===selected.item)||null;showProduct();});
 window.__inspectionFullProductRefresh=()=>showProduct();
 renderGlobal();renderRecent();
 </script>
@@ -517,11 +528,10 @@ let q=$("global-query").value.toLowerCase().trim();
 return demo.filter(x=>(!q||Object.values(x).some(v=>String(v).toLowerCase().includes(q)))&&
 (!$("f-category").value||x.category===$("f-category").value)&&
 (!$("f-brand").value||x.brand===$("f-brand").value)&&
-(!$("f-pack").value||x.pack===$("f-pack").value)&&
-(!$("f-producer").value||x.producer===$("f-producer").value));
+(!$("f-pack").value||x.pack===$("f-pack").value));
 }
 add($("global-view").querySelector(".results .section-head"),"beforeend",'<div class="actionbar"><button class="btn mini" id="global-csv">↓ Export Excel / CSV</button><button class="btn mini" id="global-print">⎙ Print table</button></div>');
-$("global-csv").onclick=()=>saveCSV("Global_Search_Results.csv",[["Item","Category","Brand","Description","Case / Pack","EST / Plant","Producer"],...currentGlobal().map(x=>[x.item,x.category,x.brand,x.description,x.pack,x.plant,x.producer])]);
+$("global-csv").onclick=()=>saveCSV("Global_Search_Results.csv",[["Item","Category","Brand","Description","Pack / Size","EST"],...currentGlobal().map(x=>[x.item,x.category,x.brand,x.description,x.pack,x.plant])]);
 $("global-print").onclick=()=>printTable("global");
 add($("global-view"),"beforeend",'<div class="panel panel-pad" style="margin-top:15px"><div class="section-head"><h3>Brand intelligence</h3><span class="hint">Reference notes · informal</span></div><div class="toolbar"><div class="field" style="min-width:220px"><div class="label">Select brand</div><select class="input" id="brand-info-choice"><option>Bars</option><option>Applegate</option><option>Dietz & Watson</option><option>Other</option></select></div><button class="btn" id="brand-edit-note">✎ Edit brand note</button></div><div id="brand-info" class="subtlebox" style="margin-top:12px"></div></div>');
 function brandInfo(){
@@ -567,7 +577,7 @@ function renderCatalogValidationProfile(){
 function updateProductExtras(){
 renderCatalogValidationProfile();
 const x=selected, info=x?(estInfo[x.item]||{primary:x.plant,others:[],trend:"No recent observations recorded."}):null;
-$("est-extras-title").textContent=x?.category==="Dairy"?"Known plant number references":"Known EST references";
+$("est-extras-title").textContent="Known EST references";
 $("est-tags").innerHTML=x?'<span class="est-tag main">'+safe(info.primary)+' · usual</span>'+info.others.map(s=>'<span class="est-tag">'+safe(s)+' · alternative</span>').join(""):'<span class="muted small">Select a product to see historical references</span>';
 $("est-trend").textContent=x?info.trend:"Historical reference only — verify actual cases on arrival.";
 $("product-note-display").textContent=x?(productNotes[x.item]||"No product-specific notes yet."):"Select a product to view reference notes.";
@@ -579,7 +589,7 @@ renderPhotos();
 $("edit-est").onclick=()=>{
 if(!selected){alert("Select a product first.");return;}
 const x=selected,info=estInfo[x.item]||{primary:x.plant,others:[],trend:""};
-modal('<h2>Manage known '+(view==="dairy"?"plant numbers":"EST numbers")+'</h2><p>Historical references for faster checking, not a substitute for inspecting actual cases.</p><div class="label">Usual / most common</div><input id="ref-primary" class="input" style="width:100%" value="'+safe(info.primary)+'"><div class="label" style="margin-top:12px">Alternatives (comma-separated)</div><input id="ref-others" class="input" style="width:100%" value="'+safe(info.others.join(", "))+'"><div class="label" style="margin-top:12px">Observation / recent trend</div><textarea class="input" id="ref-trend">'+safe(info.trend)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-refs">Save / request references</button></div>');
+modal('<h2>Manage known '+"EST numbers"+'</h2><p>Historical references for faster checking, not a substitute for inspecting actual cases.</p><div class="label">Usual / most common</div><input id="ref-primary" class="input" style="width:100%" value="'+safe(info.primary)+'"><div class="label" style="margin-top:12px">Alternatives (comma-separated)</div><input id="ref-others" class="input" style="width:100%" value="'+safe(info.others.join(", "))+'"><div class="label" style="margin-top:12px">Observation / recent trend</div><textarea class="input" id="ref-trend">'+safe(info.trend)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-refs">Save / request references</button></div>');
 $("save-refs").onclick=async()=>{const value={primary:$("ref-primary").value,others:$("ref-others").value.split(",").map(s=>s.trim()).filter(Boolean),trend:$("ref-trend").value};if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}estInfo[x.item]=value;closeModal();updateProductExtras();};
 };
 $("edit-product-note").onclick=()=>{
@@ -705,13 +715,13 @@ window.__inspectionPOChanges=()=>invoices.flatMap(p=>p.rows.filter(x=>x.verified
 loadPOWorkspace();
 const oldRecent=$("product-lookup-workspace").querySelector(".history");
 if(oldRecent)oldRecent.remove();
-add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST / Plant reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Purchase Orders</h3><span class="hint" id="po-workspace-hint">Select an existing PO or create a new one</span></div><div class="row"><button class="btn mini primary" id="po-new">＋ New PO</button><span class="pill" id="po-count">0 saved</span></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO number or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
+add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Purchase Orders</h3><span class="hint" id="po-workspace-hint">Select an existing PO or create a new one</span></div><div class="row"><button class="btn mini primary" id="po-new">＋ New PO</button><span class="pill" id="po-count">0 saved</span></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO number or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
 $("purchase-orders-view").appendChild(document.querySelector(".po-archive"));
 $("po-search-form").hidden=true;
 $("purchase-orders-search").addEventListener("input",()=>{openPO=null;$("po-search-input").value=$("purchase-orders-search").value;renderPOArchive();const approvedSearch=$("approved-po-search");if(approvedSearch){approvedSearch.value=$("purchase-orders-search").value;approvedSearch.dispatchEvent(new Event("input"));}});
-add(document.body,"beforeend",'<div id="print-log-only"><h2>Inspection Data Hub · Current PO Worklog</h2><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST / Plant</th><th>Received quantity</th><th>Note</th></tr></thead><tbody id="print-log-rows"></tbody></table></div>');
+add(document.body,"beforeend",'<div id="print-log-only"><h2>Inspection Data Hub · Current PO Worklog</h2><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST</th><th>Received quantity</th><th>Note</th></tr></thead><tbody id="print-log-rows"></tbody></table></div>');
 function renderLog(){
-$("log-rows").innerHTML=log.map((x,i)=>'<tr><td class="strong">'+(i+1)+'</td><td><input class="input" readonly data-field="item" data-i="'+i+'" value="'+safe(x.item)+'" aria-label="Item"></td><td>'+safe(x.description)+'</td><td><input class="input" readonly data-field="plant" data-i="'+i+'" value="'+safe(x.plant)+'" aria-label="EST / Plant reference"></td><td><input class="input" readonly data-field="receivedQuantity" data-i="'+i+'" value="'+safe(x.receivedQuantity||"")+'" aria-label="Received quantity"></td><td><input class="input" readonly data-field="catchWeight" data-i="'+i+'" value="'+safe(x.catchWeight??"")+'" aria-label="Catch Weight"></td><td><input class="input" readonly data-field="note" data-i="'+i+'" value="'+safe(x.note||"")+'" aria-label="Note"></td><td><button class="btn mini" data-move="up" data-i="'+i+'" title="Move up">↑</button> <button class="btn mini" data-move="down" data-i="'+i+'" title="Move down">↓</button></td><td><button class="btn mini" data-delete="'+i+'" title="Remove Item">×</button></td></tr>').join("")||'<tr><td colspan="9" class="empty">Search an Item to add it automatically to this PO.</td></tr>';
+$("log-rows").innerHTML=log.map((x,i)=>'<tr><td class="strong">'+(i+1)+'</td><td><input class="input" readonly data-field="item" data-i="'+i+'" value="'+safe(x.item)+'" aria-label="Item"></td><td>'+safe(x.description)+'</td><td><input class="input" readonly data-field="plant" data-i="'+i+'" value="'+safe(x.plant)+'" aria-label="EST reference"></td><td><input class="input" readonly data-field="receivedQuantity" data-i="'+i+'" value="'+safe(x.receivedQuantity||"")+'" aria-label="Received quantity"></td><td><input class="input" readonly data-field="catchWeight" data-i="'+i+'" value="'+safe(x.catchWeight??"")+'" aria-label="Catch Weight"></td><td><input class="input" readonly data-field="note" data-i="'+i+'" value="'+safe(x.note||"")+'" aria-label="Note"></td><td><button class="btn mini" data-move="up" data-i="'+i+'" title="Move up">↑</button> <button class="btn mini" data-move="down" data-i="'+i+'" title="Move down">↓</button></td><td><button class="btn mini" data-delete="'+i+'" title="Remove Item">×</button></td></tr>').join("")||'<tr><td colspan="9" class="empty">Search an Item to add it automatically to this PO.</td></tr>';
 $("log-rows").querySelectorAll("[data-field]").forEach(el=>el.onchange=()=>{const x=log[Number(el.dataset.i)];if(!x)return;x[el.dataset.field]=el.value;if(el.dataset.field==="item"){const match=demo.find(z=>z.item===el.value.trim());if(match)x.description=match.description;}persistPOWorkspace();renderLog();});
 $("log-rows").querySelectorAll("[data-delete]").forEach(el=>el.onclick=()=>{log.splice(Number(el.dataset.delete),1);persistPOWorkspace();renderLog();});
 $("log-rows").querySelectorAll("[data-move]").forEach(el=>el.onclick=()=>{const i=Number(el.dataset.i),j=i+(el.dataset.move==="up"?-1:1);if(j<0||j>=log.length)return;[log[i],log[j]]=[log[j],log[i]];persistPOWorkspace();renderLog();});
@@ -808,9 +818,9 @@ function ensureXLSX(){
  });
 }
 window.__inspectionLoadXLSX=ensureXLSX;
-const poSourceFields=["description","brand","category","family","pack","size","salesUnit","producer","plant","alternativeEst","notes"];
-const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,salesUnit:/^(salesunit|salesuom|uom|unitofmeasure)$/,producer:/^(supplier|vendor|producer|sourcegroup|suppliergroup|proveedor)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
-function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;return out;}
+const poSourceFields=["description","brand","category","family","pack","size","plant","alternativeEst","notes"];
+const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
+function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;return window.InspectionProduct.catalog(out);}
 function bestColumn(kind){
  if(poSourcePatterns[kind])return headers.findIndex(v=>poSourcePatterns[kind].test(norm(v)));
  const patterns=kind==="weight"?[/^(catchweight|catchwt|cw|actualweight|netweight|receivedweight|weight)$/,/catch.*(weight|wt)/]:kind==="quantity"?[/^(receivedquantity|quantityreceived|qtyreceived|receivedqty|received|cantidadrecibida|goodsreceiptquantity|grquantity|quantity|qty)$/,/received.*(qty|quantity)/,/(qty|quantity).*received/,/quantity/,/qty/]:kind==="item"?[/^item(number|no|id|code)?$/,/^(material|materialnumber|sku|productcode|productnumber|article|articlenumber)$/,/item/,/material/,/sku/]:[/^description$/,/^(itemdescription|productdescription|materialdescription|productname|itemname)$/,/description/,/productname/];
@@ -860,14 +870,14 @@ function editImportItem(row){
 function catalogEditor(row){
  const p=catalogEdits.get(row.item);if(!p)return '<button class="btn mini" data-import-edit="'+row.line+'">Edit</button>';
  const input=(k,label)=>'<label>'+label+'<input class="input" data-import-field="'+k+'" value="'+escHtml(p[k]||'')+'"></label>';
- return '<div class="po-catalog-editor" data-import-editor="'+row.line+'"><label>Brand — select or create<input class="input" autocomplete="off" data-import-field="brand" value="'+escHtml(p.brand||'')+'"></label><div class="po-brand-options"></div><span class="small muted" data-brand-hint>'+escHtml(p.selectedBrand?'Selected: '+p.selectedBrand:'Choose a brand, or explicitly create one.')+'</span><label>Description<textarea class="input" data-import-field="description">'+escHtml(p.description)+'</textarea></label><label>Class<select class="input" data-import-field="category"><option value="">Select class</option>'+['Meat','Poultry','Dairy'].map(v=>'<option'+(p.category===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>'+input('pack','Case / Pack')+input('size','Size / Unit')+'<details><summary>More source fields</summary>'+input('family','Family')+input('salesUnit','Sales unit')+input('producer','Supplier / Source Group')+input('alternativeEst','Alternative EST / Plant references')+input('notes','Notes')+'</details><button class="btn primary" data-import-add="'+row.line+'">Add to catalog</button><span class="small muted">Adds a catalog reference only.</span></div>';
+ return '<div class="po-catalog-editor" data-import-editor="'+row.line+'"><label>Brand — select or create<input class="input" autocomplete="off" data-import-field="brand" value="'+escHtml(p.brand||'')+'"></label><div class="po-brand-options"></div><span class="small muted" data-brand-hint>'+escHtml(p.selectedBrand?'Selected: '+p.selectedBrand:'Choose a brand, or explicitly create one.')+'</span><label>Description<textarea class="input" data-import-field="description">'+escHtml(p.description)+'</textarea></label><label>Class<select class="input" data-import-field="category"><option value="">Select class</option>'+['Meat','Poultry'].map(v=>'<option'+(p.category===v?' selected':'')+'>'+v+'</option>').join('')+'</select></label>'+input('pack','Pack / Size')+'<details><summary>More source fields</summary>'+input('family','Family')+input('alternativeEst','Alternative EST references')+input('notes','Notes')+'</details><button class="btn primary" data-import-add="'+row.line+'">Add to catalog</button><span class="small muted">Adds a catalog reference only.</span></div>';
 }
 function renderCatalogPreview(){
  const admin=window.InspectionCloud.isAdministrator(),missing=preview.filter(r=>!r.product);
  el('po-catalog-heading').hidden=!admin;el('po-catalog-edit-all').hidden=!admin;el('po-catalog-add-all').hidden=!admin;
  el('po-catalog-edit-all').disabled=catalogBusy||!missing.length;el('po-catalog-add-all').disabled=catalogBusy||!missing.some(r=>catalogEdits.has(r.item));
  previewPage=Math.min(previewPage,Math.max(0,Math.ceil(preview.length/250)-1));
- el('po-import-rows').innerHTML=preview.slice(previewPage*250,(previewPage+1)*250).map(r=>{const p=catalogEdits.get(r.item);return '<tr data-import-line="'+r.line+'"><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||'—')+'</td><td>'+escHtml(r.product?.description||'—')+'</td><td>'+(admin&&!r.product&&p?'<input class="input po-import-est-input" aria-label="EST / Plant for '+escHtml(r.item)+'" data-import-field="plant" value="'+escHtml(p.plant||'')+'">':escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||'—')))+'</td><td>'+escHtml((r.product?'Matched':'Not in catalog · source data only')+(r.duplicate?' · Repeated line':''))+'</td>'+'<td'+(admin?'':' hidden')+'>'+(admin?(r.product?'—':catalogEditor(r)):'')+'</td></tr>';}).join('')||'<tr><td colspan="'+(admin?7:6)+'" class="empty">No Item rows found.</td></tr>';
+ el('po-import-rows').innerHTML=preview.slice(previewPage*250,(previewPage+1)*250).map(r=>{const p=catalogEdits.get(r.item);return '<tr data-import-line="'+r.line+'"><td>'+r.line+'</td><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.description||'—')+'</td><td>'+escHtml(r.product?.description||'—')+'</td><td>'+(admin&&!r.product&&p?'<input class="input po-import-est-input" aria-label="EST for '+escHtml(r.item)+'" data-import-field="plant" value="'+escHtml(p.plant||'')+'">':escHtml(r.product?initialEST(r.product):(r.sourceProduct.plant||'—')))+'</td><td>'+escHtml((r.product?'Matched':'Not in catalog · source data only')+(r.duplicate?' · Repeated line':''))+'</td>'+'<td'+(admin?'':' hidden')+'>'+(admin?(r.product?'—':catalogEditor(r)):'')+'</td></tr>';}).join('')||'<tr><td colspan="'+(admin?7:6)+'" class="empty">No Item rows found.</td></tr>';
  let pager=el('po-import-pager');if(!pager){pager=document.createElement('div');pager.id='po-import-pager';pager.className='row';el('po-import-rows').closest('.tablewrap').insertAdjacentElement('afterend',pager);}
  pager.innerHTML=preview.length>250?'<button class="btn mini" data-import-page="-1" '+(!previewPage?'disabled':'')+'>Previous</button><span>Page '+(previewPage+1)+' of '+Math.ceil(preview.length/250)+'</span><button class="btn mini" data-import-page="1" '+((previewPage+1)*250>=preview.length?'disabled':'')+'>Next</button>':'';
  pager.querySelectorAll('button').forEach(b=>b.onclick=()=>{previewPage+=Number(b.dataset.importPage);renderCatalogPreview();});
@@ -890,8 +900,8 @@ async function addImportItems(items){
  const products=[...new Set(items)].map(item=>catalogEdits.get(item)).filter(Boolean);
  try{
   if(!products.length)throw Error('Use Edit to review the missing products first.');
-  for(const p of products){p.description=stripImportBrand(p.description,p.selectedBrand);if(!/^[-A-Za-z0-9_.]+$/.test(p.item)||!p.selectedBrand||!['Meat','Poultry','Dairy'].includes(p.category)||!clean(p.description))throw Error('Item '+p.item+': select or create a brand, choose a class and enter a description.');}
-  if(!confirm('Add '+products.length+' new product(s) to the catalog?'+(products.some(p=>!clean(p.plant))?' Some EST / Plant references are blank.':'')+'\nThis does not record a physical verification.'))return;
+  for(const p of products){p.description=stripImportBrand(p.description,p.selectedBrand);if(!/^[-A-Za-z0-9_.]+$/.test(p.item)||!p.selectedBrand||!['Meat','Poultry'].includes(p.category)||!clean(p.description))throw Error('Item '+p.item+': select or create a brand, choose a class and enter a description.');}
+  if(!confirm('Add '+products.length+' new product(s) to the catalog?'+(products.some(p=>!clean(p.plant))?' Some EST references are blank.':'')+'\nThis does not record a physical verification.'))return;
   catalogBusy=true;renderCatalogPreview();setStatus('Sending catalog products…');
   const saved=await window.InspectionCloud.addImportedCatalog(products.map(p=>({...p,brand:p.selectedBrand})));
   if(saved){for(const p of products)catalogEdits.delete(p.item);setStatus(products.length+' product(s) saved in the catalog.');}
@@ -969,7 +979,7 @@ function invoiceData(){
   const level=fixed?"stable":p?.level||"high";
   const label=fixed?"Stable":({low:"Low",medium:"Medium",high:"High"}[level]||"High");
   const pct=(pair,weeks)=>pair?pair[0]+" · "+Math.round(100*pair[1]/Math.max(1,weeks))+"%":"—";
-  return {...r,brand:product?.brand||"—",pack:product?.pack||"—",size:product?.size||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
+  return {...r,brand:product?.brand||"—",pack:window.InspectionProduct.packSize(product?.pack,product?.size)||"—",s,level,label,reason:fixed?"Fixed EST classification":p?.reason||"No physical verification recorded",recent:pct(s.recent[0],s.recentWeeks),common:pct(s.all[0],s.allWeeks),variants:s.all.map(([est,n])=>est+" ("+Math.round(100*n/Math.max(1,s.allWeeks))+"%)").join(", ")||"—",weeks:weeksSinceEST(r.item)};
  })};
 }
 function renderInvoiceOverview(){
@@ -980,7 +990,7 @@ function renderInvoiceOverview(){
  const displayRows=invoiceSortKey?window.InspectionTableTools.sort(data.rows,invoiceSortKey,invoiceSortDirection,(r,k)=>k==="latest"?r.s.latest:k==="priority"?({low:0,stable:0,medium:1,high:2}[r.level]):r[k]):data.rows;
  window.InspectionTableTools.headers(el("invoice-query-table"),invoiceSortKey,invoiceSortDirection);
  el("invoice-overview-summary").textContent=(data.saved?"Saved PO ":"Preview: ")+data.po+(data.customer?" · "+data.customer:"")+" · "+data.rows.length+" Items · EST history from physically verified observations";
- el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td><td><button type="button" class="btn mini" data-invoice-edit="'+escHtml(r.item)+'">Edit</button></td></tr>').join("")||'<tr><td colspan="14" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
+ el("invoice-overview-rows").innerHTML=displayRows.map(r=>'<tr class="invoice-row-'+escHtml(r.level)+'"><td class="strong">'+escHtml(r.item)+'</td><td>'+escHtml(r.brand)+'</td><td class="invoice-est">'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td><td class="invoice-history"><strong>'+escHtml(r.s.latest||"—")+'</strong><div>'+escHtml(r.s.date||"Never verified")+'</div></td><td class="invoice-history">'+escHtml(r.recent)+'<div>'+r.s.recentWeeks+' verified weeks</div></td><td class="invoice-history">'+escHtml(r.common)+'<div>'+r.s.allWeeks+' total weeks</div></td><td class="invoice-variants">'+escHtml(r.variants)+'</td><td>'+escHtml(r.weeks===null?"Never":r.weeks+" weeks")+'</td><td class="invoice-priority">'+(r.level==="stable"?'<span class="po-priority low">Stable</span>':'<span class="po-priority '+escHtml(r.level)+'" title="'+escHtml(r.reason)+'">'+escHtml(r.label)+'</span>')+'</td><td><button type="button" class="btn mini" data-invoice-edit="'+escHtml(r.item)+'">Edit</button></td></tr>').join("")||'<tr><td colspan="13" class="empty">Import an invoice or select a saved PO to see Item details and EST history.</td></tr>';
 }
 el("invoice-query-table").querySelector("thead").addEventListener("click",e=>{
  const button=e.target.closest(".query-sort");if(!button)return;
@@ -994,15 +1004,15 @@ el("po-import-customer").addEventListener("input",()=>{if(!el("invoice-select").
 el("invoice-export").onclick=()=>{
  const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
  saveCSV("PO_Inspection_Overview_"+String(data.po).replace(/[^a-z0-9_-]/gi,"_")+".csv",[
- ["PO","Customer","Item","Brand","EST / Plant","Description","Case / Pack","Size / Unit","Received quantity","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
- ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.size,r.receivedQuantity||"",r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
+ ["PO","Customer","Item","Brand","EST","Description","Pack / Size","Received quantity","Last confirmed EST","Last confirmation date","Last 10 verified weeks","Most common all-time","Known EST variants","Weeks since check","Review priority"],
+ ...data.rows.map(r=>[data.po,data.customer||"",r.item,r.brand,r.plant,r.description,r.pack,r.receivedQuantity||"",r.s.latest||"",r.s.date||"",r.recent,r.common,r.variants,r.weeks===null?"Never":r.weeks,r.label])
  ]);
 };
 el("invoice-print").onclick=()=>{
  const data=invoiceData();if(!data.rows.length){alert("Import a file or select a PO first.");return;}
  let printRoot=document.getElementById("inspection-invoice-print-sheet");
  if(!printRoot){printRoot=document.createElement("div");printRoot.id="inspection-invoice-print-sheet";document.body.appendChild(printRoot);}
- printRoot.innerHTML='<h2>Purchase Order '+escHtml(data.po)+'</h2><p>Customer: '+escHtml(data.customer||"—")+'</p><table><thead><tr><th>Item</th><th>Description</th><th>Case / Pack</th><th>Size / Unit</th><th>EST / Plant</th><th>Received quantity</th></tr></thead><tbody>'+data.rows.map(r=>'<tr><td>'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.size)+'</td><td>'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td></tr>').join("")+'</tbody></table>';
+ printRoot.innerHTML='<h2>Purchase Order '+escHtml(data.po)+'</h2><p>Customer: '+escHtml(data.customer||"—")+'</p><table><thead><tr><th>Item</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Received quantity</th></tr></thead><tbody>'+data.rows.map(r=>'<tr><td>'+escHtml(r.item)+'</td><td>'+escHtml(r.description||"—")+'</td><td>'+escHtml(r.pack)+'</td><td>'+escHtml(r.plant||"—")+'</td><td>'+escHtml(r.receivedQuantity||"")+'</td></tr>').join("")+'</tbody></table>';
  document.body.classList.add("print-invoice");
  window.print();
  setTimeout(()=>document.body.classList.remove("print-invoice"),1200);
@@ -1019,7 +1029,7 @@ el("po-import-create").onclick=()=>{
  if(!newItems.length){alert("No Item numbers found. Check the mapping.");return;}
  const importRow=r=>r.product?rowFor(r.product):{...rowFor({item:r.item,description:r.sourceProduct.description,missing:true}),...r.sourceProduct,description:r.sourceProduct.description,plant:r.sourceProduct.plant,expectedEst:r.sourceProduct.plant,note:r.sourceProduct.notes,importedProduct:{...r.sourceProduct},sourceFile:fileName};
  const unknown=newItems.filter(r=>!r.product);
- const info="Create PO draft "+number+" with "+newItems.length+" Items?"+(unknown.length?"\n"+unknown.length+" unknown Items will use available source product fields and be labeled Not in catalog. No catalog products are created automatically.":"")+"\nEST / Plant values are references, not physical verification.";
+ const info="Create PO draft "+number+" with "+newItems.length+" Items?"+(unknown.length?"\n"+unknown.length+" unknown Items will use available source product fields and be labeled Not in catalog. No catalog products are created automatically.":"")+"\nEST values are references, not physical verification.";
  if(!confirm(info))return;
  if(existing){
   existing.rows.push(...newItems.map(importRow));
@@ -1042,7 +1052,7 @@ el("po-import-create").onclick=()=>{
 
 $("po-new").onclick=()=>createPOFlow();
 $("po-save").onclick=closeActivePO;$("po-clear").onclick=closeActivePO;
-$("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST / Plant reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.receivedQuantity||"",x.note||""])]);
+$("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.receivedQuantity||"",x.note||""])]);
 $("log-print").onclick=()=>printTable("log");
 function normalizePOSearch(value){return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");}
 function matchesPOSearch(po,query){const term=normalizePOSearch(query);return !term||normalizePOSearch(po.po).includes(term)||normalizePOSearch(po.customer).includes(term);}
@@ -1064,7 +1074,7 @@ root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.da
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{
  const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;const admin=window.InspectionCloud.isAdministrator();
- const headers=["PO","Customer","Item","Type","Description","EST / Plant",...(admin?["Verification date","Physically observed ESTs","Note"]:[])];
+ const headers=["PO","Customer","Item","Type","Description","EST",...(admin?["Verification date","Physically observed ESTs","Note"]:[])];
  saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[headers,...p.rows.map(x=>[p.po,p.customer||"",x.item,x.category||demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,...(admin?[x.verifiedAt||"",x.verifiedEsts?.join(", ")||"",x.note||""]:[])])]);
 });
 root.querySelectorAll("[data-po-delete]").forEach(b=>b.onclick=()=>deletePrivateDraft(b.dataset.poDelete));
@@ -1079,14 +1089,14 @@ function deletePrivateDraft(id){
 }
 function poCatalogBadge(row,index){if(demo.some(p=>p.item===row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
 function poDisplayProduct(row){return demo.find(p=>p.item===row.item)||row.importedProduct||{};}
-function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([product?.pack,product?.size,product?.category].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+estPriorityCell(r.item)+'</div>':'')+'<p><strong>EST / Plant: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<p class="small">'+(checked?'Physically checked '+safe(r.verifiedAt):'Not physically checked')+'</p>':'')+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
+function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+estPriorityCell(r.item)+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<p class="small">'+(checked?'Physically checked '+safe(r.verifiedAt):'Not physically checked')+'</p>':'')+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
 function openMissingESTEditor(poId){
  const cloud=window.InspectionCloud;
  if(!cloud.isAdministrator()||!cloud.canEdit()){cloud.deny();return;}
  const po=invoices.find(p=>p.id===poId);
  const missing=(po?.rows||[]).filter(row=>!String(row.plant||'').trim()).map(row=>({lineId:row.lineId,item:row.item,description:row.description}));
- if(!missing.length){alert('There are no missing EST / Plant values.');return;}
- modal('<h2>Fill missing ESTs</h2><p>PO '+safe(po.po)+' · '+safe(po.customer)+'</p><p>Enter the selected EST / Plant values, then save them together. This does not record a physical verification or add products to the catalog.</p><div id="po-missing-est-fields">'+missing.map((row,i)=>'<label style="display:block;margin:12px 0"><strong>Item '+safe(row.item)+'</strong><div class="small">'+safe(row.description)+'</div><input class="input" style="width:100%" data-missing-est="'+i+'" aria-label="EST / Plant for Item '+safe(row.item)+'" placeholder="EST / Plant" autocomplete="off"></label>').join('')+'</div><p class="small">Unfilled values remain blank.</p><div class="row"><button class="btn primary" id="po-missing-est-save">Save all</button><button class="btn" id="po-missing-est-cancel">Cancel</button></div>');
+ if(!missing.length){alert('There are no missing EST values.');return;}
+ modal('<h2>Fill missing ESTs</h2><p>PO '+safe(po.po)+' · '+safe(po.customer)+'</p><p>Enter the selected EST values, then save them together. This does not record a physical verification or add products to the catalog.</p><div id="po-missing-est-fields">'+missing.map((row,i)=>'<label style="display:block;margin:12px 0"><strong>Item '+safe(row.item)+'</strong><div class="small">'+safe(row.description)+'</div><input class="input" style="width:100%" data-missing-est="'+i+'" aria-label="EST for Item '+safe(row.item)+'" placeholder="EST" autocomplete="off"></label>').join('')+'</div><p class="small">Unfilled values remain blank.</p><div class="row"><button class="btn primary" id="po-missing-est-save">Save all</button><button class="btn" id="po-missing-est-cancel">Cancel</button></div>');
  $('po-missing-est-cancel').onclick=closeModal;
  $('po-missing-est-save').onclick=()=>{
   if(!cloud.isAdministrator()||!cloud.canEdit()){cloud.deny();return;}
@@ -1098,7 +1108,7 @@ function openMissingESTEditor(poId){
    if(!row||String(row.plant||'').trim()){alert('This PO changed while you were editing. Close this window and review the latest PO before saving.');return;}
    changes.push({row,plant});
   }
-  if(!changes.length){alert('Enter at least one EST / Plant to save.');return;}
+  if(!changes.length){alert('Enter at least one EST to save.');return;}
   for(const {row,plant}of changes){row.plant=plant;row.verifiedAt='';row.verifiedEsts=[];}
   persistPOWorkspace();closeModal();renderPODetails();
  };
@@ -1106,13 +1116,13 @@ function openMissingESTEditor(poId){
 function renderPODetails(){
 const root=$("po-details"),p=invoices.find(x=>x.id===openPO);
 if(!p){root.innerHTML="";root.dataset.draftOwner="";return;}root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
-root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · Draft · pending inspection</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST / Plant</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Physical check</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
+root.innerHTML='<div class="po-details-head"><div><strong class="po-number">PO '+safe(p.po)+'</strong><div class="po-customer">'+safe(p.customer)+' · Draft · pending inspection</div></div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Physical check</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
- return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,product?.pack,product?.size,product?.salesUnit,product?.producer].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(product?.category||'')+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(checked?'<div class="po-verified">Physically checked · '+safe(x.verifiedAt)+'</div>':'<span class="muted">Not physically checked</span>')+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(checked?'<div class="po-verified">Physically checked · '+safe(x.verifiedAt)+'</div>':'<span class="muted">Not physically checked</span>')+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Confirm shown EST</button><button class="btn" data-po-observed="'+i+'">Different EST observed</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
  }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p);
 if(window.InspectionCloud.isAdministrator()&&p.rows.some(r=>!String(r.plant||'').trim())){const bulk=document.createElement('button');bulk.id='po-fill-missing-est';bulk.className='btn primary';bulk.textContent='Fill missing ESTs';bulk.onclick=()=>openMissingESTEditor(p.id);root.querySelector('.po-add-row').after(bulk);}
 $('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
-$('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST / Plant suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(demo.find(x=>x.item===r.item)?.category||'')+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
+$('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(window.InspectionProduct.classLabel(demo.find(x=>x.item===r.item)?.category))+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
 root.querySelectorAll('[data-po-add-catalog]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poAddCatalog)];window.__inspectionAddImportedProduct(row,()=>renderPODetails());});
 root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>{
  const row=p.rows[Number(b.dataset.poProductDetail)],item=row.item;
@@ -1122,8 +1132,8 @@ root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>
  const profile=selected;window.__inspectionNavigate?.('global');selected=profile;showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
  }catch(error){alert(window.InspectionCloud.catalogError(error));}finally{b.disabled=false;b.textContent=caption;}
 });
-root.querySelectorAll('[data-po-select-only]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poSelectOnly)],value=prompt('Select EST / Plant (does not physically verify)',row.plant);if(value===null)return;const next=normalizeESTs(value).join(', ');if(!sameESTs(row.plant,next)){row.verifiedAt='';row.verifiedEsts=[];}row.plant=next;persistPOWorkspace();renderPODetails();});
-root.querySelectorAll('[data-po-observed]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const i=Number(b.dataset.poObserved),row=p.rows[i],value=prompt('EST / Plant physically observed on Item '+row.item,row.plant);if(value===null||!value.trim())return;row.plant=normalizeESTs(value).join(', ');row.verifiedAt='';row.verifiedEsts=[];recordPOCheck(p,row,normalizeESTs(value),localDate(),'Observed different EST');});
+root.querySelectorAll('[data-po-select-only]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poSelectOnly)],value=prompt('Select EST (does not physically verify)',row.plant);if(value===null)return;const next=normalizeESTs(value).join(', ');if(!sameESTs(row.plant,next)){row.verifiedAt='';row.verifiedEsts=[];}row.plant=next;persistPOWorkspace();renderPODetails();});
+root.querySelectorAll('[data-po-observed]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const i=Number(b.dataset.poObserved),row=p.rows[i],value=prompt('EST physically observed on Item '+row.item,row.plant);if(value===null||!value.trim())return;row.plant=normalizeESTs(value).join(', ');row.verifiedAt='';row.verifiedEsts=[];recordPOCheck(p,row,normalizeESTs(value),localDate(),'Observed different EST');});
 $("po-delete-active").onclick=()=>deletePrivateDraft(p.id);
 $("po-close-active").onclick=closeActivePO;
 $("po-approve").onclick=()=>window.InspectionCloud.approvePO(p.id);
@@ -1179,7 +1189,7 @@ function verifyPORow(p,i){
 const x=p.rows[i];if(!x)return;
 if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}
 const ests=normalizeESTs(x.plant);
-if(!ests.length){alert("Enter the EST / Plant physically observed on this Item before verifying it.");return;}
+if(!ests.length){alert("Enter the EST physically observed on this Item before verifying it.");return;}
 const expected=x.expectedEst||x.plant;
 const changed=!sameESTs(expected,ests.join(", "));
 if(!confirm("Verify only this Item: did you physically check Item "+x.item+" on PO "+p.po+" and observe "+ests.join(", ")+(changed?"? Original reference: "+expected+".":"?")))return;
@@ -1226,7 +1236,7 @@ applyRole();
 .obs-table .btn{font-size:10px;padding:5px 7px}
 </style>
 <script type="application/inspection-script">
-/* EST / Plant weekly-observation design prototype. No network, no persistent database. */
+/* EST weekly-observation design prototype. No network, no persistent database. */
 (function(){
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1268,7 +1278,7 @@ return {all,groups,counts,ranked,latest,latestEsts,weeks:groups.size};
 }
 function renderWeekly(){
 const x=selected;
-$("weekly-title").textContent=x?.category==="Dairy"?"Plant number observation history":"EST observation history";
+$("weekly-title").textContent="EST observation history";
 const content=$("weekly-stat-content");
 if(!x){content.innerHTML='<div class="muted small">Select a product to view its observed establishment history.</div>';return;}
 const s=statsFor(x.item);
@@ -1294,11 +1304,11 @@ function observationModal(){
 if(!selected){alert("Select a product first.");return;}
 if(isEmployee()){alert("Employee preview: observation editing is disabled.");return;}
 const x=selected;
-modal('<h2>Record an observed '+(view==="dairy"?"plant number":"EST")+'</h2><p>Record only values actually checked on received packaging. Searches do not update statistics. Multiple EST values may be recorded for the same week.</p><div class="label">Observation date</div><input class="input" type="date" id="ob-date" style="width:100%"><div class="label" style="margin-top:13px">Observed EST / Plant numbers</div><input class="input" id="ob-est" placeholder="e.g. 471, 81B" style="width:100%"><div class="label" style="margin-top:13px">Optional note</div><textarea class="input" id="ob-note" placeholder="e.g. mixed cases on the same order"></textarea><div style="margin-top:13px"><button class="btn primary" id="ob-save">Record observation</button></div>');
+modal('<h2>Record an observed '+"EST"+'</h2><p>Record only values actually checked on received packaging. Searches do not update statistics. Multiple EST values may be recorded for the same week.</p><div class="label">Observation date</div><input class="input" type="date" id="ob-date" style="width:100%"><div class="label" style="margin-top:13px">Observed EST numbers</div><input class="input" id="ob-est" placeholder="e.g. 471, 81B" style="width:100%"><div class="label" style="margin-top:13px">Optional note</div><textarea class="input" id="ob-note" placeholder="e.g. mixed cases on the same order"></textarea><div style="margin-top:13px"><button class="btn primary" id="ob-save">Record observation</button></div>');
 $("ob-date").value=dateISO(new Date());
 $("ob-save").onclick=()=>{
 const date=$("ob-date").value,ests=$("ob-est").value.split(",").map(s=>s.trim()).filter(Boolean),note=$("ob-note").value;
-if(!date||!ests.length){alert("Enter a date and at least one EST / Plant number.");return;}
+if(!date||!ests.length){alert("Enter a date and at least one EST number.");return;}
 let added=0;for(const est of ests){if(addObservation(x.item,date,est,note))added++;}
 closeModal();renderWeekly();
 if(added)window.dispatchEvent(new Event("inspection:local-change"));
@@ -1307,7 +1317,7 @@ if(added)window.dispatchEvent(new Event("inspection:local-change"));
 function reviewModal(){
 if(!selected){alert("Select a product first.");return;}
 const x=selected,records=[...(observations[x.item]||[])].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
-modal('<h2>Recorded observations · '+esc(x.item)+'</h2><p>Each Item + EST + calendar week is counted once. A week can include more than one EST. Confirmed online records.</p><div style="max-height:350px;overflow:auto"><table class="obs-table"><thead><tr><th>Date</th><th>Week of</th><th>EST / Plant</th><th>Note</th><th></th></tr></thead><tbody>'+records.map(r=>'<tr><td>'+esc(r.date)+'</td><td>'+esc(weekKey(r.date))+'</td><td><strong>'+esc(r.est)+'</strong></td><td>'+esc(r.note)+'</td><td><button class="btn mini" data-ob-edit="'+r.id+'">Edit</button> <button class="btn mini" data-ob-delete="'+r.id+'">Delete</button></td></tr>').join("")+'</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="ob-add-from-list">＋ Record new observation</button></div>');
+modal('<h2>Recorded observations · '+esc(x.item)+'</h2><p>Each Item + EST + calendar week is counted once. A week can include more than one EST. Confirmed online records.</p><div style="max-height:350px;overflow:auto"><table class="obs-table"><thead><tr><th>Date</th><th>Week of</th><th>EST</th><th>Note</th><th></th></tr></thead><tbody>'+records.map(r=>'<tr><td>'+esc(r.date)+'</td><td>'+esc(weekKey(r.date))+'</td><td><strong>'+esc(r.est)+'</strong></td><td>'+esc(r.note)+'</td><td><button class="btn mini" data-ob-edit="'+r.id+'">Edit</button> <button class="btn mini" data-ob-delete="'+r.id+'">Delete</button></td></tr>').join("")+'</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="ob-add-from-list">＋ Record new observation</button></div>');
 const root=$("modal-root");
 root.querySelectorAll("[data-ob-delete]").forEach(b=>b.onclick=()=>{
 if(isEmployee())return;
@@ -1319,7 +1329,7 @@ root.querySelectorAll("[data-ob-edit]").forEach(b=>b.onclick=()=>{
 if(isEmployee())return;
 const r=observations[x.item].find(z=>z.id===Number(b.dataset.obEdit));
 if(!r)return;
-modal('<h2>Correct recorded observation</h2><p>Fix an entry without creating extra counted observations.</p><div class="label">Date</div><input type="date" class="input" id="ob-edit-date" style="width:100%" value="'+esc(r.date)+'"><div class="label" style="margin-top:12px">EST / Plant</div><input class="input" id="ob-edit-est" style="width:100%" value="'+esc(r.est)+'"><div class="label" style="margin-top:12px">Note</div><textarea class="input" id="ob-edit-note">'+esc(r.note)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="ob-edit-save">Save correction</button></div>');
+modal('<h2>Correct recorded observation</h2><p>Fix an entry without creating extra counted observations.</p><div class="label">Date</div><input type="date" class="input" id="ob-edit-date" style="width:100%" value="'+esc(r.date)+'"><div class="label" style="margin-top:12px">EST</div><input class="input" id="ob-edit-est" style="width:100%" value="'+esc(r.est)+'"><div class="label" style="margin-top:12px">Note</div><textarea class="input" id="ob-edit-note">'+esc(r.note)+'</textarea><div style="margin-top:12px"><button class="btn primary" id="ob-edit-save">Save correction</button></div>');
 $("ob-edit-save").onclick=()=>{
 const d=$("ob-edit-date").value,est=$("ob-edit-est").value.trim().toUpperCase();
 if(!d||!est){alert("Date and EST are required.");return;}
@@ -1389,8 +1399,8 @@ const summary=document.createElement("div");summary.className="period-context";
 document.querySelector("#global-view .results .section-head").insertAdjacentElement("afterend",summary);
 function refresh(){
 const label=options.find(x=>x[0]===current)[1];
-context.textContent="EST / Plant statistics: "+label.toLowerCase()+" · based on observed weeks, not searches";
-summary.textContent="EST / Plant column: most frequent observed value during "+label.toLowerCase()+".";
+context.textContent="EST statistics: "+label.toLowerCase()+" · based on observed weeks, not searches";
+summary.textContent="EST column: most frequent observed value during "+label.toLowerCase()+".";
 if(window.__inspectionRenderWeekly)window.__inspectionRenderWeekly();
 if(typeof renderGlobal==="function")renderGlobal();
 }
@@ -1438,7 +1448,7 @@ const s=calc(x.item),latest=s.latest;
 const main=latest?.est||"—";
 $("plant-value").textContent=main;
 const label=$("plant-label");
-label.textContent=x.category==="Dairy"?"MOST RECENT CONFIRMED PLANT NUMBER":"MOST RECENT CONFIRMED EST";
+label.textContent="MOST RECENT CONFIRMED EST";
 function tile(title,stat){
 if(!stat.top)return '<div class="est-summary-card"><div class="label">'+title+'</div><div class="est-summary-value">—</div><div class="est-summary-context">No recorded observations</div></div>';
 const [est,n]=stat.top,pct=Math.round(n/stat.weeks*100);
@@ -1516,7 +1526,7 @@ if(!s.latest){const initial=initialReview[item];return {level:"high",label:initi
 const age=daysSince(s.latest.date);
 // Any distinct EST values observed in the last ten physically verified weeks
 // override all other review intervals, including inherited brand stability.
-if(s.recent.ranked.length>1)return {level:"high",label:"HIGH PRIORITY · EST VARIATION",reason:"Multiple distinct EST / Plant numbers were physically observed during the last 10 verified weeks. Check each new reception."};
+if(s.recent.ranked.length>1)return {level:"high",label:"HIGH PRIORITY · EST VARIATION",reason:"Multiple distinct EST numbers were physically observed during the last 10 verified weeks. Check each new reception."};
 if(window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(item,stableItems.has(item)):stableItems.has(item)){
 const last=new Date(s.latest.date+"T12:00:00"),now=new Date(today()+"T12:00:00");
 const plusMonths=n=>{const d=new Date(last),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));return d;};
@@ -1537,12 +1547,12 @@ return '<div class="est-summary-card"><div class="label">'+title+'</div><div cla
 function render(){
 const x=typeof selected==="undefined"?null:selected;
 const root=$("est-summary-design");if(!root)return;
-if(!x){root.innerHTML='<div class="muted small">Search an Item to see confirmed EST / Plant history.</div>';return;}
+if(!x){root.innerHTML='<div class="muted small">Search an Item to see confirmed EST history.</div>';return;}
 const s=summary(x.item),p=priority(s,x.item),age=s.latest?daysSince(s.latest.date):null;
 const newest=s.latest? s.all.filter(r=>r.date===s.latest.date).map(r=>r.est):[];
 const lastEst=[...new Set(newest)].join(" + ")||"—";
 $("plant-value").textContent=s.latest?lastEst:(x.plant||"—");
-$("plant-label").textContent=s.latest?(x.category==="Dairy"?"MOST RECENT CONFIRMED PLANT NUMBER":"MOST RECENT CONFIRMED EST"):(x.category==="Dairy"?"PLANT NUMBER REFERENCE · NOT VERIFIED":"EST REFERENCE · NOT VERIFIED");
+$("plant-label").textContent=s.latest?"MOST RECENT CONFIRMED EST":"EST REFERENCE · NOT VERIFIED";
 const variants=s.historical.ranked.map(([est,n])=>{
 const badges=[];
 if(newest.includes(est))badges.push("Latest confirmed");
@@ -1551,7 +1561,7 @@ if(!badges.length)badges.push("Historical variant");
 return '<div class="est-variant"><strong>'+esc(est)+'</strong><small>'+n+' of '+s.historical.weeks+' verified weeks · '+Math.round(100*n/s.historical.weeks)+'%</small><em>'+esc(badges.join(" · "))+'</em></div>';
 }).join("");
 const note=s.latest?"Last physically confirmed "+age+" day"+(age===1?"":"s")+" ago. "+(s.recent.ranked.length>1?"Multiple establishments have been observed in the last 10 recorded weeks. ":"")+"Historical statistics reflect sampled, manually recorded observations—not every received case.":"No physical confirmations recorded for this Item. Historical reference fields are not verification.";
-root.innerHTML='<div class="est-latest-block"><div class="label">LATEST HUMAN-CONFIRMED OBSERVATION</div><div class="est-latest-number '+p.level+'">'+esc(lastEst)+'</div><span class="est-priority '+p.level+'">'+p.label+'</span><div class="est-summary-context">'+esc(s.latest?.date||"Never verified")+(age!==null?" · "+age+" days without verification":"")+'</div></div>'+'<div class="est-summary-grid">'+tile("LAST 10 VERIFIED WEEKS",s.recent)+tile("ALL-TIME HISTORY",s.historical)+'</div><div class="est-variants"><div class="est-variants-title">Known EST references · physically verified frequency</div><div class="est-variants-grid">'+(variants||'<div class="small muted">No physical EST verifications yet</div>')+'</div></div><div class="est-summary-note"><strong>Review guidance:</strong> '+esc(p.reason)+'<br>'+esc(note)+'</div><div class="est-verify-actions"><button class="btn primary" id="est-verify-now">✓ Verify EST / Plant</button><button class="btn" id="est-review-observations">View / correct records</button><button class="btn" id="est-toggle-stable">'+((window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item))?"★ Highly stable · override":"☆ Mark highly stable")+'</button></div><div class="est-verify-foot">Highly stable is a manual classification, not a guarantee that the EST cannot change. Suggested priority is informational only and does not replace required inspection procedures. Verifying sampled boxes does not verify the entire pallet.</div>';
+root.innerHTML='<div class="est-latest-block"><div class="label">LATEST HUMAN-CONFIRMED OBSERVATION</div><div class="est-latest-number '+p.level+'">'+esc(lastEst)+'</div><span class="est-priority '+p.level+'">'+p.label+'</span><div class="est-summary-context">'+esc(s.latest?.date||"Never verified")+(age!==null?" · "+age+" days without verification":"")+'</div></div>'+'<div class="est-summary-grid">'+tile("LAST 10 VERIFIED WEEKS",s.recent)+tile("ALL-TIME HISTORY",s.historical)+'</div><div class="est-variants"><div class="est-variants-title">Known EST references · physically verified frequency</div><div class="est-variants-grid">'+(variants||'<div class="small muted">No physical EST verifications yet</div>')+'</div></div><div class="est-summary-note"><strong>Review guidance:</strong> '+esc(p.reason)+'<br>'+esc(note)+'</div><div class="est-verify-actions"><button class="btn primary" id="est-verify-now">✓ Verify EST</button><button class="btn" id="est-review-observations">View / correct records</button><button class="btn" id="est-toggle-stable">'+((window.__inspectionEffectiveStable?window.__inspectionEffectiveStable(x.item,stableItems.has(x.item)):stableItems.has(x.item))?"★ Highly stable · override":"☆ Mark highly stable")+'</button></div><div class="est-verify-foot">Highly stable is a manual classification, not a guarantee that the EST cannot change. Suggested priority is informational only and does not replace required inspection procedures. Verifying sampled boxes does not verify the entire pallet.</div>';
 $("est-verify-now").disabled=!admin();
 $("est-review-observations").disabled=false;
 $("est-toggle-stable").disabled=!admin();
@@ -1564,13 +1574,13 @@ const x=typeof selected==="undefined"?null:selected;if(!x||!admin())return;
 const s=summary(x.item),variants=[...new Set([...s.historical.ranked.map(([e])=>e),...(window.__inspectionGetAlternativeRefs?.(x.item)||"").split(",").map(e=>e.trim()).filter(Boolean),x.plant].filter(Boolean))];
 const latest=s.latest?.est||"";
 const options=variants.map(e=>'<label class="est-verify-choice"><input type="checkbox" name="est-verified-choice" value="'+esc(e)+'"><span><strong>'+esc(e)+'</strong>'+(e===latest?' <small class="muted">· last confirmed</small>':'')+'</span></label>').join("");
-modal('<h2>Verify '+("EST / Plant")+' · '+esc(x.item)+'</h2><p>Select every EST / Plant number physically observed. Select several values when they appear in the same reception.</p><div id="est-known-options">'+(options||'<div class="small muted">No previously confirmed variants</div>')+'</div><label class="est-verify-choice"><input type="checkbox" id="est-new-choice">＋ New EST / Plant number</label><input id="est-new-value" class="input" placeholder="e.g. 81J" style="width:100%" disabled><div style="margin-top:12px"><div class="label">Verification date</div><input class="input" type="date" id="est-verify-date" style="width:100%"></div><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="est-verify-note" placeholder="e.g. mixed EST values observed" style="width:100%"></textarea><div class="est-verify-foot">Each Item + EST + calendar week counts once. Record only what you physically checked.</div><div style="margin-top:15px"><button class="btn primary" id="est-confirm-save">Save verification</button></div>');
+modal('<h2>Verify '+("EST")+' · '+esc(x.item)+'</h2><p>Select every EST number physically observed. Select several values when they appear in the same reception.</p><div id="est-known-options">'+(options||'<div class="small muted">No previously confirmed variants</div>')+'</div><label class="est-verify-choice"><input type="checkbox" id="est-new-choice">＋ New EST number</label><input id="est-new-value" class="input" placeholder="e.g. 81J" style="width:100%" disabled><div style="margin-top:12px"><div class="label">Verification date</div><input class="input" type="date" id="est-verify-date" style="width:100%"></div><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="est-verify-note" placeholder="e.g. mixed EST values observed" style="width:100%"></textarea><div class="est-verify-foot">Each Item + EST + calendar week counts once. Record only what you physically checked.</div><div style="margin-top:15px"><button class="btn primary" id="est-confirm-save">Save verification</button></div>');
 $("est-verify-date").value=today();
 $("est-new-choice").onchange=()=>{$("est-new-value").disabled=!$("est-new-choice").checked;};
 $("est-confirm-save").onclick=()=>{
 const date=$("est-verify-date").value,note=$("est-verify-note").value.trim();
 const chosen=[...document.querySelectorAll('input[name="est-verified-choice"]:checked')].map(el=>el.value.toUpperCase());
-if($("est-new-choice").checked){const v=$("est-new-value").value.trim().toUpperCase();if(!v){alert("Enter the new EST / Plant number.");return;}chosen.push(v);}
+if($("est-new-choice").checked){const v=$("est-new-value").value.trim().toUpperCase();if(!v){alert("Enter the new EST number.");return;}chosen.push(v);}
 const values=[...new Set(chosen)];
 if(!date||date>today()||!values.length){alert("Select at least one EST and a valid date no later than today.");return;}
 const a=records[x.item]||(records[x.item]=[]);
@@ -1656,7 +1666,7 @@ window.InspectionCloud.collect("inspection-data-hub-stability-overrides-v1",()=>
 const extraQueue=new Set();
 const checked=new Set();
 const admin=()=>window.InspectionCloud.isAdministrator()&&window.InspectionCloud.canEdit();
-const types=["Beef / Pork","Poultry","Dairy","Other"];
+const types=["Beef / Pork","Poultry","Other"];
 function typeOf(x){
 const d=(x.description||"").toLowerCase();
 if(x.category==="Dairy")return "Dairy";
@@ -1739,14 +1749,14 @@ $("quick-confirm-selected").onclick=()=>{
 if(!admin())return;
 const items=[...checked].map(id=>({id,ests:allLatest(id)})).filter(x=>x.ests.length);
 if(!items.length)return;
-if(!confirm("Confirm that you physically checked "+items.length+" selected Items and that each matched its latest confirmed EST / Plant values? Only checked Items will be recorded."))return;
+if(!confirm("Confirm that you physically checked "+items.length+" selected Items and that each matched its latest confirmed EST values? Only checked Items will be recorded."))return;
 for(const x of items)save(x.id,x.ests,today(),"Quick verification · physically checked; matches latest recorded values");
 afterSave();
 };
 function changeModal(item){
 if(!admin())return;const x=demo.find(p=>p.item===item);if(!x)return;
 const vals=[...new Set((records[item]||[]).map(r=>r.est))],last=allLatest(item);
-modal('<h2>Verify EST / Plant · '+esc(item)+'</h2><p>Select the EST values physically seen today. You may select several known values and/or add a new value.</p>'+vals.map(v=>'<label class="est-verify-choice"><input type="checkbox" name="q-est" value="'+esc(v)+'"> '+esc(v)+(last.includes(v)?" · latest confirmed":"")+'</label>').join("")+'<label class="est-verify-choice"><input type="checkbox" id="q-new-enable"> ＋ New EST / Plant</label><input class="input" id="q-new-est" placeholder="New EST / Plant number" disabled style="width:100%"><div class="label" style="margin-top:12px">Verification date</div><input type="date" class="input" id="q-date" style="width:100%"><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="q-note" style="width:100%"></textarea><div style="margin-top:14px"><button class="btn primary" id="q-save">Save verification</button></div>');
+modal('<h2>Verify EST · '+esc(item)+'</h2><p>Select the EST values physically seen today. You may select several known values and/or add a new value.</p>'+vals.map(v=>'<label class="est-verify-choice"><input type="checkbox" name="q-est" value="'+esc(v)+'"> '+esc(v)+(last.includes(v)?" · latest confirmed":"")+'</label>').join("")+'<label class="est-verify-choice"><input type="checkbox" id="q-new-enable"> ＋ New EST</label><input class="input" id="q-new-est" placeholder="New EST number" disabled style="width:100%"><div class="label" style="margin-top:12px">Verification date</div><input type="date" class="input" id="q-date" style="width:100%"><div class="label" style="margin-top:12px">Optional note</div><textarea class="input" id="q-note" style="width:100%"></textarea><div style="margin-top:14px"><button class="btn primary" id="q-save">Save verification</button></div>');
 $("q-date").value=today();$("q-new-enable").onchange=()=>{$("q-new-est").disabled=!$("q-new-enable").checked;};
 $("q-save").onclick=()=>{
 const ests=[...document.querySelectorAll('input[name="q-est"]:checked')].map(e=>e.value);
@@ -1792,11 +1802,11 @@ $("brand-filter").oninput=renderBrands;
 $("brand-new").onclick=()=>{if(admin())editBrand("");};
 function editBrand(name){
 if(!admin())return;const p=profile(name);
-modal('<h2>'+esc(name?"Edit brand · "+name:"Add brand")+'</h2><p>Internal reference only. Do not assume manufacturer or plant facts without confirmation.</p><div class="brand-form-grid"><div class="full"><div class="label">Brand name</div><input class="input" id="bp-name" value="'+esc(name)+'" '+(name?"readonly":"")+'></div><div class="full"><div class="label">Brand description</div><textarea class="input" id="bp-description" style="width:100%">'+esc(p.description)+'</textarea></div><div><div class="label">Establishment rule</div><select class="input" id="bp-mode"><option value="variable">Variable / Item-specific</option><option value="single">One fixed EST</option><option value="category">Fixed by product type</option></select></div><div><div class="label">Stability inheritance</div><label style="display:flex;gap:7px;align-items:center;margin-top:9px;font-size:12px"><input type="checkbox" id="bp-stable" '+(p.stable?"checked":"")+'> Highly stable for matching Items</label></div><div class="full"><div class="label">Single fixed EST (if applicable)</div><input class="input" id="bp-single" value="'+esc(p.single)+'"></div>'+types.map((t,i)=>'<div><div class="label">'+esc(t)+' EST</div><input class="input" id="bp-plant-'+i+'" value="'+esc(p.plants[t]||"")+'"></div>').join("")+'<div class="full"><div class="label">Internal notes / plant details</div><textarea class="input" id="bp-notes" style="width:100%">'+esc(p.notes)+'</textarea></div></div><p class="small muted">For fixed-by-type rules, only Items whose category has a specified EST inherit stability. Item exceptions override the brand rule.</p><div style="margin-top:14px"><button class="btn primary" id="bp-save">Save brand profile</button></div>');
+modal('<h2>'+esc(name?"Edit brand · "+name:"Add brand")+'</h2><p>Internal reference only. Do not assume manufacturer or plant facts without confirmation.</p><div class="brand-form-grid"><div class="full"><div class="label">Brand name</div><input class="input" id="bp-name" value="'+esc(name)+'" '+(name?"readonly":"")+'></div><div class="full"><div class="label">Brand description</div><textarea class="input" id="bp-description" style="width:100%">'+esc(p.description)+'</textarea></div><div><div class="label">Establishment rule</div><select class="input" id="bp-mode"><option value="variable">Variable / Item-specific</option><option value="single">One fixed EST</option><option value="category">Fixed by product type</option></select></div><div><div class="label">Stability inheritance</div><label style="display:flex;gap:7px;align-items:center;margin-top:9px;font-size:12px"><input type="checkbox" id="bp-stable" '+(p.stable?"checked":"")+'> Highly stable for matching Items</label></div><div class="full"><div class="label">Single fixed EST (if applicable)</div><input class="input" id="bp-single" value="'+esc(p.single)+'"></div>'+types.map((t,i)=>'<div><div class="label">'+esc(t)+' EST</div><input class="input" id="bp-plant-'+i+'" value="'+esc(p.plants[t]||"")+'"></div>').join("")+'<div class="full"><div class="label">Internal notes / EST details</div><textarea class="input" id="bp-notes" style="width:100%">'+esc(p.notes)+'</textarea></div></div><p class="small muted">For fixed-by-type rules, only Items whose category has a specified EST inherit stability. Item exceptions override the brand rule.</p><div style="margin-top:14px"><button class="btn primary" id="bp-save">Save brand profile</button></div>');
 $("bp-mode").value=p.mode;
 $("bp-save").onclick=()=>{
 const n=$("bp-name").value.trim();if(!n){alert("Enter a brand name.");return;}
-const mode=$("bp-mode").value,single=$("bp-single").value.trim().toUpperCase(),plants=Object.fromEntries(types.map((t,i)=>[t,$("bp-plant-"+i).value.trim().toUpperCase()]));
+const mode=$("bp-mode").value,single=$("bp-single").value.trim().toUpperCase(),plants={...p.plants,...Object.fromEntries(types.map((t,i)=>[t,$("bp-plant-"+i).value.trim().toUpperCase()]))};
 if($("bp-stable").checked&&((mode==="single"&&!single)||(mode==="category"&&!Object.values(plants).some(Boolean)))){alert("Enter the applicable fixed EST reference before enabling inherited stability.");return;}
 profiles[n]={name:n,description:$("bp-description").value.trim(),mode,stable:$("bp-stable").checked,single,plants,notes:$("bp-notes").value.trim()};
 closeModal();refresh();if(window.__inspectionProductRefresh)window.__inspectionProductRefresh();
@@ -2205,17 +2215,17 @@ html,body{width:100%;max-width:100%;margin:0}
 (function(){
 const imagesByItem=window.InspectionCloud.photoMap();
 const $=id=>document.getElementById(id);
-const fields=["brand","family","pack","size","plant"];
+const fields=["brand","family","pack","plant"];
 const BLANK_FILTER="__inspection_blank__";
 const isBlankCatalogField=value=>String(value??"").trim()==="";
-const editable=["brand","plant","description","pack","size","family","category"];
+const editable=["brand","plant","description","pack","family","category"];
 const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let matched=[],selectedIds=new Set(),sortKey="item",sortDirection=1,resultsDirty=true,searchTimer=null,lastQuery="";
 const table=$("iq-table"),tableTools=window.InspectionTableTools;
 const facets=[...fields,"category","photo","description-state"];
-const facetOptions={category:[["Meat","Meat"],["Poultry","Poultry"],["Dairy","Dairy"],[BLANK_FILTER,"Blank field"]],photo:[["with","With photos"],["without","Without photos"]],"description-state":[["blank","Blank field"],["filled","Filled field"]]};
-const facetPlaceholders={brand:"Select brand…",family:"Select product family…",pack:"Select case / pack…",size:"Select size / unit…",plant:"Select EST / Plant…",category:"Select product type…",photo:"Select photo status…","description-state":"Select description status…"};
-const facetLabels={brand:"brands",family:"families",pack:"packs",size:"sizes",plant:"EST / Plant values",category:"groups",photo:"products","description-state":"descriptions"};
+const facetOptions={category:[["Meat","Meat"],["Poultry","Poultry"],[BLANK_FILTER,"Blank field"]],photo:[["with","With photos"],["without","Without photos"]],"description-state":[["blank","Blank field"],["filled","Filled field"]]};
+const facetPlaceholders={brand:"Select brand…",family:"Select product family…",pack:"Select pack / size…",plant:"Select EST…",category:"Select product type…",photo:"Select photo status…","description-state":"Select description status…"};
+const facetLabels={brand:"brands",family:"families",pack:"packs",plant:"EST values",category:"groups",photo:"products","description-state":"descriptions"};
 // Initialize the visible filter choices before attaching any optional table handlers.
 function populate(){
  const choices=facets.map(field=>{
@@ -2234,7 +2244,7 @@ function populate(){
 function matchesFacet(x,field,value){
  if(!value)return true;
  if(fields.includes(field))return value===BLANK_FILTER?isBlankCatalogField(x[field]):String(x[field]??"")===value;
- if(field==="category")return value===BLANK_FILTER?isBlankCatalogField(x.category):value==="Poultry"?groupOf(x)==="Poultry":value==="Meat"?x.category!=="Dairy":x.category===value;
+ if(field==="category")return value===BLANK_FILTER?isBlankCatalogField(x.category):value==="Poultry"?groupOf(x)==="Poultry":value==="Meat"?groupOf(x)==="Meat":x.category===value;
  if(field==="photo")return value==="with"?(imagesByItem[x.item]||[]).length>0:!(imagesByItem[x.item]||[]).length;
  return value==="blank"?isBlankCatalogField(x.description):!isBlankCatalogField(x.description);
 }
@@ -2246,6 +2256,7 @@ function groupOf(x){
  return "Meat";
 }
 function match(x,skip=""){
+ if(!window.InspectionProduct.visible(x))return false;
  for(const field of facets)if(field!==skip&&!matchesFacet(x,field,$("iq-"+field).value))return false;
  const description=$("iq-description").value.trim().toLocaleLowerCase();
  return !description||String(x.description||"").toLocaleLowerCase().includes(description);
@@ -2268,7 +2279,7 @@ function draw(){
   const cells=editable.map(k=>'<td>'+(k==="description"?'<textarea rows="2" class="input iq-cell iq-description-cell" readonly data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" readonly data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
   // Item remains immutable; editable cells are identified by field, not position.
   return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><div class="iq-row-actions"><button type="button" class="btn mini iq-edit">Edit</button><button type="button" class="btn mini iq-save" hidden>Save</button><button type="button" class="btn mini iq-cancel" hidden>Cancel</button></div></td></tr>';
- }).join("")||'<tr><td colspan="11" class="empty">No matching products. Try removing a condition.</td></tr>';
+ }).join("")||'<tr><td colspan="10" class="empty">No matching products. Try removing a condition.</td></tr>';
  $("iq-rows").querySelectorAll(".iq-description-cell").forEach(el=>{el.style.height="auto";el.style.height=Math.max(46,el.scrollHeight)+"px";});
  $("iq-export").disabled=matched.length===0;$("iq-print").disabled=matched.length===0;
  selectionLabel();
@@ -2294,7 +2305,7 @@ async function run(){
  if(sequence!==querySequence||query!==signature())return;
  if(!products){status.textContent='Search superseded by another catalog query. Press Search products to retry.';return;}
  const ids=exactItems(),missing=[];
- if(ids.length){matched=ids.map(id=>{const product=window.InspectionCloud.exactCatalogItem(products,id);if(!product)missing.push(id);return product;}).filter(Boolean);status.textContent=missing.length?'No exact match: '+missing.join(', ')+'. Check full identifiers; no approximate matches were substituted.':'Exact matches from the complete official catalog. Other filters were ignored.';}
+ if(ids.length){matched=ids.map(id=>{const product=window.InspectionCloud.exactCatalogItem(products,id);if(!product)missing.push(id);return product&&window.InspectionProduct.visible(product)?product:null;}).filter(Boolean);status.textContent=missing.length?'No exact match: '+missing.join(', ')+'. Check full identifiers; no approximate matches were substituted.':'Exact matches from the complete official catalog. Other filters were ignored.';}
  else {populate();matched=products.filter(x=>match(x));status.textContent='Official catalog queried successfully. Results use the visible filters.';}
  selectedIds=new Set();lastQuery=query;resultsDirty=false;$("iq-idle").hidden=true;draw();
  }catch(error){if(sequence===querySequence){matched=[];$("iq-results").classList.add('hidden');status.textContent=window.InspectionCloud.catalogError(error);}}
@@ -2390,8 +2401,8 @@ $("iq-rows").onclick=async e=>{
  if(!x)return;
  const changes={};for(const input of tr.querySelectorAll(".iq-cell"))changes[input.dataset.field]=input.value.trim();
  changes.description=productDescription(changes.description,changes.brand);
- if(!changes.description||!changes.brand||!changes.category){alert("Category, brand and description cannot be empty.");return;}
- if(changes.plant!==x.plant&&!confirm("Update catalog EST / Plant for Item "+x.item+"? This is a reference edit, NOT a physical verification."))return;
+ if(!changes.description||!changes.brand||!["Meat","Poultry"].includes(changes.category)){alert("Choose Meat or Poultry; brand and description cannot be empty.");return;}
+ if(changes.plant!==x.plant&&!confirm("Update catalog EST for Item "+x.item+"? This is a reference edit, NOT a physical verification."))return;
  if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}
  Object.assign(x,changes);
  if(window.__inspectionCatalogReferenceUpdated)window.__inspectionCatalogReferenceUpdated([x]);
@@ -2402,8 +2413,8 @@ $("iq-bulk-apply").onclick=()=>{
  const field=$("iq-bulk-field").value,value=$("iq-bulk-value").value.trim(),ids=[...selectedIds];
  if(!ids.length){alert("Select at least one Item.");return;}
  if(!value){alert("Enter a new value.");return;}
- if(field==="category"&&!["Meat","Dairy"].includes(value)){alert("Category must be Meat or Dairy.");return;}
- const notice="Change "+field+" to '"+value+"' for "+ids.length+" selected Items?"+(field==="plant"?" This updates reference EST / Plant only and does NOT record a physical verification.":"");
+ if(field==="category"&&!["Meat","Poultry"].includes(value)){alert("Category must be Meat or Poultry.");return;}
+ const notice="Change "+field+" to '"+value+"' for "+ids.length+" selected Items?"+(field==="plant"?" This updates reference EST only and does NOT record a physical verification.":"");
  if(!confirm(notice))return;
  const updated=[];for(const x of demo)if(selectedIds.has(x.item)){x[field]=value;updated.push(x);}
  if(window.__inspectionCatalogReferenceUpdated)window.__inspectionCatalogReferenceUpdated(updated);
@@ -2412,7 +2423,7 @@ $("iq-bulk-apply").onclick=()=>{
 };
 $("iq-print").onclick=()=>{
  if(!matched.length)return;
- const cols=[["Item","item"],["Brand","brand"],["EST / Plant","plant"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["Product family","family"],["Type","category"],["Photo","__photo"]];
+ const cols=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Product family","family"],["Type","category"],["Photo","__photo"]];
  let target=document.getElementById("iq-print-area");
  if(!target){target=document.createElement("section");target.id="iq-print-area";document.body.appendChild(target);}
  const values=x=>cols.map(c=>c[1]==="__photo"?((imagesByItem[x.item]||[]).length?"With photo":"Without photo"):x[c[1]]);
@@ -2425,7 +2436,7 @@ $("iq-print").onclick=()=>{
 function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
 $("iq-export").onclick=()=>{
  if(!matched.length)return;
- const columns=[["Item","item"],["Brand","brand"],["EST / Plant","plant"],["Description","description"],["Case / Pack","pack"],["Size / Unit","size"],["Product family","family"],["Type","category"],["Photo status","__photo"]];
+ const columns=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Product family","family"],["Type","category"],["Photo status","__photo"]];
  const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(c[1]==="__photo"?(imagesByItem[x.item]||[]).length?"With photo":"Without photo":x[c[1]])).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
  const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
@@ -2590,7 +2601,8 @@ body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
 (function(){
 "use strict";
 const el=id=>document.getElementById(id);
-const keys=["category","brand","family","description","pack","size","plant"];
+const keys=["category","brand","family","description","pack","plant"];
+const sourceKeys=[...keys,"size"];
 const trim=s=>String(s??"").replace(/^\uFEFF/,"").trim();
 const norm=s=>trim(s).toLowerCase().replace(/[^a-z0-9]/g,"");
 const html=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2611,7 +2623,7 @@ function productFrom(input){
  const item=window.InspectionCloud.itemKey(input.item);
  const brand=trim(input.brand),description=productDescription(input.description,brand);
  const category=canonicalGroup(input.category)||"";
- return {item,category,brand,family:trim(input.family),producer:brand,description,pack:trim(input.pack),size:trim(input.size),plant:trim(input.plant)};
+ return {item,category,brand,family:trim(input.family),description,pack:window.InspectionProduct.packSize(input.pack,input.size),plant:trim(input.plant)};
 }
 function compare(product,original,provided){
  const diffs=[];
@@ -2627,8 +2639,8 @@ function prepare(entries){
  const seen=new Map();
  staged=entries.map((entry,index)=>{
   const p=productFrom(entry.data),existing=demo.find(x=>x.item===p.item);
-  const provided=new Set(entry.provided||keys);
-  const valid=/^[A-Za-z0-9_.-]{1,64}$/.test(p.item)&&!!(p.description||existing?.description)&&!!(p.brand||existing?.brand);
+  const provided=new Set(entry.provided||keys);if(provided.has("size"))provided.add("pack");
+  const valid=/^[A-Za-z0-9_.-]{1,64}$/.test(p.item)&&!!(p.description||existing?.description)&&!!(p.brand||existing?.brand)&&window.InspectionProduct.visible(p)&&(!p.category||["Meat","Poultry"].includes(p.category));
   const diffs=compare(p,existing,provided);
   const duplicate=seen.has(p.item);
   if(p.item)seen.set(p.item,index);
@@ -2647,7 +2659,7 @@ function draw(){
  el("ip-review-rows").innerHTML=staged.map((r,i)=>{
   const p=r.p,details=r.diffs.map(d=>'<div><strong>'+html(d.key)+':</strong> '+html(d.from||"—")+' → '+html(d.to||"—")+'</div>').join("");
   const changes=r.status==="duplicate"?"Repeated Item Number in this file; review the source rows.":r.status==="invalid"?"Missing/invalid Item Number, Brand or Description.":r.status==="new"?"New catalog record":r.status==="same"?"No changes to mapped fields":details;
-  return '<tr class="ip-row-'+r.status+'"><td><strong>'+html(p.item||"—")+'</strong><div class="muted small">Row '+r.line+'</div></td><td>'+html(p.brand||r.existing?.brand||"—")+'</td><td>'+html(p.category||r.existing?.category||"—")+'</td><td>'+html(p.description||r.existing?.description||"—")+'</td><td>'+html(p.pack||r.existing?.pack||"—")+' / '+html(p.size||r.existing?.size||"—")+'</td><td>'+html(p.plant||r.existing?.plant||"—")+'</td><td><span class="ip-tag '+r.status+'">'+({new:"NEW",changed:"CHANGED",same:"UNCHANGED",duplicate:"DUPLICATE",invalid:"INVALID"}[r.status])+'</span></td><td class="ip-changes">'+changes+'</td><td><select class="input" data-ip-action="'+i+'" aria-label="Decision for Item '+html(p.item)+'">'+actionOptions(r)+'</select></td></tr>';
+  return '<tr class="ip-row-'+r.status+'"><td><strong>'+html(p.item||"—")+'</strong><div class="muted small">Row '+r.line+'</div></td><td>'+html(p.brand||r.existing?.brand||"—")+'</td><td>'+html(window.InspectionProduct.classLabel(p.category||r.existing?.category)||"—")+'</td><td>'+html(p.description||r.existing?.description||"—")+'</td><td>'+html(p.pack||r.existing?.pack||"—")+'</td><td>'+html(p.plant||r.existing?.plant||"—")+'</td><td><span class="ip-tag '+r.status+'">'+({new:"NEW",changed:"CHANGED",same:"UNCHANGED",duplicate:"DUPLICATE",invalid:"INVALID"}[r.status])+'</span></td><td class="ip-changes">'+changes+'</td><td><select class="input" data-ip-action="'+i+'" aria-label="Decision for Item '+html(p.item)+'">'+actionOptions(r)+'</select></td></tr>';
  }).join("")||'<tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr>';
  const add=staged.filter(r=>r.action==="add").length,update=staged.filter(r=>r.action==="update").length;
  el("ip-selection").textContent=add+" new + "+update+" updates selected";
@@ -2665,20 +2677,20 @@ el("ip-stage-manual").onclick=()=>{
  prepare([{data,provided:keys,line:1}]);
  notice("Review the Item below. Existing products default to Skip; choose Update existing to replace changed fields.");
 };
-el("ip-manual-clear").onclick=()=>{for(const key of ["item","brand","family","description","pack","size","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";};
+el("ip-manual-clear").onclick=()=>{for(const key of ["item","brand","family","description","pack","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";};
 const mappings={
  item:[/^item(number|no|id|code)?$/,/^material(number|no|id)?$/,/^sku$/,/^product(code|number|id)?$/,/^article(number)?$/,/item/,/material/],
  description:[/^description$/,/^materialdescription$/,/^itemdescription$/,/^productdescription$/,/^shorttext$/,/description/,/shorttext/],
- brand:[/^brand$/,/^producer$/,/^manufacturer$/,/^vendorname$/,/^suppliername$/,/^vendor$/,/^supplier$/,/brand/,/manufacturer/],
+ brand:[/^brand$/,/^manufacturer$/,/brand/,/manufacturer/],
  family:[/^productfamily$/,/^family$/,/^subcategory$/,/^productclass$/],
  category:[/^category$/,/^productgroup$/,/^itemgroup$/,/^type$/,/^materialgroup$/,/category/,/productgroup/],
  pack:[/^pack$/,/^casepack$/,/^packsize$/,/^casecount$/,/^unitspercase$/,/^caseqty$/,/pack/,/casecount/],
- size:[/^size$/,/^sizeunit$/,/^unit$/,/^unitofmeasure$/,/^netcontent$/,/^productsize$/,/size/,/unitofmeasure/],
+ size:[/^size$/,/^sizeunit$/,/^unitsize$/,/^netcontent$/,/^productsize$/,/size/],
  plant:[/^est$/,/^estnumber$/,/^establishment$/,/^establishmentnumber$/,/^plant$/,/^plantnumber$/,/^usdaplant$/,/^dairyplant$/,/establishment/,/plantnumber/]
 };
 function autoMap(key){for(const pattern of mappings[key]){const i=headers.findIndex(x=>pattern.test(norm(x)));if(i>=0)return String(i);}return "";}
 function setMaps(){
- for(const key of ["item",...keys]){
+ for(const key of ["item",...sourceKeys]){
   const node=el("ip-map-"+key),suggested=autoMap(key);
   node.innerHTML='<option value="">'+(key==="item"?"Select Item Number column":"Not provided / keep existing")+'</option>'+headers.map((v,i)=>'<option value="'+i+'">'+html(v)+'</option>').join("");
   node.value=suggested;
@@ -2727,11 +2739,11 @@ el("ip-file").onchange=async e=>{
 el("ip-file-clear").onclick=()=>{el("ip-file").value="";headers=[];rawRows=[];setMaps();notice("File cleared. Previously staged review remains until you clear it.");};
 el("ip-stage-file").onclick=()=>{
  const itemCol=el("ip-map-item").value;if(itemCol===""){notice("Choose the Item Number column.",true);return;}
- const mapped={};for(const key of keys)mapped[key]=el("ip-map-"+key).value;
+ const mapped={};for(const key of sourceKeys)mapped[key]=el("ip-map-"+key).value;
  const rows=rawRows.map(r=>{
   const data={item:trim(r.values[Number(itemCol)])};
   const provided=[];
-  for(const key of keys)if(mapped[key]!==""){const value=trim(r.values[Number(mapped[key])]);if(value){data[key]=value;provided.push(key);}}
+  for(const key of sourceKeys)if(mapped[key]!==""){const value=trim(r.values[Number(mapped[key])]);if(value){data[key]=value;provided.push(key);}}
   if(!data.category){data.category=el("ip-default-category").value;if(!demo.some(x=>x.item===data.item))provided.push("category");}
   return {data,provided,line:r.line};
  }).filter(r=>r.data.item);
@@ -2753,19 +2765,19 @@ el("ip-commit").onclick=()=>{
    const original=demo.find(x=>x.item===r.p.item);
    if(r.action==="add"){
     if(original)throw Error("Item "+r.p.item+" now exists. Refresh comparison before saving.");
-    const p={item:r.p.item,category:r.p.category||"Meat",brand:r.p.brand||"Other",family:r.p.family||"",producer:r.p.brand||"Other",description:r.p.description||"",pack:r.p.pack||"",size:r.p.size||"",plant:r.p.plant||""};
+    const p={item:r.p.item,category:r.p.category||"Meat",brand:r.p.brand||"Other",family:r.p.family||"",description:r.p.description||"",pack:r.p.pack||"",plant:r.p.plant||""};
     if(!p.description||!p.brand)throw Error("Missing required fields for Item "+p.item);
     demo.push(p);
    }else{
     if(!original)throw Error("Item "+r.p.item+" no longer exists. Refresh comparison.");
     for(const key of keys)if(r.provided.has(key)&&trim(r.p[key]))original[key]=r.p[key];
-    // Brand updates do not overwrite the separately stored supplier/source group.
+    // Product and brand notes remain separate from catalog import fields.
    }
   }
   if(!window.__inspectionSaveCatalog?.())throw Error("Could not persist catalog. No changes were applied.");
   notice(window.InspectionCloud.isAdministrator()?"Saving "+adds+" new Items and "+updates+" updates to Supabase…":"Submitting "+adds+" new Items and "+updates+" updates for approval. Official catalog values remain unchanged.");
   staged=[];draw();count();
-  if(el("item-count"))el("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";
+  if(el("item-count"))el("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";
   window.dispatchEvent(new CustomEvent("inspection:catalog-updated"));
  }catch(error){
   demo.splice(0,demo.length,...snapshot);notice(error.message||String(error),true);console.error("Catalog import commit",error);
@@ -3195,7 +3207,7 @@ async function refreshCatalog(){
  catalogReadRevision=Number(data.revision);catalogGeneration=data.generation||catalogGeneration;
  catalogMetadata={validations:data.validations||[],deliveries:data.deliveries||{}};
  for(const [key,value]of [[keys[0],data.catalog],[keys[1],data.references||{}]]){official[key]=clone(value);memory.set(key,JSON.stringify(value));const collector=collectors.get(key);if(collector?.set)collector.set(clone(value));else if(collector)replaceObject(collector.get(),clone(value));}
- return Object.entries(data.catalog).map(([item,p])=>({...p,item}));
+ return Object.entries(data.catalog).map(([item,p])=>({...window.InspectionProduct.catalog(p),item}));
 }
 async function initializeCatalogValidation(button){
  if(!administrator||!canEdit()){deny();return;}
@@ -3236,7 +3248,7 @@ function updateRole(){
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
  for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current draft'],['#po-search-form label','Search drafts'],['#po-import-create','Create draft from invoice Items'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
- const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Draft PO: review the selected EST / Plant values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Shared draft pending inspection. The administrator approves the order; the approved version then appears below.';if(hint.textContent!==text)hint.textContent=text;}
+ const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Draft PO: review the selected EST values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Shared draft pending inspection. The administrator approves the order; the approved version then appears below.';if(hint.textContent!==text)hint.textContent=text;}
  
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
  if(!administrator){for(const id of ['change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
@@ -3456,7 +3468,7 @@ async function downloadDeliveryOriginal(d){
 }
 function renderPODeliveries(a){
  const root=document.getElementById('approved-po-deliveries');if(!root)return;const cache=poDeliveries.get(a.id);
- root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Only SAP delivery lines are included. Zero quantity means not received; a blank quantity remains blank. Items absent from this delivery are not exported. EST / Plant comes only from the approved PO, which stays unchanged.</p></div><div class="row"><button class="btn primary" id="sap-delivery-upload">Load delivery</button><button class="btn" id="sap-delivery-refresh">Refresh</button></div></div>'+(!cache?'<p>Loading…</p>':cache.error?'<p class="cloud-error">'+escapeHTML(cache.error)+'</p>':!cache.rows.length?'<p>No delivery loaded yet.</p>':cache.rows.map(d=>{
+ root.innerHTML='<div class="section-head"><div><h3>Deliveries</h3><p class="small muted">Only SAP delivery lines are included. Zero quantity means not received; a blank quantity remains blank. Items absent from this delivery are not exported. EST comes only from the approved PO, which stays unchanged.</p></div><div class="row"><button class="btn primary" id="sap-delivery-upload">Load delivery</button><button class="btn" id="sap-delivery-refresh">Refresh</button></div></div>'+(!cache?'<p>Loading…</p>':cache.error?'<p class="cloud-error">'+escapeHTML(cache.error)+'</p>':!cache.rows.length?'<p>No delivery loaded yet.</p>':cache.rows.map(d=>{
  const current=deliveryCurrent(d,a),missing=d.rows.filter(r=>!r.matched&&!deliveryNotReceived(r)).length,notReceived=d.rows.filter(deliveryNotReceived).length;
  return '<article class="sap-delivery-card"><div class="section-head"><div><strong>Delivery '+escapeHTML(d.delivery_number)+'</strong><p class="small muted">'+escapeHTML(d.source_file)+' · '+escapeHTML(d.updated_email)+' · '+escapeHTML(new Date(d.updated_at).toLocaleString())+'</p></div><div class="row"><button class="btn primary" data-delivery-export="'+d.id+'"'+(!current?' disabled':'')+'>'+((missing||notReceived)?'Export received summary':'Export summary')+'</button><button class="btn" data-delivery-original="'+d.id+'"'+(!d.source_path?' disabled':'')+'>Download original</button><button class="btn" data-delivery-update="'+d.id+'">Update / resolve</button></div></div>'+(!current?'<p class="cloud-error">Approved PO changed. Update the match before exporting.</p>':'')+(notReceived?'<p class="small muted">'+notReceived+' zero-quantity row(s): not received, excluded from export. The approved PO is unchanged.</p>':'')+(missing?'<p class="cloud-error">Partial summary: '+missing+' unresolved row(s). They stay visible and will be excluded from the matched export.</p>':'')+'<div class="tablewrap"><table data-layout-key="delivery"><thead><tr><th>Item No.</th><th>Description</th><th>Catch Weight</th><th>Quantity</th><th>EST No.</th></tr></thead><tbody>'+d.rows.map((r,i)=>'<tr class="'+(!r.matched?'delivery-unresolved':'')+'"><td>'+escapeHTML(r.item)+(deliveryNotReceived(r)?'<div class="small muted">Not received · quantity 0 · excluded from export</div>':!r.matched?'<div class="cloud-error small">Source line '+(i+1)+' · '+escapeHTML(r.match_status==='ambiguous'?'Ambiguous approved EST':'No valid PO match')+'</div>':'')+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.catchWeight??'')+' '+escapeHTML(r.catchWeight!==''&&r.catchWeight!=null?r.weightUnit||d.weight_unit:'')+'</td><td>'+escapeHTML(r.receivedQuantity??'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div></article>';
  }).join(''));
@@ -3531,7 +3543,7 @@ async function saveSAPDelivery(a,number,fileName,rows,previous,sourceBlob,source
  const job={id,owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'delivery-v3',payload,file:sourceBlob};
  try{await queueStore('put',job);saving=true;overlay('Synchronizing delivery and original file…',true);await drainQueue();const pending=(await ownJobs()).find(j=>j.id===job.id);if(pending){if(pending.state==='conflict')throw Error(pending.error);message('Delivery is pending on this device; it is not synchronized yet.',true);return true;}await loadPODeliveries(a.id,false);deliveryOrderIDs.add(a.id);renderApprovedPOs();message('Delivery and original file synchronized.');return true;}catch(error){if(error.network){ready=false;offline=true;message('Delivery pending on this device; not synchronized yet.',true);return true;}alert(error.message);return false;}finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Connection lost. Pending delivery will retry for this account.');}
 }
-function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-key="approved-po"><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST / Plant</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(r.category||'')+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div>';
+function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-key="approved-po"><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+escapeHTML(r.item)+'</td><td class="delivery-description">'+escapeHTML(r.description)+'</td><td>'+escapeHTML(window.InspectionProduct.classLabel(r.category))+'</td><td>'+escapeHTML(r.plant||'')+'</td></tr>').join('')+'</tbody></table></div>';
 }
 function approvedEvidenceHTML(p){if(!administrator)return '';return '<details class="inspection-evidence"><summary>Inspection evidence</summary>'+p.rows.map(r=>'<p>'+escapeHTML(r.item)+' · '+(isPORowVerified(r)?'Physically checked '+escapeHTML(r.verifiedAt)+' · '+escapeHTML(actorLabel(r.verifiedBy||r.verified_by)):'Not individually verified')+'</p>').join('')+'</details>';}
 function renderApprovedPOs(){
@@ -3548,7 +3560,7 @@ function renderApprovedPOs(){
  detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+approvedEvidenceHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
- document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST / Plant'],...a.snapshot.rows.map(r=>[r.item,r.description,r.category||'',r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST'],...a.snapshot.rows.map(r=>[r.item,r.description,window.InspectionProduct.classLabel(r.category),r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
  document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>PO Approved for Inspection</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
 }
 async function manageApprovedPO(a,replacement){
@@ -3568,7 +3580,7 @@ function editApprovedPO(a){
  if(!administrator||!canEdit()){deny();return;}
  let dialog=document.getElementById('approved-po-editor');if(!dialog){dialog=document.createElement('dialog');dialog.id='approved-po-editor';dialog.className='online-dialog';dialog.style.maxWidth='1100px';document.body.appendChild(dialog);}
  const draft=clone(a.snapshot);draft.rows.forEach((r,i)=>r.lineId||="legacy:"+i);const fields=['item','description','category','plant'];
- dialog.innerHTML='<div class="section-head"><h3>Edit approved PO</h3><button class="btn" id="approved-editor-cancel">Cancel</button></div><p>Changes update this approved PO only. Product catalog data and historical observations are unchanged.</p><label class="label">PO number</label><input class="input" id="approved-editor-number" value="'+escapeHTML(draft.po)+'"><label class="label">Customer</label><input class="input" id="approved-editor-customer" value="'+escapeHTML(draft.customer)+'"><div class="tablewrap"><table><thead><tr>'+['Item','Description','Class','EST / Plant','Order / Remove'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody id="approved-editor-rows"></tbody></table></div><div class="row" style="margin-top:14px"><button class="btn" id="approved-editor-add">Add Item</button><button class="btn primary" id="approved-editor-save">Save approved PO</button></div>';
+ dialog.innerHTML='<div class="section-head"><h3>Edit approved PO</h3><button class="btn" id="approved-editor-cancel">Cancel</button></div><p>Changes update this approved PO only. Product catalog data and historical observations are unchanged.</p><label class="label">PO number</label><input class="input" id="approved-editor-number" value="'+escapeHTML(draft.po)+'"><label class="label">Customer</label><input class="input" id="approved-editor-customer" value="'+escapeHTML(draft.customer)+'"><div class="tablewrap"><table><thead><tr>'+['Item','Description','Class','EST','Order / Remove'].map(v=>'<th>'+v+'</th>').join('')+'</tr></thead><tbody id="approved-editor-rows"></tbody></table></div><div class="row" style="margin-top:14px"><button class="btn" id="approved-editor-add">Add Item</button><button class="btn primary" id="approved-editor-save">Save approved PO</button></div>';
  bindClientInput(dialog.querySelector('#approved-editor-customer'),draft.clientId);
  const rows=dialog.querySelector('#approved-editor-rows');
  const draw=()=>{rows.innerHTML=draft.rows.map((r,i)=>'<tr data-approved-edit-row="'+i+'">'+fields.map(k=>'<td>'+(k==='description'?'<textarea class="input auto-description" rows="2" data-approved-field="description" aria-label="Description">'+escapeHTML(r[k]??'')+'</textarea>':'<input class="input" data-approved-field="'+k+'" value="'+escapeHTML(r[k]??'')+'" aria-label="'+k+'">')+'</td>').join('')+'<td><button class="btn mini" data-approved-move="up" data-index="'+i+'">↑</button><button class="btn mini" data-approved-move="down" data-index="'+i+'">↓</button><button class="btn mini" data-approved-remove="'+i+'">Remove</button></td></tr>').join('');};
@@ -3577,7 +3589,7 @@ function editApprovedPO(a){
  rows.onclick=e=>{const remove=e.target.closest('[data-approved-remove]'),move=e.target.closest('[data-approved-move]');if(!remove&&!move)return;collect();if(remove)draft.rows.splice(Number(remove.dataset.approvedRemove),1);else{const i=Number(move.dataset.index),j=i+(move.dataset.approvedMove==='up'?-1:1);if(j>=0&&j<draft.rows.length)[draft.rows[i],draft.rows[j]]=[draft.rows[j],draft.rows[i]];}draw();};
  dialog.querySelector('#approved-editor-add').onclick=()=>{collect();draft.rows.push({lineId:crypto.randomUUID(),item:'',description:'',category:'',plant:'',verifiedAt:'',verifiedEsts:[]});draw();};
  dialog.querySelector('#approved-editor-cancel').onclick=()=>dialog.close();
- dialog.querySelector('#approved-editor-save').onclick=async()=>{collect();draft.po=dialog.querySelector('#approved-editor-number').value.trim();const client=requireClient(dialog.querySelector('#approved-editor-customer'));if(!client)return;draft.customer=client.name;draft.clientId=client.id;if(!draft.po||!draft.customer||!draft.rows.length||draft.rows.some(r=>!r.item||!r.description||!r.plant)){alert('PO number, customer, Item, description and EST / Plant are required.');return;}if(await manageApprovedPO(a,draft))dialog.close();};
+ dialog.querySelector('#approved-editor-save').onclick=async()=>{collect();draft.po=dialog.querySelector('#approved-editor-number').value.trim();const client=requireClient(dialog.querySelector('#approved-editor-customer'));if(!client)return;draft.customer=client.name;draft.clientId=client.id;if(!draft.po||!draft.customer||!draft.rows.length||draft.rows.some(r=>!r.item||!r.description||!r.plant)){alert('PO number, customer, Item, description and EST are required.');return;}if(await manageApprovedPO(a,draft))dialog.close();};
  draw();dialog.showModal();
 }
 function isPORowVerified(row){
@@ -3589,7 +3601,7 @@ function approvalValidation(po){
  if(!po)return 'PO not found. Refresh the workspace.';
  if(!po.rows?.length)return 'Add at least one Item before approving this PO.';
  const missing=po.rows.filter(row=>!String(row.plant??'').trim());
- return missing.length?'Enter an EST / Plant for '+missing.length+' Item(s) before approving this PO: '+missing.map(row=>row.item).join(', '):'';
+ return missing.length?'Enter an EST for '+missing.length+' Item(s) before approving this PO: '+missing.map(row=>row.item).join(', '):'';
 }
 function replaceableApproval(job,poId,owner,generation){
  // This explicit validation rejection guarantees that this approval did not run.
@@ -3614,7 +3626,7 @@ async function approvePO(poId){
  const current=collectors.get(PO_KEY)?.get()||record(PO_KEY);
  const validation=approvalValidation(current?.invoices?.find(p=>p.id===poId));
  if(validation){alert(validation);return}
- if(!confirm('As the inspector, do you approve this PO for inspection and publish its selected EST / Plant values for all users? This draft will move to Approved for Inspection. Only individually verified Items keep their physical verification; this approval does not verify any additional Item.'))return;
+ if(!confirm('As the inspector, do you approve this PO for inspection and publish its selected EST values for all users? This draft will move to Approved for Inspection. Only individually verified Items keep their physical verification; this approval does not verify any additional Item.'))return;
  let approvalQueued=false;
  try{
   await retireRejectedApproval(poId);
@@ -3681,9 +3693,9 @@ async function addImportedCatalog(products){
  const names=[...Object.keys(brands),...Object.values(catalog).map(p=>p.brand)].filter(Boolean);
  for(const p of products){
   if(!p.item||seen.has(p.item)||Object.hasOwn(catalog,p.item))throw Error('Item '+p.item+' already exists or is repeated. Refresh the preview.');seen.add(p.item);
-  if(!['Meat','Poultry','Dairy'].includes(p.category)||!String(p.brand||'').trim()||!String(p.description||'').trim())throw Error('Missing required fields for Item '+p.item);
+  if(!['Meat','Poultry'].includes(p.category)||!String(p.brand||'').trim()||!String(p.description||'').trim())throw Error('Missing required fields for Item '+p.item);
   const brand=names.find(n=>brandKey(n)===brandKey(p.brand))||String(p.brand).trim();
-  const product=Object.fromEntries(['category','description','pack','plant','producer','size','family','salesUnit'].map(k=>[k,String(p[k]||'').trim()]));product.brand=brand;
+  const product=Object.fromEntries(['category','description','pack','plant','family'].map(k=>[k,String(p[k]||'').trim()]));product.brand=brand;product.pack=window.InspectionProduct.packSize(p.pack,p.size);
   catalog[p.item]=product;
   if(!names.some(n=>brandKey(n)===brandKey(brand))){brands[brand]={name:brand,description:'',mode:'variable',stable:false,single:'',plants:{},notes:''};names.push(brand);}
   if(p.notes)notes[p.item]=String(p.notes);
@@ -3900,21 +3912,21 @@ setInterval(async()=>{if(signingOut||!session||!started||saving||photoBusy||sign
 let changeHistory=[],requestsLoading=false;
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const domainNames={'catalog-overrides':'Product','product-notes':'Product notes','brand-notes':'Brand notes','est-references':'EST references','brand-profiles':'Brand profile','stability-overrides':'Stability','observations':'Physical EST observations','fixed-est':'Fixed EST','photos':'Photos'};
-const historyFieldNames={item:'Item number',description:'Description',brand:'Brand',family:'Product family',salesUnit:'Sales unit',producer:'Supplier / source group',plant:'EST / Plant',category:'Product type',pack:'Case / Pack',size:'Size / Unit','product-notes':'Product notes','est-references':'EST / Plant references','stability-overrides':'Review priority','observations':'EST / Plant verification','fixed-est':'Fixed EST / Plant','photos':'Photos'};
+const historyFieldNames={item:'Item number',description:'Description',brand:'Brand',family:'Product family',salesUnit:'Sales unit',producer:'Supplier / source group',plant:'EST',category:'Product type',pack:'Pack / Size',size:'Size / Unit','product-notes':'Product notes','est-references':'EST references','stability-overrides':'Review priority','observations':'EST verification','fixed-est':'Fixed EST','photos':'Photos'};
 function historyValue(value){
  if(value===null||value===undefined||value==='')return '—';
  if(typeof value!=='object')return String(value);
  if(Array.isArray(value))return value.map(historyValue).join(' · ')||'—';
- return Object.entries(value).filter(([k])=>!['id','operation_id','path','generation'].includes(k)).map(([k,v])=>(historyFieldNames[k]||({est:'EST / Plant',date:'Date',note:'Note',primary:'Primary EST / Plant',others:'Alternative references',name:'Name'}[k])||k)+': '+historyValue(v)).join(' · ')||'—';
+ return Object.entries(value).filter(([k])=>!['id','operation_id','path','generation'].includes(k)).map(([k,v])=>(historyFieldNames[k]||({est:'EST',date:'Date',note:'Note',primary:'Primary EST',others:'Alternative references',name:'Name'}[k])||k)+': '+historyValue(v)).join(' · ')||'—';
 }
 function productHistoryRows(){
  const domains=['catalog-overrides','product-notes','est-references','observations','fixed-est','photos','stability-overrides'];
  return changeHistory.filter(r=>domains.includes(r.domain)).flatMap(row=>{
-  if(row.domain==='est-references')return ['primary','others'].filter(k=>JSON.stringify(row.before_value?.[k])!==JSON.stringify(row.after_value?.[k])).map(k=>({...row,field_name:k==='primary'?'plant':'Alternative EST / Plant',before_value:row.before_value?.[k],after_value:row.after_value?.[k]}));
+  if(row.domain==='est-references')return ['primary','others'].filter(k=>JSON.stringify(row.before_value?.[k])!==JSON.stringify(row.after_value?.[k])).map(k=>({...row,field_name:k==='primary'?'plant':'Alternative EST',before_value:row.before_value?.[k],after_value:row.after_value?.[k]}));
   if(row.domain==='observations'){
    const before=Array.isArray(row.before_value)?row.before_value:[],after=Array.isArray(row.after_value)?row.after_value:[];
    const signature=v=>JSON.stringify(v);const added=after.filter(v=>!before.some(b=>signature(b)===signature(v))),removed=before.filter(v=>!after.some(b=>signature(b)===signature(v)));
-   return [{...row,field_name:'Physical EST / Plant verification',before_value:removed.map(v=>v.est||v.ests).filter(Boolean).join(', ')||before.at(-1)?.est||'',after_value:added.map(v=>v.est||v.ests).filter(Boolean).join(', ')||''}];
+   return [{...row,field_name:'Physical EST verification',before_value:removed.map(v=>v.est||v.ests).filter(Boolean).join(', ')||before.at(-1)?.est||'',after_value:added.map(v=>v.est||v.ests).filter(Boolean).join(', ')||''}];
   }
   if(row.domain==='photos')return [{...row,field_name:'Photos',before_value:(row.before_value||[]).map(v=>v.name||'Photo').join(', '),after_value:(row.after_value||[]).map(v=>v.name||'Photo').join(', ')}];
   return [row];
