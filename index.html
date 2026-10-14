@@ -98,7 +98,7 @@ window.InspectionTableTools={
  }
 };
 </script>
-<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style></head><body><style id="online-workspace-style">
+<style>#purchase-orders-view:not(.hidden){display:flex;flex-direction:column;gap:14px;min-width:0}#purchase-orders-view>.panel{min-width:0;max-width:100%}#purchase-orders-view .po-directory-search{padding:12px 14px}#purchase-orders-view .po-directory-search .label{display:block;margin-bottom:6px}#purchase-orders-view #approved-po-panel{margin-top:0}#purchase-orders-view #po-search-form{display:none}#purchase-orders-view .po-archive .section-head h3,#purchase-orders-view #approved-po-panel .section-head h3{font-size:14px}</style><style id="product-search-workspace-style">#product-lookup-workspace{margin-bottom:16px;min-width:0}#product-lookup-workspace>.inspection-single-lookup{margin-bottom:10px}#product-lookup-workspace .inspection-single-lookup>.row{flex-wrap:wrap}#product-lookup-workspace .toolbar{flex-wrap:wrap;gap:10px}#product-lookup-workspace .toolbar .item{flex:1;min-width:160px}#product-lookup-workspace .toolbar .item .input{width:100%}#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}</style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
 #cloud-banner{position:sticky;top:0;z-index:35;padding:8px 15px;background:var(--sk-accent-soft);color:var(--sk-ink);border-bottom:1px solid var(--sk-border);font-size:11px}
@@ -118,7 +118,9 @@ window.InspectionTableTools={
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">PO Inspection</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
-<section id="global-view" class="hidden"><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
+<section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search" selected>Search only</option><option value="po">Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
+<div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Supplier / Source Group</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div><div><div class="label">Sales unit</div><div class="value" id="d-salesUnit">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
+<div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></div><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
 <div id="inspection-query-conditions" class="inspection-query-conditions">
 <div class="inspection-query-conditions-title"><strong>Filter by existing values</strong><span class="muted small">Choose a filter or enter a description to search. Use Edit on a result to change its fields.</span></div><div class="inspection-query-grid">
@@ -144,12 +146,8 @@ window.InspectionTableTools={
 </div>
 </section>
 <section id="clients-view" class="hidden"><div id="client-directory" class="panel panel-pad"></div></section>
-<section id="purchase-orders-view" class="hidden"><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">Review the client, status and Item count, then choose a PO to open.</p></div></section><section id="lookup-view" class="hidden">
-<div class="inspection-workflow-switch" role="group" aria-label="PO Inspection workflow">
-<button type="button" class="inspection-workflow-btn active" id="inspection-item-mode" aria-pressed="true">⌕ Item by Item</button>
-<button type="button" class="inspection-workflow-btn" id="inspection-invoice-mode" aria-pressed="false">▤ Import Items</button>
-</div>
-<div class="panel panel-pad inspection-single-lookup"><div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><label class="label" for="item-lookup-purpose">Lookup mode</label><select class="input" id="item-lookup-purpose" style="width:auto"><option value="search">Search only</option><option value="po" selected>Work on a PO draft</option></select><button class="btn mini" id="item-create-po" type="button" hidden>Create / open PO</button><span class="muted small" id="item-purpose-hint">View Items without creating a PO or recording searches.</span></div><div class="toolbar"><div class="field item"><div class="label">Item number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count">—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
+<section id="purchase-orders-view" class="hidden"><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO number</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO number" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">Review the client, status and Item count, then choose a PO to open.</p></div></section><section id="lookup-view" class="hidden invoice-mode">
+
 <div class="panel panel-pad po-bulk-import" id="po-bulk-import" style="margin-top:12px">
 <div class="section-head" style="margin-bottom:0"><div><h3>Import PO Draft</h3><span class="hint">Build your private PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn mini" id="po-import-toggle" aria-expanded="false">↑ Import Excel / CSV</button></div>
 <div id="po-import-body" class="hidden">
@@ -179,8 +177,7 @@ window.InspectionTableTools={
 <th>Actions</th></tr></thead><tbody id="invoice-overview-rows"><tr><td colspan="14" class="empty">Choose a file to see invoice details.</td></tr></tbody></table></div>
 <div class="muted small" style="margin-top:12px">Colors indicate historical review priority, not guaranteed current plant numbers. Printing includes Item, Description, Case / Pack, Size / Unit, EST / Plant and Received quantity.</div>
 </div>
-<div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">ESTABLISHMENT NUMBER</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Supplier / Source Group</div><div class="value" id="d-producer">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Case / Pack</div><div class="value" id="d-pack">—</div></div><div><div class="label">Size / Unit</div><div class="value" id="d-size">—</div></div><div><div class="label">Sales unit</div><div class="value" id="d-salesUnit">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
-<div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></section>
+</section>
 
 <section id="guide-view" class="hidden">
 <div class="panel panel-pad guide-intro" id="guide-overview">
@@ -404,12 +401,12 @@ window.__inspectionSaveCatalog=function(){
 let view="meat",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Find private drafts and POs Approved for Inspection"],clients:["Clients","Find, add and edit saved clients"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Global Search","Filter, review, edit and export product catalog Items"],meat:["PO Inspection","Look up Meat and Dairy Items and manage Purchase Orders"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="meat"||v==="dairy"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
+function navigate(v){if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Find private drafts and POs Approved for Inspection"],clients:["Clients","Find, add and edit saved clients"],settings:["Settings","Appearance, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],meat:["PO Inspection","Import a private PO draft or start with a delivery"],dairy:["Dairy Products","Fast Item lookup · dairy plant number"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST / PLANT NUMBER";$("item-count").textContent=demo.length+" catalog Items · Meat + Dairy";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the PO Inspection workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
 function renderGlobal(){ /* Legacy hook; catalog queries now live inside Inspection. */ }
-function showProduct(){let x=selected;$("lookup-view").classList.toggle("has-product",!!x);$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
+function showProduct(){let x=selected;$("product-lookup-workspace").classList.toggle("has-product",!!x);$("plant-label").textContent=x?.category==="Dairy"?"PLANT NUMBER":"EST / PLANT NUMBER";$("plant-value").textContent=x?.plant||"—";$("product-name").textContent=x?.description||(x?.missing?"Item not in catalog":"Select or scan a product");$("product-chip").textContent=x?(x.missing?"NOT IN CATALOG":(x.category||"Unknown").toUpperCase()+" PRODUCT"):"NO ITEM SELECTED";["item","brand","family","producer","description","pack","salesUnit"].forEach(k=>$("d-"+k).textContent=x?.[k]||"—");$("d-size").textContent=x?.size||"—";const photoLabel=$("photo-area").querySelector("strong");if(photoLabel)photoLabel.textContent=photoName||"Click to select a photo";}
 let lookupSequence=0;
 async function lookup(){
  if(!window.InspectionCloud.canConsult()){window.InspectionCloud.deny();return;}
@@ -537,7 +534,7 @@ modal('<h2>Edit brand note</h2><p>Shared reference note for all products of this
 $("save-brand-note").onclick=()=>{defaultNotes[b]=$("brand-note-editor").value;closeModal();brandInfo();updateProductExtras();};
 };
 brandInfo();
-const productPanel=$("lookup-view").querySelector(".panel.product");
+const productPanel=$("product-lookup-workspace").querySelector(".panel.product");
 add(productPanel.querySelector(".detail-grid"),"afterend",'<div class="subtlebox" id="est-extras"><div class="section-head" style="margin:0 0 6px"><h3 id="est-extras-title">Known EST references</h3><button class="btn mini compact-edit" id="edit-est" title="Edit EST references" aria-label="Edit EST references">✎</button></div><div class="est-list" id="est-tags"></div><div class="muted small" style="margin-top:9px" id="est-trend">Historical reference only — verify actual cases on arrival.</div></div><div class="note-area"><div class="section-head" style="margin:0"><strong>Product & brand notes</strong><button class="btn mini compact-edit" id="edit-product-note" title="Edit product and brand notes" aria-label="Edit product and brand notes">✎</button></div><p id="product-note-display">Select a product to view reference notes.</p><p id="brand-note-display"></p></div>');
 window.__inspectionGetAlternativeRefs=item=>(estInfo[item]?.others||[]).join(", ");
 window.__inspectionSaveAlternativeRefs=(item,raw,primary)=>{
@@ -589,7 +586,7 @@ const x=selected;
 modal('<h2>Product reference notes</h2><p>Example: "Last five deliveries used EST 81J". These are informal notes, not SAP records.</p><textarea class="input" id="product-note-editor">'+safe(productNotes[x.item]||"")+'</textarea><div style="margin-top:12px"><button class="btn primary" id="save-product-note">Save note</button></div>');
 $("save-product-note").onclick=async()=>{const value=$("product-note-editor").value;if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}productNotes[x.item]=value;closeModal();updateProductExtras();};
 };
-const photoPanel=$("lookup-view").querySelector(".panel.photo");
+const photoPanel=$("product-lookup-workspace").querySelector(".panel.photo");
 add($("photo-area"),"afterend",'<div class="thumbnails" id="photo-thumbs"></div><div class="small muted" style="margin-top:8px">Select a thumbnail · click main photo to enlarge</div><button class="btn mini" id="manage-gallery" style="margin-top:10px;width:100%">＋ Manage photos</button>');
 function photos(){return selected?(imagesByItem[selected.item]||[]):[];}
 function renderPhotos(){
@@ -638,7 +635,7 @@ window.__inspectionPhotoRefresh=renderPhotos;
 const originalShow=showProduct;
 showProduct=function(){originalShow();updateProductExtras();};
 const originalNavigate=navigate;
-navigate=function(v){originalNavigate(v);if(v==="meat"||v==="dairy")updateProductExtras();};
+navigate=function(v){originalNavigate(v);if(v==="global")updateProductExtras();};
 const originalLookup=lookup;
 lookup=async function(){await originalLookup();updateProductExtras();};
 $("lookup-btn").onclick=lookup;
@@ -703,7 +700,7 @@ renderPOArchive();
 }
 window.__inspectionPOChanges=()=>invoices.flatMap(p=>p.rows.filter(x=>x.verifiedAt&&x.changeFrom&&x.changeTo&&!sameESTs(x.changeFrom,x.changeTo)).map(x=>({item:x.item,date:x.verifiedAt,from:x.changeFrom,to:x.changeTo,description:x.description}))).sort((a,b)=>b.date.localeCompare(a.date));
 loadPOWorkspace();
-const oldRecent=$("lookup-view").querySelector(".history");
+const oldRecent=$("product-lookup-workspace").querySelector(".history");
 if(oldRecent)oldRecent.remove();
 add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST / Plant reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Purchase Orders</h3><span class="hint" id="po-workspace-hint">Select an existing PO or create a new one</span></div><div class="row"><button class="btn mini primary" id="po-new">＋ New PO</button><span class="pill" id="po-count">0 saved</span></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO number or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
 $("purchase-orders-view").appendChild(document.querySelector(".po-archive"));
@@ -720,7 +717,7 @@ $("po-save").disabled=!log.length;
 $("po-clear").disabled=!log.length;
 }
 let existingPOAccepted=false;
-window.__inspectionOpenReviewPO=id=>{if(window.__inspectionSetMode)window.__inspectionSetMode('item');activatePO(id,true);document.getElementById('po-details')?.scrollIntoView?.({block:'start'});};
+window.__inspectionOpenReviewPO=id=>{activatePO(id,true);document.getElementById('po-details')?.scrollIntoView?.({block:'start'});};
 function activatePO(id,reopened=false){if(!invoices.some(x=>x.id===id))return;openPO=id;existingPOAccepted=!reopened;renderPOArchive();window.__inspectionNavigate?.("purchase-orders");}
 function closeActivePO(){openPO=null;existingPOAccepted=false;persistPOWorkspace();renderPOArchive();}
 function addItemToActivePO(x){
@@ -734,14 +731,14 @@ p.rows.push(rowFor(x));persistPOWorkspace();renderPOArchive();
 }
 const purpose=$("item-lookup-purpose");
 window.__inspectionSearchOnly=()=>purpose.value==="search";
-function updateLookupPurpose(){const only=window.__inspectionSearchOnly();$("lookup-view").classList.toggle("search-only-mode",only);$("item-create-po").hidden=only;$("item-purpose-hint").textContent=only?"View Items without creating a PO or recording searches.":"Look up Items to add them to your private PO draft.";}
+function updateLookupPurpose(){const only=window.__inspectionSearchOnly();$("product-lookup-workspace").classList.toggle("search-only-mode",only);$("item-create-po").hidden=only;$("item-purpose-hint").textContent=only?"View Items without creating a PO or recording searches.":"Look up Items to add them to your private PO draft.";}
 purpose.onchange=updateLookupPurpose;updateLookupPurpose();
 $("item-create-po").onclick=()=>createPOFlow();
 function findExistingPO(number){return invoices.find(p=>p.po.trim().toLowerCase()===number.trim().toLowerCase())||null;}
 function offerExistingPO(number,onNew,onOpen=()=>{}){
  const existing=findExistingPO(number),approved=window.InspectionCloud.hasApprovedPO(number);if(!existing&&!approved)return false;
  modal('<h2>This PO already exists</h2><p>PO '+safe(number)+' already exists'+(existing?' in your private drafts.':' as a PO Approved for Inspection.')+' Open it to view its existing Items, or create a new PO using a different number. This lookup/import will not add Items to the existing PO.</p><div class="row" style="gap:10px;margin-top:15px"><button class="btn primary" id="po-existing-open">Open existing PO</button><button class="btn" id="po-existing-new">Create new PO</button></div>');
- $("po-existing-open").onclick=()=>{closeModal();onOpen();purpose.value="po";updateLookupPurpose();window.__inspectionSetMode?.("item");if(existing)activatePO(existing.id,true);else window.InspectionCloud.openApprovedPO(number);};
+ $("po-existing-open").onclick=()=>{closeModal();onOpen();purpose.value="po";updateLookupPurpose();if(existing)activatePO(existing.id,true);else window.InspectionCloud.openApprovedPO(number);};
  $("po-existing-new").onclick=()=>{closeModal();onNew();};return true;
 }
 function createPOFlow(pendingItem=null,initial={},after=()=>{}){
@@ -931,17 +928,6 @@ for(const id of ["po-import-item-col","po-import-desc-col",...poSourceFields.fil
 el("po-import-cancel").onclick=()=>{importLoadSequence++;catalogEdits.clear();previewPage=0;sourceRows=[];preview=[];headers=[];sourceFile=null;el("po-import-file").value="";el("po-import-preview").classList.add("hidden");setStatus("Select a spreadsheet to preview before importing.");renderInvoiceOverview();};
 
 /* Invoice-mode view: historical EST intelligence per imported/saved Item. */
-const itemMode=el("inspection-item-mode"),invoiceMode=el("inspection-invoice-mode"),lookupView=el("lookup-view");
-function setInspectionMode(mode){
- const invoice=mode==="invoice";if(invoice){document.getElementById('po-import-body').classList.remove('hidden');document.getElementById('po-import-toggle').setAttribute('aria-expanded','true');}
- lookupView.classList.toggle("invoice-mode",invoice);
- itemMode.classList.toggle("active",!invoice);invoiceMode.classList.toggle("active",invoice);
- itemMode.setAttribute("aria-pressed",String(!invoice));invoiceMode.setAttribute("aria-pressed",String(invoice));
- if(invoice){body.classList.remove("hidden");toggle.setAttribute("aria-expanded","true");renderInvoiceOverview();}
-}
-itemMode.onclick=()=>setInspectionMode("item");
-invoiceMode.onclick=()=>setInspectionMode("invoice");
-window.__inspectionSetMode=setInspectionMode;
 function weekOf(date){
  const d=new Date(String(date)+"T12:00:00");
  if(!Number.isFinite(d.getTime()))return String(date);
@@ -1116,7 +1102,7 @@ root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>
  const caption=b.textContent;b.disabled=true;b.textContent='Loading profile…';
  try{const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.exactCatalogItem(products,item);
  if(!selected){modal('<h2>Not in catalog</h2><p>The official catalog was queried successfully. Source PO data only; adding this product is optional.</p><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}
- const profile=selected;window.__inspectionNavigate?.('meat');selected=profile;showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
+ const profile=selected;window.__inspectionNavigate?.('global');selected=profile;showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
  }catch(error){alert(window.InspectionCloud.catalogError(error));}finally{b.disabled=false;b.textContent=caption;}
 });
 root.querySelectorAll('[data-po-select-only]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poSelectOnly)],value=prompt('Select EST / Plant (does not physically verify)',row.plant);if(value===null)return;const next=normalizeESTs(value).join(', ');if(!sameESTs(row.plant,next)){row.verifiedAt='';row.verifiedEsts=[];}row.plant=next;persistPOWorkspace();renderPODetails();});
@@ -1860,71 +1846,71 @@ $("context-help").onclick=()=>window.__inspectionOpenHelp(view);
 
 <style>
 /* Compact Item workspace: statistics first, product identity and metadata together. */
-#lookup-view .layout{grid-template-columns:minmax(0,1fr) 248px;gap:10px;margin-top:10px;align-items:start}
-#lookup-view .layout>.est-summary{grid-column:1/-1;grid-row:1;margin:0}
-#lookup-view .layout>.product{grid-column:1;grid-row:2}
-#lookup-view .layout>.photo{grid-column:2;grid-row:2}
-#lookup-view .product{padding:12px 14px}
-#lookup-view .product-header{align-items:center;gap:10px;padding:0 0 10px;margin:0 0 10px}
-#lookup-view .product-header>div:first-child{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px;min-width:0;flex:1}
-#lookup-view .product-header #plant-label{grid-column:1;grid-row:1;margin:0}
-#lookup-view .product-header #plant-value{grid-column:1;grid-row:2;font-size:16px;line-height:1.2;font-weight:800;white-space:normal;max-width:180px}
-#lookup-view .product-header #product-name{grid-column:2;grid-row:2;font-size:14px;line-height:1.3;font-weight:700;margin:0}
-#lookup-view .product-header #product-chip{grid-column:3;grid-row:2;padding:3px 6px;font-size:9px;white-space:nowrap}
-#lookup-view .product-header #edit-btn{flex:none}
-#lookup-view .detail-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;padding:0 0 8px}
-#lookup-view .detail-grid .label{margin-bottom:2px}
-#lookup-view .detail-grid .value{font-size:12px;line-height:1.3}
-#lookup-view .photo{padding:11px}
-#lookup-view .photo-space{height:140px;gap:5px}
-#lookup-view .photo-icon{font-size:26px}
-#lookup-view .photo-space strong{font-size:11px}
-#lookup-view .photo .section-head{margin-bottom:8px}
-#lookup-view .photo .hint{font-size:10px}
-#lookup-view .est-summary{padding:11px 13px;display:grid;grid-template-columns:minmax(175px,.65fr) minmax(300px,1.5fr);gap:9px 15px;align-items:start}
-#lookup-view .est-summary>div:first-child{grid-column:1;grid-row:1;min-width:0}
-#lookup-view .est-summary>div:first-child strong{font-size:17px!important}
-#lookup-view .est-summary .est-summary-grid{grid-column:2;grid-row:1;gap:8px;margin:0}
-#lookup-view .est-summary .est-summary-card{padding:8px 10px}
-#lookup-view .est-summary .est-summary-value{font-size:15px;line-height:1.3;margin-top:3px}
-#lookup-view .est-summary .est-summary-context{font-size:10px;margin-top:2px}
-#lookup-view .est-summary .est-variants{grid-column:1;grid-row:2;margin:0}
-#lookup-view .est-summary .est-variants-title{font-size:11px;margin-bottom:5px}
-#lookup-view .est-summary .est-variants-grid{grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:6px}
-#lookup-view .est-summary .est-variant{padding:7px}
-#lookup-view .est-summary .est-variant strong{font-size:14px}
-#lookup-view .est-summary .est-variant small{font-size:9px}
-#lookup-view .est-summary .est-variant em{font-size:9px;padding:2px 4px}
-#lookup-view .est-summary .est-verify-actions{grid-column:2;grid-row:2;margin:0;align-self:center;gap:6px}
-#lookup-view .est-summary .est-verify-actions .btn{font-size:11px;padding:7px 9px}
-#lookup-view .est-summary .est-summary-note,#lookup-view .est-summary .est-verify-foot{display:none}
-#lookup-view .est-summary .est-priority{font-size:10px;padding:4px 6px}
-#lookup-view .history{margin-top:10px}
-#lookup-view .history .section-head{padding:11px 14px}
-#lookup-view .note-area{padding:10px 0}
-#lookup-view #est-extras{margin-top:9px}
-#lookup-view .est-list{gap:6px}
-#lookup-view #est-trend{margin-top:5px!important}
-#lookup-view #brand-note-display,#lookup-view #product-note-display{line-height:1.4}
-#lookup-view .layout .panel{min-width:0}
+#product-lookup-workspace .layout{grid-template-columns:minmax(0,1fr) 248px;gap:10px;margin-top:10px;align-items:start}
+#product-lookup-workspace .layout>.est-summary{grid-column:1/-1;grid-row:1;margin:0}
+#product-lookup-workspace .layout>.product{grid-column:1;grid-row:2}
+#product-lookup-workspace .layout>.photo{grid-column:2;grid-row:2}
+#product-lookup-workspace .product{padding:12px 14px}
+#product-lookup-workspace .product-header{align-items:center;gap:10px;padding:0 0 10px;margin:0 0 10px}
+#product-lookup-workspace .product-header>div:first-child{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px;min-width:0;flex:1}
+#product-lookup-workspace .product-header #plant-label{grid-column:1;grid-row:1;margin:0}
+#product-lookup-workspace .product-header #plant-value{grid-column:1;grid-row:2;font-size:16px;line-height:1.2;font-weight:800;white-space:normal;max-width:180px}
+#product-lookup-workspace .product-header #product-name{grid-column:2;grid-row:2;font-size:14px;line-height:1.3;font-weight:700;margin:0}
+#product-lookup-workspace .product-header #product-chip{grid-column:3;grid-row:2;padding:3px 6px;font-size:9px;white-space:nowrap}
+#product-lookup-workspace .product-header #edit-btn{flex:none}
+#product-lookup-workspace .detail-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;padding:0 0 8px}
+#product-lookup-workspace .detail-grid .label{margin-bottom:2px}
+#product-lookup-workspace .detail-grid .value{font-size:12px;line-height:1.3}
+#product-lookup-workspace .photo{padding:11px}
+#product-lookup-workspace .photo-space{height:140px;gap:5px}
+#product-lookup-workspace .photo-icon{font-size:26px}
+#product-lookup-workspace .photo-space strong{font-size:11px}
+#product-lookup-workspace .photo .section-head{margin-bottom:8px}
+#product-lookup-workspace .photo .hint{font-size:10px}
+#product-lookup-workspace .est-summary{padding:11px 13px;display:grid;grid-template-columns:minmax(175px,.65fr) minmax(300px,1.5fr);gap:9px 15px;align-items:start}
+#product-lookup-workspace .est-summary>div:first-child{grid-column:1;grid-row:1;min-width:0}
+#product-lookup-workspace .est-summary>div:first-child strong{font-size:17px!important}
+#product-lookup-workspace .est-summary .est-summary-grid{grid-column:2;grid-row:1;gap:8px;margin:0}
+#product-lookup-workspace .est-summary .est-summary-card{padding:8px 10px}
+#product-lookup-workspace .est-summary .est-summary-value{font-size:15px;line-height:1.3;margin-top:3px}
+#product-lookup-workspace .est-summary .est-summary-context{font-size:10px;margin-top:2px}
+#product-lookup-workspace .est-summary .est-variants{grid-column:1;grid-row:2;margin:0}
+#product-lookup-workspace .est-summary .est-variants-title{font-size:11px;margin-bottom:5px}
+#product-lookup-workspace .est-summary .est-variants-grid{grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:6px}
+#product-lookup-workspace .est-summary .est-variant{padding:7px}
+#product-lookup-workspace .est-summary .est-variant strong{font-size:14px}
+#product-lookup-workspace .est-summary .est-variant small{font-size:9px}
+#product-lookup-workspace .est-summary .est-variant em{font-size:9px;padding:2px 4px}
+#product-lookup-workspace .est-summary .est-verify-actions{grid-column:2;grid-row:2;margin:0;align-self:center;gap:6px}
+#product-lookup-workspace .est-summary .est-verify-actions .btn{font-size:11px;padding:7px 9px}
+#product-lookup-workspace .est-summary .est-summary-note,#product-lookup-workspace .est-summary .est-verify-foot{display:none}
+#product-lookup-workspace .est-summary .est-priority{font-size:10px;padding:4px 6px}
+#product-lookup-workspace .history{margin-top:10px}
+#product-lookup-workspace .history .section-head{padding:11px 14px}
+#product-lookup-workspace .note-area{padding:10px 0}
+#product-lookup-workspace #est-extras{margin-top:9px}
+#product-lookup-workspace .est-list{gap:6px}
+#product-lookup-workspace #est-trend{margin-top:5px!important}
+#product-lookup-workspace #brand-note-display,#product-lookup-workspace #product-note-display{line-height:1.4}
+#product-lookup-workspace .layout .panel{min-width:0}
 @media(max-width:950px){
-#lookup-view .layout{grid-template-columns:minmax(0,1fr) 215px}
-#lookup-view .est-summary{grid-template-columns:minmax(140px,.7fr) minmax(0,1.3fr)}
-#lookup-view .product-header>div:first-child{grid-template-columns:auto minmax(0,1fr)}
-#lookup-view .product-header #product-chip{grid-column:2;grid-row:1;justify-self:start}
+#product-lookup-workspace .layout{grid-template-columns:minmax(0,1fr) 215px}
+#product-lookup-workspace .est-summary{grid-template-columns:minmax(140px,.7fr) minmax(0,1.3fr)}
+#product-lookup-workspace .product-header>div:first-child{grid-template-columns:auto minmax(0,1fr)}
+#product-lookup-workspace .product-header #product-chip{grid-column:2;grid-row:1;justify-self:start}
 }
 @media(max-width:720px){
-#lookup-view .layout{grid-template-columns:1fr}
-#lookup-view .layout>.est-summary{grid-column:1;grid-row:1}
-#lookup-view .layout>.product{grid-column:1;grid-row:2}
-#lookup-view .layout>.photo{grid-column:1;grid-row:3}
-#lookup-view .est-summary{grid-template-columns:1fr}
-#lookup-view .est-summary>div:first-child,#lookup-view .est-summary .est-summary-grid,#lookup-view .est-summary .est-variants,#lookup-view .est-summary .est-verify-actions{grid-column:1;grid-row:auto}
+#product-lookup-workspace .layout{grid-template-columns:1fr}
+#product-lookup-workspace .layout>.est-summary{grid-column:1;grid-row:1}
+#product-lookup-workspace .layout>.product{grid-column:1;grid-row:2}
+#product-lookup-workspace .layout>.photo{grid-column:1;grid-row:3}
+#product-lookup-workspace .est-summary{grid-template-columns:1fr}
+#product-lookup-workspace .est-summary>div:first-child,#product-lookup-workspace .est-summary .est-summary-grid,#product-lookup-workspace .est-summary .est-variants,#product-lookup-workspace .est-summary .est-verify-actions{grid-column:1;grid-row:auto}
 }
 </style>
 <script type="application/inspection-script">
 (function(){
-const layout=document.querySelector("#lookup-view .layout");
+const layout=document.querySelector("#product-lookup-workspace .layout");
 const summary=document.getElementById("est-summary-design");
 if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summary,layout.firstElementChild);
 })();
@@ -1933,26 +1919,26 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 
 <style>
 /* Dense three-zone EST summary with verified variants below frequency tiles. */
-#lookup-view .est-summary{grid-template-columns:minmax(155px,.55fr) minmax(0,1.45fr);gap:5px 12px;padding:9px 11px}
-#lookup-view .est-summary>div:first-child{grid-column:1;grid-row:1 / span 2;align-self:start}
-#lookup-view .est-summary>div:first-child .label{font-size:9px;letter-spacing:.035em}
-#lookup-view .est-summary>div:first-child strong{font-size:15px!important}
-#lookup-view .est-summary .est-summary-grid{grid-column:2;grid-row:1;gap:6px}
-#lookup-view .est-summary .est-summary-card{padding:6px 8px}
-#lookup-view .est-summary .est-summary-card .label{font-size:9px;letter-spacing:.025em}
-#lookup-view .est-summary .est-summary-value{font-size:13px;margin-top:2px}
-#lookup-view .est-summary .est-variants{grid-column:2;grid-row:2;margin:3px 0 0}
-#lookup-view .est-summary .est-variants-title{font-size:10px;margin-bottom:4px}
-#lookup-view .est-summary .est-variants-grid{display:flex;flex-wrap:wrap;gap:5px}
-#lookup-view .est-summary .est-variant{padding:5px 7px;min-width:105px;flex:0 1 auto}
-#lookup-view .est-summary .est-variant strong{font-size:12px;display:inline}
-#lookup-view .est-summary .est-variant small{font-size:9px;display:block;margin-top:1px}
-#lookup-view .est-summary .est-variant em{display:none}
-#lookup-view .est-summary .est-verify-actions{grid-column:1/-1;grid-row:3;justify-content:flex-end;margin-top:2px}
-#lookup-view #est-extras{display:none!important}
+#product-lookup-workspace .est-summary{grid-template-columns:minmax(155px,.55fr) minmax(0,1.45fr);gap:5px 12px;padding:9px 11px}
+#product-lookup-workspace .est-summary>div:first-child{grid-column:1;grid-row:1 / span 2;align-self:start}
+#product-lookup-workspace .est-summary>div:first-child .label{font-size:9px;letter-spacing:.035em}
+#product-lookup-workspace .est-summary>div:first-child strong{font-size:15px!important}
+#product-lookup-workspace .est-summary .est-summary-grid{grid-column:2;grid-row:1;gap:6px}
+#product-lookup-workspace .est-summary .est-summary-card{padding:6px 8px}
+#product-lookup-workspace .est-summary .est-summary-card .label{font-size:9px;letter-spacing:.025em}
+#product-lookup-workspace .est-summary .est-summary-value{font-size:13px;margin-top:2px}
+#product-lookup-workspace .est-summary .est-variants{grid-column:2;grid-row:2;margin:3px 0 0}
+#product-lookup-workspace .est-summary .est-variants-title{font-size:10px;margin-bottom:4px}
+#product-lookup-workspace .est-summary .est-variants-grid{display:flex;flex-wrap:wrap;gap:5px}
+#product-lookup-workspace .est-summary .est-variant{padding:5px 7px;min-width:105px;flex:0 1 auto}
+#product-lookup-workspace .est-summary .est-variant strong{font-size:12px;display:inline}
+#product-lookup-workspace .est-summary .est-variant small{font-size:9px;display:block;margin-top:1px}
+#product-lookup-workspace .est-summary .est-variant em{display:none}
+#product-lookup-workspace .est-summary .est-verify-actions{grid-column:1/-1;grid-row:3;justify-content:flex-end;margin-top:2px}
+#product-lookup-workspace #est-extras{display:none!important}
 @media(max-width:720px){
-#lookup-view .est-summary{grid-template-columns:1fr}
-#lookup-view .est-summary>div:first-child,#lookup-view .est-summary .est-summary-grid,#lookup-view .est-summary .est-variants,#lookup-view .est-summary .est-verify-actions{grid-column:1;grid-row:auto}
+#product-lookup-workspace .est-summary{grid-template-columns:1fr}
+#product-lookup-workspace .est-summary>div:first-child,#product-lookup-workspace .est-summary .est-summary-grid,#product-lookup-workspace .est-summary .est-variants,#product-lookup-workspace .est-summary .est-verify-actions{grid-column:1;grid-row:auto}
 }
 </style>
 
@@ -1960,68 +1946,68 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 /* Compact workstation controls, visible review status and a desktop-style footer. */
 #print-log-only{display:none}
 @media print{body.print-log #print-log-only{display:block!important}}
-#lookup-view .est-summary{padding:7px 10px;gap:4px 10px;grid-template-columns:minmax(155px,.55fr) minmax(0,1.45fr)}
-#lookup-view .est-summary>div:first-child{position:relative;min-height:70px;padding-right:0;display:flex!important;flex-direction:column;gap:2px}
-#lookup-view .est-summary>div:first-child .label{margin-bottom:1px}
-#lookup-view .est-summary>div:first-child strong{font-size:14px!important}
-#lookup-view .est-summary .est-priority{display:inline-flex!important;align-items:center;align-self:flex-start;white-space:normal;font-size:9px;padding:4px 7px;margin-top:3px;line-height:1.2;border:1px solid transparent}
-#lookup-view .est-summary .est-priority.high{background:#c82e35!important;color:#fff!important;border-color:#ae1d2b!important;font-weight:800;box-shadow:0 1px 2px #8c121d18}
-#lookup-view .est-summary .est-priority.medium{background:#fff2d2!important;color:#845000!important;border-color:#f4d68a!important}
-#lookup-view .est-summary .est-priority.low{background:#e2f4e9!important;color:#176440!important;border-color:#b7dec7!important}
-#lookup-view .est-summary .est-summary-card{padding:5px 7px}
-#lookup-view .est-summary .est-summary-value{font-size:12px}
-#lookup-view .est-summary .est-summary-context{font-size:9px}
-#lookup-view .est-summary .est-variants{margin-top:1px}
-#lookup-view .est-summary .est-variants-title{display:flex;align-items:center;gap:6px;font-size:9px;line-height:1.3}
-#lookup-view .est-summary .est-variants-grid{gap:4px}
-#lookup-view .est-summary .est-variant{min-width:90px;padding:4px 6px}
-#lookup-view .est-summary .est-variant strong{font-size:11px}
-#lookup-view .est-summary .est-variant small{font-size:8px}
-#lookup-view .est-summary .est-verify-actions{gap:4px}
-#lookup-view .est-summary .est-verify-actions .btn{padding:5px 7px;font-size:10px}
-#lookup-view .product{padding:9px 11px}
-#lookup-view .product-header{padding-bottom:7px;margin-bottom:7px}
-#lookup-view .product-header #plant-value{font-size:14px}
-#lookup-view .product-header #product-name{font-size:12px}
-#lookup-view .detail-grid{gap:7px 10px;padding-bottom:4px}
-#lookup-view .detail-grid .label{font-size:8px}
-#lookup-view .detail-grid .value{font-size:11px}
-#lookup-view .photo{padding:9px}
-#lookup-view .photo-space{height:115px}
-#lookup-view .note-area{padding:7px 0}
-#lookup-view .note-area p{margin:4px 0;font-size:11px}
-#lookup-view .history{margin-top:7px}
-#lookup-view .history .section-head{padding:8px 11px}
-#lookup-view .history td,#lookup-view .history th{padding:7px 9px}
-.compact-edit,#lookup-view .est-mini-edit{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;padding:0!important;border-radius:5px!important;font-size:12px!important;line-height:1!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
-#lookup-view .est-mini-edit{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;font-size:11px!important}
-#lookup-view .product-header #edit-btn{margin-left:auto}
-#lookup-view .note-area .section-head{gap:8px}
+#product-lookup-workspace .est-summary{padding:7px 10px;gap:4px 10px;grid-template-columns:minmax(155px,.55fr) minmax(0,1.45fr)}
+#product-lookup-workspace .est-summary>div:first-child{position:relative;min-height:70px;padding-right:0;display:flex!important;flex-direction:column;gap:2px}
+#product-lookup-workspace .est-summary>div:first-child .label{margin-bottom:1px}
+#product-lookup-workspace .est-summary>div:first-child strong{font-size:14px!important}
+#product-lookup-workspace .est-summary .est-priority{display:inline-flex!important;align-items:center;align-self:flex-start;white-space:normal;font-size:9px;padding:4px 7px;margin-top:3px;line-height:1.2;border:1px solid transparent}
+#product-lookup-workspace .est-summary .est-priority.high{background:#c82e35!important;color:#fff!important;border-color:#ae1d2b!important;font-weight:800;box-shadow:0 1px 2px #8c121d18}
+#product-lookup-workspace .est-summary .est-priority.medium{background:#fff2d2!important;color:#845000!important;border-color:#f4d68a!important}
+#product-lookup-workspace .est-summary .est-priority.low{background:#e2f4e9!important;color:#176440!important;border-color:#b7dec7!important}
+#product-lookup-workspace .est-summary .est-summary-card{padding:5px 7px}
+#product-lookup-workspace .est-summary .est-summary-value{font-size:12px}
+#product-lookup-workspace .est-summary .est-summary-context{font-size:9px}
+#product-lookup-workspace .est-summary .est-variants{margin-top:1px}
+#product-lookup-workspace .est-summary .est-variants-title{display:flex;align-items:center;gap:6px;font-size:9px;line-height:1.3}
+#product-lookup-workspace .est-summary .est-variants-grid{gap:4px}
+#product-lookup-workspace .est-summary .est-variant{min-width:90px;padding:4px 6px}
+#product-lookup-workspace .est-summary .est-variant strong{font-size:11px}
+#product-lookup-workspace .est-summary .est-variant small{font-size:8px}
+#product-lookup-workspace .est-summary .est-verify-actions{gap:4px}
+#product-lookup-workspace .est-summary .est-verify-actions .btn{padding:5px 7px;font-size:10px}
+#product-lookup-workspace .product{padding:9px 11px}
+#product-lookup-workspace .product-header{padding-bottom:7px;margin-bottom:7px}
+#product-lookup-workspace .product-header #plant-value{font-size:14px}
+#product-lookup-workspace .product-header #product-name{font-size:12px}
+#product-lookup-workspace .detail-grid{gap:7px 10px;padding-bottom:4px}
+#product-lookup-workspace .detail-grid .label{font-size:8px}
+#product-lookup-workspace .detail-grid .value{font-size:11px}
+#product-lookup-workspace .photo{padding:9px}
+#product-lookup-workspace .photo-space{height:115px}
+#product-lookup-workspace .note-area{padding:7px 0}
+#product-lookup-workspace .note-area p{margin:4px 0;font-size:11px}
+#product-lookup-workspace .history{margin-top:7px}
+#product-lookup-workspace .history .section-head{padding:8px 11px}
+#product-lookup-workspace .history td,#product-lookup-workspace .history th{padding:7px 9px}
+.compact-edit,#product-lookup-workspace .est-mini-edit{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;padding:0!important;border-radius:5px!important;font-size:12px!important;line-height:1!important;display:inline-flex!important;align-items:center;justify-content:center;flex:none}
+#product-lookup-workspace .est-mini-edit{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;font-size:11px!important}
+#product-lookup-workspace .product-header #edit-btn{margin-left:auto}
+#product-lookup-workspace .note-area .section-head{gap:8px}
 .app-footer{font-size:10px;line-height:1.3;text-align:center;color:#98a8b7;padding:11px 4px 4px;margin-top:16px;border-top:1px solid #dfe7ee}
 .app-footer a{color:#5b86a5;text-decoration:none;font-weight:650}
 .app-footer a:hover{text-decoration:underline;color:#286e9c}
 @media print{.app-footer{display:none!important}}
-@media(max-width:720px){#lookup-view .est-summary{grid-template-columns:1fr}#lookup-view .est-summary>div:first-child,#lookup-view .est-summary .est-summary-grid,#lookup-view .est-summary .est-variants,#lookup-view .est-summary .est-verify-actions{grid-column:1;grid-row:auto}}
+@media(max-width:720px){#product-lookup-workspace .est-summary{grid-template-columns:1fr}#product-lookup-workspace .est-summary>div:first-child,#product-lookup-workspace .est-summary .est-summary-grid,#product-lookup-workspace .est-summary .est-variants,#product-lookup-workspace .est-summary .est-verify-actions{grid-column:1;grid-row:auto}}
 </style>
 
 <style>
 /* Align the latest observation as a true left column, and put priority directly below it. */
-#lookup-view .est-summary>.est-latest-block{grid-column:1!important;grid-row:1 / span 2!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:5px!important;padding:4px 4px 3px 2px!important;min-height:0!important}
-#lookup-view .est-latest-block .label{font-size:9px!important;line-height:1.35;max-width:185px;margin:0 0 5px!important}
-#lookup-view .est-latest-number{font-size:17px!important;font-weight:800;line-height:1.2;margin:0!important}
-#lookup-view .est-latest-number.high{color:#c42c37!important}
-#lookup-view .est-latest-number.medium{color:#b67513!important}
-#lookup-view .est-latest-number.low{color:#27805b!important}
-#lookup-view .est-latest-block .est-priority{position:static!important;display:inline-flex!important;align-self:flex-start!important;margin:0!important;max-width:100%;white-space:normal!important}
-#lookup-view .est-latest-block .est-summary-context{margin:2px 0 0!important}
-#lookup-view .est-summary .est-variants{min-width:0}
-#lookup-view .note-area{padding:12px 14px!important;margin:10px 0 0!important}
-#lookup-view .note-area .section-head{padding:0!important;margin:0 0 6px!important;align-items:center!important}
-#lookup-view .note-area .section-head strong{margin:0!important}
-#lookup-view .note-area .section-head button{margin:0!important}
-#lookup-view .note-area p{margin:6px 0 0!important}
+#product-lookup-workspace .est-summary>.est-latest-block{grid-column:1!important;grid-row:1 / span 2!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:5px!important;padding:4px 4px 3px 2px!important;min-height:0!important}
+#product-lookup-workspace .est-latest-block .label{font-size:9px!important;line-height:1.35;max-width:185px;margin:0 0 5px!important}
+#product-lookup-workspace .est-latest-number{font-size:17px!important;font-weight:800;line-height:1.2;margin:0!important}
+#product-lookup-workspace .est-latest-number.high{color:#c42c37!important}
+#product-lookup-workspace .est-latest-number.medium{color:#b67513!important}
+#product-lookup-workspace .est-latest-number.low{color:#27805b!important}
+#product-lookup-workspace .est-latest-block .est-priority{position:static!important;display:inline-flex!important;align-self:flex-start!important;margin:0!important;max-width:100%;white-space:normal!important}
+#product-lookup-workspace .est-latest-block .est-summary-context{margin:2px 0 0!important}
+#product-lookup-workspace .est-summary .est-variants{min-width:0}
+#product-lookup-workspace .note-area{padding:12px 14px!important;margin:10px 0 0!important}
+#product-lookup-workspace .note-area .section-head{padding:0!important;margin:0 0 6px!important;align-items:center!important}
+#product-lookup-workspace .note-area .section-head strong{margin:0!important}
+#product-lookup-workspace .note-area .section-head button{margin:0!important}
+#product-lookup-workspace .note-area p{margin:6px 0 0!important}
 .edit-reference-field{margin-top:14px;padding:12px;border:1px solid #dfe9f1;background:#f8fbfe;border-radius:7px}
-@media(max-width:720px){#lookup-view .est-summary>.est-latest-block{grid-column:1!important;grid-row:auto!important}}
+@media(max-width:720px){#product-lookup-workspace .est-summary>.est-latest-block{grid-column:1!important;grid-row:auto!important}}
 </style>
 
 <style>
@@ -2083,9 +2069,9 @@ if(layout&&summary&&layout.firstElementChild!==summary)layout.insertBefore(summa
 .est-number{color:#2a6588!important;font-family:Inter,"Segoe UI",Arial,sans-serif;font-weight:750;-webkit-font-smoothing:antialiased}
 </style><style>
 /* Product search priority: softer contrast and readable type */
-#lookup-view .est-summary .est-priority.high{background:#fae9e9!important;color:#913e43!important;border-color:#e8b9bb!important;box-shadow:none!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:10px!important;font-weight:700!important;letter-spacing:0!important;text-shadow:none!important;-webkit-font-smoothing:antialiased}
-#lookup-view .est-latest-number.high{color:#a44e52!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-weight:750!important;-webkit-font-smoothing:antialiased}
-#lookup-view .est-summary .est-priority.medium{background:#fff1df!important;color:#946020!important;border-color:#eed2a7!important}
+#product-lookup-workspace .est-summary .est-priority.high{background:#fae9e9!important;color:#913e43!important;border-color:#e8b9bb!important;box-shadow:none!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:10px!important;font-weight:700!important;letter-spacing:0!important;text-shadow:none!important;-webkit-font-smoothing:antialiased}
+#product-lookup-workspace .est-latest-number.high{color:#a44e52!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-weight:750!important;-webkit-font-smoothing:antialiased}
+#product-lookup-workspace .est-summary .est-priority.medium{background:#fff1df!important;color:#946020!important;border-color:#eed2a7!important}
 </style>
 <style>
 /* Responsive workspace: desktop-first, fluid at any window width. */
@@ -2099,11 +2085,11 @@ html,body{width:100%;max-width:100%;margin:0}
 :is(#lookup-view,#purchase-orders-view) #po-details table{width:max-content;min-width:100%}
 :is(#lookup-view,#purchase-orders-view) .po-add-row{min-width:0}
 :is(#lookup-view,#purchase-orders-view) .po-add-row input{min-width:0}
-#lookup-view .est-summary .est-summary-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
-#lookup-view .est-summary .est-summary-card{min-width:0}
-#lookup-view .est-summary .est-summary-value{font-size:12px!important;font-weight:750!important;line-height:1.3!important;letter-spacing:0!important;overflow-wrap:anywhere}
-#lookup-view .est-summary .est-summary-card .label{font-size:9px!important;letter-spacing:.035em!important;line-height:1.3!important}
-#lookup-view .est-summary .est-summary-context{font-size:10px!important;line-height:1.35!important}
+#product-lookup-workspace .est-summary .est-summary-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+#product-lookup-workspace .est-summary .est-summary-card{min-width:0}
+#product-lookup-workspace .est-summary .est-summary-value{font-size:12px!important;font-weight:750!important;line-height:1.3!important;letter-spacing:0!important;overflow-wrap:anywhere}
+#product-lookup-workspace .est-summary .est-summary-card .label{font-size:9px!important;letter-spacing:.035em!important;line-height:1.3!important}
+#product-lookup-workspace .est-summary .est-summary-context{font-size:10px!important;line-height:1.35!important}
 #lookup-view .po-worklog,#lookup-view .worklog{display:none!important}
 .tablewrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:1100px){
@@ -2112,24 +2098,24 @@ html,body{width:100%;max-width:100%;margin:0}
  .nav{font-size:11px;padding:9px 7px}
  .nav .ico{width:20px}
  .main{padding:12px}
- #lookup-view .layout{grid-template-columns:minmax(0,1fr) minmax(185px,25%)}
- #lookup-view .est-summary{grid-template-columns:minmax(120px,.6fr) minmax(0,1.4fr)}
+ #product-lookup-workspace .layout{grid-template-columns:minmax(0,1fr) minmax(185px,25%)}
+ #product-lookup-workspace .est-summary{grid-template-columns:minmax(120px,.6fr) minmax(0,1.4fr)}
  .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:850px){
  .sidebar{width:138px}
  .main{padding:11px}
- #lookup-view .layout{grid-template-columns:minmax(0,1fr)}
- #lookup-view .layout>.est-summary{grid-column:1;grid-row:1}
- #lookup-view .layout>.product{grid-column:1;grid-row:2}
- #lookup-view .layout>.photo{grid-column:1;grid-row:3}
- #lookup-view .est-summary{grid-template-columns:minmax(0,1fr)!important}
- #lookup-view .est-summary>.est-latest-block,
- #lookup-view .est-summary>div:first-child,
- #lookup-view .est-summary .est-summary-grid,
- #lookup-view .est-summary .est-variants,
- #lookup-view .est-summary .est-verify-actions{grid-column:1!important;grid-row:auto!important}
- #lookup-view .est-summary .est-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #product-lookup-workspace .layout{grid-template-columns:minmax(0,1fr)}
+ #product-lookup-workspace .layout>.est-summary{grid-column:1;grid-row:1}
+ #product-lookup-workspace .layout>.product{grid-column:1;grid-row:2}
+ #product-lookup-workspace .layout>.photo{grid-column:1;grid-row:3}
+ #product-lookup-workspace .est-summary{grid-template-columns:minmax(0,1fr)!important}
+ #product-lookup-workspace .est-summary>.est-latest-block,
+ #product-lookup-workspace .est-summary>div:first-child,
+ #product-lookup-workspace .est-summary .est-summary-grid,
+ #product-lookup-workspace .est-summary .est-variants,
+ #product-lookup-workspace .est-summary .est-verify-actions{grid-column:1!important;grid-row:auto!important}
+ #product-lookup-workspace .est-summary .est-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:620px){
  .shell{display:block;min-width:0!important}
@@ -2148,10 +2134,10 @@ html,body{width:100%;max-width:100%;margin:0}
  .toolbar .field.searchwide{min-width:0;flex-basis:100%}
  .toolbar .field.searchwide input{min-width:0}
  .filters,.settings-grid,.edit-grid,.detail-grid,.brand-form-grid,.guide-grid,.guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
- #lookup-view .est-summary .est-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
- #lookup-view .est-summary .est-summary-card{padding:8px}
- #lookup-view .product-header>div:first-child{grid-template-columns:auto minmax(0,1fr)}
- #lookup-view .product-name{font-size:15px}
+ #product-lookup-workspace .est-summary .est-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #product-lookup-workspace .est-summary .est-summary-card{padding:8px}
+ #product-lookup-workspace .product-header>div:first-child{grid-template-columns:auto minmax(0,1fr)}
+ #product-lookup-workspace .product-name{font-size:15px}
  :is(#lookup-view,#purchase-orders-view) .po-archive .section-head{flex-wrap:wrap;gap:8px}
  :is(#lookup-view,#purchase-orders-view) .po-archive .section-head>.row{flex-wrap:wrap}
  :is(#lookup-view,#purchase-orders-view) .po-details-head{flex-wrap:wrap}
@@ -2161,7 +2147,7 @@ html,body{width:100%;max-width:100%;margin:0}
 }
 @media(max-width:370px){
  .detail-grid,.filters,.settings-grid,.edit-grid{grid-template-columns:1fr}
- #lookup-view .est-summary .est-summary-grid{grid-template-columns:1fr}
+ #product-lookup-workspace .est-summary .est-summary-grid{grid-template-columns:1fr}
 }
 @media print{
  .sidebar{display:none!important}
@@ -2525,7 +2511,7 @@ body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
 #lookup-view .inspection-workflow-switch{display:flex;align-items:stretch;gap:6px;margin-bottom:14px;padding:5px;background:#e2eaf2;border:1px solid #d6e1eb;border-radius:11px;max-width:510px}
 #lookup-view .inspection-workflow-btn{flex:1;border:0;background:transparent;color:#57728b;font:inherit;font-size:13px;font-weight:750;cursor:pointer;border-radius:8px;padding:12px 14px;white-space:nowrap}
 #lookup-view .inspection-workflow-btn.active{background:#fff;color:#205d8d;box-shadow:0 1px 5px #1c3e5d20}
-#lookup-view.invoice-mode>.inspection-single-lookup,#lookup-view.invoice-mode>.layout,#lookup-view.invoice-mode>.history,#lookup-view.invoice-mode>.worklog,#lookup-view.invoice-mode>.po-archive,#lookup-view.invoice-mode>.panel:not(.po-bulk-import):not(.inspection-invoice-workspace):not(.inspection-single-lookup){display:none!important}
+#lookup-view.invoice-mode>.inspection-single-lookup,#lookup-view.invoice-mode>.layout,#lookup-view.invoice-mode>.history,#lookup-view.invoice-mode>.worklog,#lookup-view.invoice-mode>.po-archive,#lookup-view.invoice-mode>.panel:not(.po-bulk-import):not(.inspection-invoice-workspace):not(.inspection-single-lookup):not(#delivery-intakes-panel){display:none!important}
 #lookup-view.invoice-mode #po-bulk-import{margin-top:0!important}
 #lookup-view.invoice-mode #po-import-body{display:block!important}
 #lookup-view.invoice-mode #po-import-toggle{display:none!important}
@@ -2960,9 +2946,9 @@ count();draw();
 :root[data-skin] :is(.est-priority.medium,:is(#lookup-view,#purchase-orders-view) .est-summary .est-priority.medium,:is(#lookup-view,#purchase-orders-view) .po-priority.medium,.ip-tag.changed){background:var(--sk-warning-bg)!important;color:var(--sk-warning-ink)!important;border-color:var(--sk-warning-bg)!important;box-shadow:none!important}
 :root[data-skin] :is(.est-priority.high,:is(#lookup-view,#purchase-orders-view) .est-summary .est-priority.high,:is(#lookup-view,#purchase-orders-view) .po-priority.high,.ip-tag.duplicate,.ip-tag.invalid){background:var(--sk-negative-bg)!important;color:var(--sk-negative-ink)!important;border-color:var(--sk-negative-bg)!important;box-shadow:none!important}
 :root[data-skin] :is(.ip-tag.same,.po-type.meat,.po-type.dairy){background:var(--sk-accent-soft);color:var(--sk-accent)}
-:root[data-skin] :is(#lookup-view .est-latest-number.low){color:var(--sk-positive-ink)!important}
-:root[data-skin] :is(#lookup-view .est-latest-number.medium){color:var(--sk-warning-ink)!important}
-:root[data-skin] :is(#lookup-view .est-latest-number.high){color:var(--sk-negative-ink)!important}
+:root[data-skin] :is(#product-lookup-workspace .est-latest-number.low){color:var(--sk-positive-ink)!important}
+:root[data-skin] :is(#product-lookup-workspace .est-latest-number.medium){color:var(--sk-warning-ink)!important}
+:root[data-skin] :is(#product-lookup-workspace .est-latest-number.high){color:var(--sk-negative-ink)!important}
 :root[data-skin] :is(#import-view .ip-feedback.error){background:var(--sk-negative-bg);border-color:var(--sk-negative-ink);color:var(--sk-negative-ink)}
 :root[data-skin] :is(#import-view .ip-row-new){background:color-mix(in srgb,var(--sk-positive-bg) 45%,var(--sk-surface))}
 :root[data-skin] :is(#import-view .ip-row-changed){background:color-mix(in srgb,var(--sk-warning-bg) 45%,var(--sk-surface))}
@@ -2986,10 +2972,10 @@ count();draw();
 
 /* Complete skin coverage for high-specificity and dynamically rendered components. */
 @media screen {
- :root[data-skin] #lookup-view :is(.est-summary,.est-summary-card,.est-variant){border-color:var(--sk-border)}
- :root[data-skin] #lookup-view .est-summary{background:var(--sk-surface2)}
- :root[data-skin] #lookup-view :is(.est-summary-card,.est-variant){background:var(--sk-surface)}
- :root[data-skin] #lookup-view .est-summary>div:first-child strong{color:var(--sk-accent)!important}
+ :root[data-skin] #product-lookup-workspace :is(.est-summary,.est-summary-card,.est-variant){border-color:var(--sk-border)}
+ :root[data-skin] #product-lookup-workspace .est-summary{background:var(--sk-surface2)}
+ :root[data-skin] #product-lookup-workspace :is(.est-summary-card,.est-variant){background:var(--sk-surface)}
+ :root[data-skin] #product-lookup-workspace .est-summary>div:first-child strong{color:var(--sk-accent)!important}
  :root[data-skin] :is(.est-variant small,.est-summary-label,.inspection-mode-caption){color:var(--sk-muted)}
  :root[data-skin] #lookup-view :is(.po-est-fixed,.po-verified){color:var(--sk-positive-ink)}
  :root[data-skin] #lookup-view :is(.po-est-weeks,.po-fixed-toggle){color:var(--sk-muted)}
@@ -3925,16 +3911,16 @@ window.InspectionTableLayout={refresh};refresh();
  function schedule(){if(!pending){pending=true;(window.requestAnimationFrame||window.setTimeout)(scan);}}
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});document.addEventListener('input',e=>{if(e.target.matches('textarea.iq-description-cell,textarea.auto-description'))fit(e.target);});window.addEventListener('resize',schedule);document.addEventListener('click',schedule);scan();
 })();</script><style>.sap-delivery-card{border-top:1px solid var(--sk-border,#ddd);padding:16px 0}.delivery-description{white-space:normal;overflow-wrap:anywhere;min-width:220px}#sap-delivery-dialog .po-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}#sap-delivery-dialog .input{width:100%}#sap-delivery-dialog label{display:block}#sap-delivery-dialog .tablewrap{max-height:50vh;margin-top:16px}#sap-delivery-dialog th{white-space:normal}</style><style>
-[hidden]{display:none!important}#lookup-view:not(.has-product)>.layout{display:none!important}#lookup-view .inspection-invoice-workspace,#lookup-view #po-current-worklog{display:none!important}
-#lookup-view .weekly-stats,#lookup-view .est-stats,#lookup-view .period-stats{display:none!important}
+[hidden]{display:none!important}#product-lookup-workspace:not(.has-product)>.layout{display:none!important}#lookup-view .inspection-invoice-workspace,#lookup-view #po-current-worklog{display:none!important}
+#product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}
 #draft-print-sheet{display:none}.client-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.client-suggestions:empty{display:none}.delivery-unresolved{background:var(--sk-surface2);outline:1px solid var(--sk-border)}
 #sap-delivery-dialog select{max-width:100%}#admin-clients-panel{margin-top:18px}.inspection-evidence{padding:12px;margin-top:12px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-radius)}
 .idh-mobile-order{display:flex;flex-wrap:wrap;gap:6px}.idh-mobile-order select{max-width:220px}.idh-mobile-order label{display:flex;align-items:center;gap:5px}.idh-mobile-order .idh-width-input{width:86px;padding:7px;min-height:36px}.idh-table-layout-bar{flex-wrap:wrap}.idh-mobile-order button{min-width:40px}
 @media(max-width:800px){#po-details th,#po-details td{padding:8px}#po-details .btn{white-space:normal;min-height:40px}#po-details [data-po-ref]{font-size:16px}#po-details .po-details-head{flex-wrap:wrap}#sap-delivery-dialog{width:96vw;max-width:96vw}.client-suggestions .btn{min-height:40px}}
 @media print{body.print-draft>.shell,body.print-draft>dialog,body.print-draft>#cloud-banner,body.print-draft>#cloud-blocker{display:none!important}body.print-draft>#draft-print-sheet{display:block!important;background:white;color:black}body.print-draft td,body.print-draft th{white-space:normal;border:1px solid #bbb;color:black;background:white}}
-</style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#lookup-view:not(.show-history) .weekly-stats,#lookup-view:not(.show-history) .est-stats,#lookup-view:not(.show-history) .period-stats{display:none!important}#lookup-view.show-history .weekly-stats,#lookup-view.show-history .est-stats,#lookup-view.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
-window.addEventListener('inspection:cloud-ready',()=>{const header=document.querySelector('.product-header');if(!header||!window.InspectionCloud.isAdministrator()||document.getElementById('product-details-toggle'))return;const button=document.createElement('button');button.id='product-details-toggle';button.className='btn mini';button.textContent='Reference statistics';button.onclick=()=>{const view=document.getElementById('lookup-view');view.classList.toggle('show-history');button.textContent=view.classList.contains('show-history')?'Hide statistics':'Reference statistics';};header.appendChild(button);});
-</script><style>#lookup-view:not(.show-history) .est-summary,#lookup-view:not(.show-history) .est-variant,#lookup-view:not(.show-history) .stat-pill{display:none!important}#lookup-view.show-history .est-summary{display:block!important}#lookup-view.show-history .est-variant,#lookup-view.show-history .stat-pill{display:block!important}</style><style id="client-directory-picker-style">
+</style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#product-lookup-workspace:not(.show-history) .weekly-stats,#product-lookup-workspace:not(.show-history) .est-stats,#product-lookup-workspace:not(.show-history) .period-stats{display:none!important}#product-lookup-workspace.show-history .weekly-stats,#product-lookup-workspace.show-history .est-stats,#product-lookup-workspace.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
+window.addEventListener('inspection:cloud-ready',()=>{const header=document.querySelector('.product-header');if(!header||!window.InspectionCloud.isAdministrator()||document.getElementById('product-details-toggle'))return;const button=document.createElement('button');button.id='product-details-toggle';button.className='btn mini';button.textContent='Reference statistics';button.onclick=()=>{const view=document.getElementById('product-lookup-workspace');view.classList.toggle('show-history');button.textContent=view.classList.contains('show-history')?'Hide statistics':'Reference statistics';};header.appendChild(button);});
+</script><style>#product-lookup-workspace:not(.show-history) .est-summary,#product-lookup-workspace:not(.show-history) .est-variant,#product-lookup-workspace:not(.show-history) .stat-pill{display:none!important}#product-lookup-workspace.show-history .est-summary{display:block!important}#product-lookup-workspace.show-history .est-variant,#product-lookup-workspace.show-history .stat-pill{display:block!important}</style><style id="client-directory-picker-style">
 .client-picker{position:relative;min-width:0;width:100%}.client-picker>input{width:100%}.client-picker-hint{margin-top:5px;line-height:1.4}
 .client-picker .client-suggestions{position:absolute;top:42px;left:0;right:0;z-index:50;display:block;max-height:250px;overflow-y:auto;margin:0;border:1px solid var(--sk-border);border-radius:8px;background:var(--sk-surface);box-shadow:0 8px 24px #0002}
 .client-option{display:block;width:100%;border:0;border-bottom:1px solid var(--sk-border);padding:11px 12px;text-align:left;background:var(--sk-surface);color:var(--sk-ink);font:inherit;cursor:pointer;white-space:normal;min-height:42px}
