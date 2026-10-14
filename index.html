@@ -3582,11 +3582,11 @@ function renderApprovedPOs(){
  document.getElementById(selected&&deliveryOrderIDs.has(selected.id)?'delivery-po-panel':'approved-po-panel').appendChild(detailRoot);
  document.querySelectorAll('[data-approved-open]').forEach(b=>b.onclick=()=>{selectedApproved=b.dataset.approvedOpen;renderApprovedPOs()});
  const a=approvedPOs.find(p=>p.id===selectedApproved),detail=document.getElementById('approved-po-details');
- detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+approvedEvidenceHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
+ detail.innerHTML=a?'<div class="po-details-head"><div><strong class="po-number">PO '+escapeHTML(a.snapshot.po)+' - Approved for Inspection</strong><div class="po-customer">'+escapeHTML(a.snapshot.customer)+'</div><p class="small muted">Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+' · Read-only inspector-approved version</p></div><div class="row"><button class="btn mini" id="approved-po-csv">↓ CSV</button><button class="btn mini" id="approved-po-print">⎙ Print</button><button class="btn mini" id="approved-po-close">Close</button>'+(administrator?'<button class="btn mini" id="approved-po-edit">Edit PO</button><button class="btn mini" id="approved-po-delete">Delete PO</button>':'')+'</div></div>'+approvedRowsHTML(a.snapshot)+approvedEvidenceHTML(a.snapshot)+'<section class="panel panel-pad" id="approved-po-deliveries" style="margin-top:18px"></section>':'';if(a)renderPODeliveries(a);
  if(a){if(administrator){document.getElementById('approved-po-edit').onclick=()=>editApprovedPO(a);document.getElementById('approved-po-delete').onclick=()=>manageApprovedPO(a,null);}
  document.getElementById('approved-po-close').onclick=()=>{selectedApproved=null;renderApprovedPOs()};
  document.getElementById('approved-po-csv').onclick=()=>{const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const values=[['Item No.','Description','Class','EST'],...a.snapshot.rows.map(r=>[r.item,r.description,window.InspectionProduct.classLabel(r.category),r.plant])];const url=URL.createObjectURL(new Blob(['\uFEFF'+values.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Approved_PO'+a.snapshot.po.replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
- document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>PO Approved for Inspection</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>PO Approved for Inspection '+escapeHTML(a.snapshot.po)+'</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
+ document.getElementById('approved-po-print').onclick=()=>{const w=window.open('','_blank');if(!w){alert('Allow pop-ups to print this PO.');return}w.document.write('<!doctype html><html><head><title>PO Approved for Inspection</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #bbb;padding:8px;text-align:left}</style></head><body><h1>PO '+escapeHTML(a.snapshot.po)+' - Approved for Inspection</h1><h2>'+escapeHTML(a.snapshot.customer)+'</h2><p>Approved by '+escapeHTML(a.approved_email)+' · '+escapeHTML(new Date(a.approved_at).toLocaleString())+'</p>'+approvedRowsHTML(a.snapshot)+'</body></html>');w.document.close();w.focus();w.print()};}
 }
 async function manageApprovedPO(a,replacement){
  if(!administrator||!canEdit()){deny();return false;}
@@ -3998,7 +3998,8 @@ connect();
 .idh-adjustable-table :is(input.input,textarea.input){min-width:0!important;max-width:100%!important;width:100%;box-sizing:border-box}
 .idh-col-resize{position:absolute;right:-3px;top:0;width:10px;height:100%;cursor:col-resize;touch-action:none;z-index:3;border-right:2px solid transparent}
 .idh-col-resize:hover,.idh-col-resize:focus-visible{border-color:var(--sk-accent,#285b7e);outline:none;background:color-mix(in srgb,var(--sk-accent,#285b7e) 18%,transparent)}
-.idh-col-move{border:0;background:transparent;color:inherit;padding:0 4px 0 0;cursor:grab;font-size:15px;opacity:.6}
+.idh-col-move{border:0;background:transparent;color:inherit;padding:0 4px 0 0;cursor:grab;font-size:15px;opacity:.6;touch-action:none;min-width:24px;min-height:24px}
+.idh-column-drop-target{outline:2px solid var(--sk-accent,#285b7e);outline-offset:-2px}
 .idh-col-move:hover,.idh-col-move:focus-visible{opacity:1}
 .idh-dragging-column{opacity:.5}
 .idh-resizing-columns,.idh-resizing-columns *{cursor:col-resize!important;user-select:none!important}
@@ -4026,7 +4027,6 @@ function apply(state){
  if(cols.some(col=>!col.dataset.idhCol))cols.forEach((col,i)=>col.dataset.idhCol=base[i]);
  const map=new Map(cols.map(col=>[col.dataset.idhCol,col]));place(group,order.map(key=>map.get(key)));
  for(const key of base){map.get(key).style.width=clamp(state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle)handle.setAttribute('aria-valuenow',String(clamp(state.widths[key])));map.get(key).hidden=header.hidden;}
- if(state.widthInput&&document.activeElement!==state.widthInput)state.widthInput.value=clamp(state.widths[base[Number(state.columnSelect.value)]]);
  const width=base.reduce((total,key)=>total+(state.headers.get(key).hidden?0:clamp(state.widths[key])),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
 }
 function restore(state){
@@ -4048,21 +4048,35 @@ function install(table){
  const key=(table.dataset.layoutKey||root)+':'+base.join('|');
  const cols=[...table.querySelectorAll(':scope > colgroup > col')];const defaults={};
  cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];const explicit=parseFloat(cols[i]?.style.width||'');const measured=cell.getBoundingClientRect().width;defaults[base[i]]=clamp(explicit||measured||(/catalog actions/i.test(labels[i])?340:/description|valor|value|note/i.test(labels[i])?280:/item|brand|marca|est|plant/i.test(labels[i])?140:110));});
- const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.innerHTML='<span>Drag headers to reorder · drag column edges to resize</span><button type="button" class="btn mini idh-table-reset">Reset columns</button>';
+ const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.textContent='Drag headers to reorder · drag column edges to resize';
  table.before(notice);
  state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,order:[...base],defaults,widths:{...defaults},uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
- notice.querySelector('.idh-table-reset').onclick=()=>{state.order=[...base];state.widths={...defaults};apply(state);save(state);};
- const mobile=document.createElement('div');mobile.className='idh-mobile-order';mobile.innerHTML='<select aria-label="Column to adjust">'+base.map((key,i)=>'<option value="'+i+'">'+labels[i].replace(/[<>]/g,'')+'</option>').join('')+'</select><button type="button" class="btn mini" data-column-left>←</button><button type="button" class="btn mini" data-column-right>→</button><label>Width (px) <input class="input idh-width-input" type="number" min="50" max="1400" step="1" aria-label="Column width in pixels"></label><button type="button" class="btn mini" data-column-width>Apply width</button>';notice.appendChild(mobile);
- mobile.querySelectorAll('[data-column-left],[data-column-right]').forEach(b=>b.onclick=()=>{const key=base[Number(mobile.querySelector('select').value)],index=state.order.indexOf(key),target=state.order[index+(b.hasAttribute('data-column-left')?-1:1)];if(target)move(state,key,target);});
- const widthInput=mobile.querySelector('.idh-width-input'),columnSelect=mobile.querySelector('select');
- state.widthInput=widthInput;state.columnSelect=columnSelect;
- columnSelect.onchange=()=>{widthInput.value=clamp(state.widths[state.base[Number(columnSelect.value)]]);};
- const setWidth=()=>{const value=Number(widthInput.value);if(!widthInput.value||!Number.isFinite(value)||value<50||value>1400){widthInput.setCustomValidity('Enter a width from 50 to 1400 pixels.');widthInput.reportValidity();return;}widthInput.setCustomValidity('');state.widths[state.base[Number(columnSelect.value)]]=clamp(value);apply(state);save(state);};
- mobile.querySelector('[data-column-width]').onclick=setWidth;widthInput.oninput=()=>widthInput.setCustomValidity('');widthInput.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();setWidth();}};
  cells.forEach((cell,i)=>{
   const col=base[i];cell.draggable=true;cell.title='Drag to reorder '+labels[i];
   const handle=document.createElement('span');handle.className='idh-col-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','Resize '+labels[i]);handle.setAttribute('aria-valuemin','50');handle.setAttribute('aria-valuemax','1400');cell.appendChild(handle);
   const mover=document.createElement('button');mover.type='button';mover.className='idh-col-move';mover.textContent='⠿';mover.title='Move '+labels[i]+' · use left/right arrow keys';mover.setAttribute('aria-label','Move '+labels[i]);cell.insertBefore(mover,cell.firstChild);
+  // Native header drag handles the mouse; Pointer Events make the same grip work with touch/pen.
+  mover.onpointerdown=e=>{
+   if(!['touch','pen'].includes(e.pointerType)||e.button!==0)return;
+   e.preventDefault();e.stopPropagation();cell.draggable=false;mover.setPointerCapture?.(e.pointerId);cell.classList.add('idh-dragging-column');
+   let target=col,highlight=null;
+   const clear=()=>{highlight?.classList.remove('idh-column-drop-target');highlight=null;};
+   const track=event=>{
+    if(event.pointerId!==e.pointerId)return;
+    clear();target=null;const header=document.elementFromPoint(event.clientX,event.clientY)?.closest('th');
+    if(header?.closest('table')===table&&state.headers.has(header.dataset.idhCol)){target=header.dataset.idhCol;highlight=header;highlight.classList.add('idh-column-drop-target');}
+    const wrap=table.closest('.tablewrap');if(wrap){const bounds=wrap.getBoundingClientRect();if(event.clientX<bounds.left+28)wrap.scrollLeft-=24;else if(event.clientX>bounds.right-28)wrap.scrollLeft+=24;}
+   };
+   const finish=event=>{
+    if(event.pointerId!==e.pointerId)return;
+    if(event.type==='pointerup')track(event);
+    mover.removeEventListener('pointermove',track);mover.removeEventListener('pointerup',finish);mover.removeEventListener('pointercancel',finish);
+    clear();cell.classList.remove('idh-dragging-column');cell.draggable=true;
+    if(event.type==='pointerup'&&target&&target!==col)move(state,col,target);
+    table.dataset.idhSuppressClick=String(Date.now()+300);
+   };
+   mover.addEventListener('pointermove',track);mover.addEventListener('pointerup',finish);mover.addEventListener('pointercancel',finish);
+  };
   mover.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();const index=state.order.indexOf(col),target=state.order[index+(e.key==='ArrowLeft'?-1:1)];if(target)move(state,col,target);mover.focus();};
   handle.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();state.widths[col]=clamp(state.widths[col]+(e.key==='ArrowLeft'?-10:10));apply(state);save(state);};
   handle.onpointerdown=e=>{
@@ -4100,7 +4114,7 @@ window.InspectionTableLayout={refresh};refresh();
 #product-lookup-workspace .weekly-stats,#product-lookup-workspace .est-stats,#product-lookup-workspace .period-stats{display:none!important}
 #draft-print-sheet{display:none}.client-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.client-suggestions:empty{display:none}.delivery-unresolved{background:var(--sk-surface2);outline:1px solid var(--sk-border)}
 #sap-delivery-dialog select{max-width:100%}#admin-clients-panel{margin-top:18px}.inspection-evidence{padding:12px;margin-top:12px;background:var(--sk-surface2);border:1px solid var(--sk-border);border-radius:var(--sk-radius)}
-.idh-mobile-order{display:flex;flex-wrap:wrap;gap:6px}.idh-mobile-order select{max-width:220px}.idh-mobile-order label{display:flex;align-items:center;gap:5px}.idh-mobile-order .idh-width-input{width:86px;padding:7px;min-height:36px}.idh-table-layout-bar{flex-wrap:wrap}.idh-mobile-order button{min-width:40px}
+
 @media(max-width:800px){#po-details th,#po-details td{padding:8px}#po-details .btn{white-space:normal;min-height:40px}#po-details [data-po-ref]{font-size:16px}#po-details .po-details-head{flex-wrap:wrap}#sap-delivery-dialog{width:96vw;max-width:96vw}.client-suggestions .btn{min-height:40px}}
 @media print{body.print-draft>.shell,body.print-draft>dialog,body.print-draft>#cloud-banner,body.print-draft>#cloud-blocker{display:none!important}body.print-draft>#draft-print-sheet{display:block!important;background:white;color:black}body.print-draft td,body.print-draft th{white-space:normal;border:1px solid #bbb;color:black;background:white}}
 </style><style>#lookup-view:not(.hidden){display:flex;flex-direction:column;gap:14px}#lookup-view>.panel,#lookup-view>.layout{order:2}.normal-user #lookup-view>#approved-po-panel{order:0}.normal-user #lookup-view>.po-archive{order:1}body:not(.normal-user) #lookup-view>.po-archive{order:0}#product-lookup-workspace:not(.show-history) .weekly-stats,#product-lookup-workspace:not(.show-history) .est-stats,#product-lookup-workspace:not(.show-history) .period-stats{display:none!important}#product-lookup-workspace.show-history .weekly-stats,#product-lookup-workspace.show-history .est-stats,#product-lookup-workspace.show-history .period-stats{display:block!important}</style><style>.po-mobile-lines,.mobile-inspection-toggle{display:none}.po-mobile-lines .row{flex-wrap:wrap;gap:8px}.po-mobile-lines .btn{min-height:42px;white-space:normal}@media(max-width:800px){.mobile-inspection-toggle{display:block}.po-mobile-lines{display:grid;gap:12px}#po-details:not(.mobile-table)>.po-review-table,#po-details:not(.mobile-table)>.po-review-table .idh-table-layout-bar{display:none}#po-details.mobile-table>.po-mobile-lines{display:none}}</style><script>
