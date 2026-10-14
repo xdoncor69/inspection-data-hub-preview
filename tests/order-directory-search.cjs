@@ -17,7 +17,7 @@ const intake={id:'i1',draft_id:'draft1',approved_po_id:null,po_number:'00402824'
 s=model.summary(po,{intakes:[intake]});assert.equal(s.status,'Draft · pending inspection');assert.equal(s.po,'00402824');assert.equal(s.customer,'Budget Food');assert(model.matches(s,'003001'));
 const only={...po,po:'D003001'};
 s=model.summary(only,{intakes:[{...intake,po_number:'D003001',has_supplied_po:false}]});assert.equal(s.po,'');assert.equal(s.association,'none');assert.equal(s.status,'Draft · pending inspection');
-let card=model.identityHTML(s,esc);assert(card.includes('No PO associated'));assert(card.includes('Delivery 003001'));assert(card.includes('Status: Draft'));assert(!card.includes('D003001'));
+let card=model.identityHTML(s,esc);assert(card.includes('No PO associated'));assert(card.includes('Del No. 003001'));assert(card.includes('Status: Draft'));assert(!card.includes('D003001'));
 const standalone=s;
 s=model.summary(only,{intakes:[{...intake,po_number:'D003001',has_supplied_po:null}]});assert.equal(s.association,'unknown');assert(model.identityHTML(s,esc).includes('PO association not recorded'));
 s=model.summary({...only,po:'12345'},{intakes:[{...intake,po_number:'D003001',has_supplied_po:false}]});assert.equal(s.po,'12345');
@@ -42,7 +42,7 @@ const entries=Array.from({length:60},(_,i)=>({summary:{...model.summary({...po,i
 const table=model.tableHTML(entries,{layoutKey:'purchase-order-drafts',escape:esc});
 assert.equal((table.match(/<tr>/g)||[]).length,61);
 const headings=[...table.matchAll(/<th [^>]+>([^<]+)<\/th>/g)].map(m=>m[1]);
-assert.equal(headings.join('|'),'Delivery No.|PO No.|Customer|Sales team|Status|Actions');
+assert.equal(headings.join('|'),'Del No.|PO No.|Customer|Sales team|Status|Actions');
 assert(table.includes('data-layout-key="purchase-order-drafts"'));assert(!table.includes('po-list-row'));assert(!table.includes('<input'));
 assert(table.includes('CSR1'));assert(table.includes('>7<'));
 const empty=model.tableHTML([],{layoutKey:'purchase-order-approved',escape:esc});assert(empty.includes('colspan="6"'));
