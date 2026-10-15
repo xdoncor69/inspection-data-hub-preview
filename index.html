@@ -495,7 +495,7 @@ function closeModal(){$("modal-root").innerHTML="";}
 $("photo-area").onclick=()=>{modal('<h2>Manage case photo</h2><p>Select an existing image or upload a new one. This preview does not save files.</p><div class="choice" id="choose-gallery">▦ &nbsp; Browse photo gallery</div><div class="choice" id="choose-upload">＋ &nbsp; Add a new photo</div><div class="choice" id="choose-remove">× &nbsp; Remove assigned photo</div>');$("choose-gallery").onclick=gallery;$("choose-upload").onclick=upload;$("choose-remove").onclick=()=>{photoName="";showProduct();closeModal()};};
 function gallery(){modal('<h2>Photo gallery</h2><p>Reuse an existing photo or add another one.</p><div class="gallery"><div class="tile" data-photo="Sample case A">▧<br>Sample case A</div><div class="tile" data-photo="Sample case B">▧<br>Sample case B</div><div class="tile" id="gallery-upload">＋<br>Add new photo</div></div>');document.querySelectorAll("[data-photo]").forEach(t=>t.onclick=()=>{photoName=t.dataset.photo;showProduct();closeModal()});$("gallery-upload").onclick=upload;}
 function upload(){modal('<h2>Upload case photo</h2><p>Select an image from this device to preview its filename.</p><input type="file" id="photo-file" accept="image/*" class="input" style="width:100%">');$("photo-file").onchange=e=>{photoName=e.target.files?.[0]?.name||"";showProduct();closeModal()};}
-window.__inspectionEditProductItem=item=>{const x=demo.find(p=>String(p.item)===String(item));if(!x)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}selected=x;$("edit-btn").onclick();};
+window.__inspectionEditProductItem=item=>{const x=window.InspectionCloud.catalogItem(demo,item);if(!x)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}selected=x;$("edit-btn").onclick();};
 function editCatalogProduct(x,isNew=false,done=()=>{}){
  if(!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return;}
  const data={category:"Meat",brand:"",description:"",plant:"",family:"",pack:"",...window.InspectionProduct.catalog(x)};
@@ -505,7 +505,7 @@ function editCatalogProduct(x,isNew=false,done=()=>{}){
   const obj={};["item","category","plant","brand","family","description","pack"].forEach(k=>obj[k]=$("edit-"+k).value.trim());
   obj.description=productDescription(obj.description,obj.brand);
   if(!/^[-A-Za-z0-9_.]+$/.test(obj.item)||!["Meat","Poultry"].includes(obj.category)||!obj.brand||!obj.description){alert("Item number, class, brand and description are required.");return;}
-  if(demo.some(p=>p.item===obj.item&&(isNew||p.item!==x.item))){alert("That Item number already exists.");return;}
+  const found=window.InspectionCloud.catalogItem(demo,obj.item);if(found&&(isNew||found.item!==x.item)){alert("That Item number already exists.");return;}
   const refs=$("edit-alternative-est").value,notes=$("edit-new-notes").value;
   const i=demo.findIndex(p=>p.item===x.item);if(i>=0&&!isNew)demo[i]=obj;else demo.push(obj);
   if(!window.__inspectionSaveCatalog())return;
@@ -514,7 +514,7 @@ function editCatalogProduct(x,isNew=false,done=()=>{}){
   selected=obj;showProduct();window.__inspectionFullProductRefresh?.();window.__inspectionGlobalRefresh?.();finish();
  };
 }
-window.__inspectionAddImportedProduct=(row,done=()=>{})=>{if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}if(demo.some(p=>p.item===row.item)){done();return;}editCatalogProduct({...row.importedProduct,item:row.item,description:row.description,plant:row.plant||row.importedProduct?.plant||'',category:row.importedProduct?.category||''},true,done);};
+window.__inspectionAddImportedProduct=(row,done=()=>{})=>{if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}if(window.InspectionCloud.catalogItem(demo,row.item)){done();return;}editCatalogProduct({...row.importedProduct,item:row.item,description:row.description,plant:row.plant||row.importedProduct?.plant||'',category:row.importedProduct?.category||''},true,done);};
 window.__inspectionOfferMissing=(item,done=()=>{})=>{
  if(!window.InspectionCloud.isAdministrator()){alert('Item '+item+' is not in the catalog. It stays in your draft with unknown data blank. Only the administrator can add it.');$('item-input').focus();$('item-input').select();done();return;}
 
@@ -882,9 +882,9 @@ function currentPreview(){
  preview=sourceRows.map((values,index)=>{
   const item=window.InspectionCloud.itemKey(values[Number(itemCol)]);
   const description=descCol!==""?clean(values[Number(descCol)]):"";
-  const product=window.InspectionCloud.exactCatalogItem(demo,item);
-  const duplicate=!!item&&seen.has(item);
-  if(item)seen.add(item);
+  const product=window.InspectionCloud.catalogItem(demo,item);
+  const identity=window.InspectionCloud.itemIdentity(item),duplicate=!!item&&seen.has(identity);
+  if(item)seen.add(identity);
   return {line:index+2,item,description,product,duplicate,sourceProduct:sourceProduct(values,sourceMapping)};
  }).filter(r=>r.item);
  const matched=preview.filter(r=>r.product&&!r.duplicate),unknown=preview.filter(r=>!r.product),dupes=preview.filter(r=>r.duplicate);
@@ -1026,7 +1026,7 @@ el("po-import-create").onclick=()=>{
  const client=window.InspectionCloud.requireClient(el("po-import-customer"));if(!client)return;
  const newItems=preview;
  if(!newItems.length){alert("No Item numbers found. Check the mapping.");return;}
- const importRow=r=>r.product?rowFor(r.product):{...rowFor({item:r.item,description:r.sourceProduct.description,missing:true}),...r.sourceProduct,description:r.sourceProduct.description,plant:r.sourceProduct.plant,expectedEst:r.sourceProduct.plant,note:r.sourceProduct.notes,importedProduct:{...r.sourceProduct},sourceFile:fileName};
+ const importRow=r=>r.product?{...rowFor(r.product),sourceItem:r.item,sourceFile:fileName}:{...rowFor({item:r.item,description:r.sourceProduct.description,missing:true}),...r.sourceProduct,description:r.sourceProduct.description,plant:r.sourceProduct.plant,expectedEst:r.sourceProduct.plant,note:r.sourceProduct.notes,importedProduct:{...r.sourceProduct},sourceItem:r.item,sourceFile:fileName};
  const unknown=newItems.filter(r=>!r.product);
  const info="Create PO draft "+number+" with "+newItems.length+" Items?"+(unknown.length?"\n"+unknown.length+" unknown Items will use available source product fields and be labeled Not in catalog. No catalog products are created automatically.":"")+"\nEST values are references, not physical verification.";
  if(!confirm(info))return;
@@ -1163,8 +1163,8 @@ function deletePrivateDraft(id){
  invoices=invoices.filter(x=>x.id!==id);if(openPO===id)openPO=null;
  persistPOWorkspace();renderPOArchive();
 }
-function poCatalogBadge(row,index){if(row.sourceMode==='external-picture')return '<div class="notice small">External source · Page '+safe(row.sourcePage)+' / line '+safe(row.sourceLine)+'</div>';if(demo.some(p=>p.item===row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
-function poDisplayProduct(row){return row.sourceMode==='external-picture'?(row.importedProduct||row):demo.find(p=>p.item===row.item)||row.importedProduct||{};}
+function poCatalogBadge(row,index){if(row.sourceMode==='external-picture')return '<div class="notice small">External source · Page '+safe(row.sourcePage)+' / line '+safe(row.sourceLine)+'</div>';if(window.InspectionCloud.catalogItem(demo,row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
+function poDisplayProduct(row){return row.sourceMode==='external-picture'?(row.importedProduct||row):window.InspectionCloud.catalogItem(demo,row.item)||row.importedProduct||{};}
 function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+(r.sourceMode==='external-picture'?'Review':estPriorityCell(r.item))+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
 function openMissingESTEditor(poId){
  const cloud=window.InspectionCloud;
@@ -1195,7 +1195,7 @@ if(!p){root.innerHTML="";root.dataset.draftOwner="";window.InspectionOrderOvervi
 const folded=window.InspectionOrderOverview.capture(root,p.id);root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
 root.innerHTML='<div class="po-details-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'</div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="order-counts"><span>PO: '+p.rows.length+' item lines</span></div><details class="order-lines" data-order-fold="po"><summary>PO items ('+p.rows.length+')</summary><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
- return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+(x.sourceMode==='external-picture'?'Review':estPriorityCell(x.item))+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+(x.sourceItem&&x.sourceItem!==x.item?'<div class="small muted">Source: '+safe(x.sourceItem)+'</div>':'')+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+(x.sourceMode==='external-picture'?'Review':estPriorityCell(x.item))+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
  }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p)+'</details><section id="draft-delivery-overview"></section>';
 window.InspectionCloud.renderDraftDeliveries?.(document.getElementById('draft-delivery-overview'),p);
 window.InspectionOrderOverview.restore(root,folded);window.InspectionOrderOverview.sync('draft',root,true,()=>{openPO=null;existingPOAccepted=false;renderPOArchive();});
@@ -1206,7 +1206,7 @@ root.querySelectorAll('[data-po-add-catalog]').forEach(b=>b.onclick=()=>{if(!win
 root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>{
  const row=p.rows[Number(b.dataset.poProductDetail)],item=row.item;
  const caption=b.textContent;b.disabled=true;b.textContent='Loading profile…';
- try{if(row.sourceMode==='external-picture'){modal('<h2>External source product</h2><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.exactCatalogItem(products,item);
+ try{if(row.sourceMode==='external-picture'){modal('<h2>External source product</h2><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.catalogItem(products,item);
  if(!selected){modal('<h2>Not in catalog</h2><p>The official catalog was queried successfully. Source PO data only; adding this product is optional.</p><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}
  const profile=selected;window.__inspectionNavigate?.('global');selected=profile;showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
  }catch(error){alert(window.InspectionCloud.catalogError(error));}finally{b.disabled=false;b.textContent=caption;}
@@ -1218,9 +1218,9 @@ $("po-close-active").onclick=closeActivePO;
 $("po-approve").onclick=()=>window.InspectionCloud.approvePO(p.id);
 const poAdd=$("po-add-item"),poAddBtn=$("po-add-item-btn");
 poAddBtn.onclick=()=>{
-const item=window.InspectionCloud.itemKey(poAdd.value),product=window.InspectionCloud.exactCatalogItem(demo,item);
+const item=window.InspectionCloud.itemKey(poAdd.value),product=window.InspectionCloud.catalogItem(demo,item);
 if(!item)return;
-if(p.rows.some(x=>x.item===item)&&!confirm("This Item is already in the PO. Add a separate line?"))return;
+if(p.rows.some(x=>window.InspectionCloud.itemIdentity(x.item)===window.InspectionCloud.itemIdentity(item))&&!confirm("This Item is already in the PO. Add a separate line?"))return;
 if(!product){addItemToActivePO({item,description:"",missing:true});window.__inspectionOfferMissing(item);return;}
 addItemToActivePO(product);
 };
@@ -2277,7 +2277,7 @@ $("iq-edit-all").onclick=()=>{
 };
 function finishBatch(){
  batchEditing=false;batchBase.clear();
- matched=matched.map(p=>window.InspectionCloud.exactCatalogItem(demo,p.item)).filter(Boolean);
+ matched=matched.map(p=>window.InspectionCloud.catalogItem(demo,p.item)).filter(Boolean);
  refreshAfterEdit();batchControls();
 }
 $("iq-cancel-all").onclick=()=>{if(batchBusy)return;finishBatch();$("iq-batch-status").textContent="Batch edits cancelled. No catalog changes were sent.";};
@@ -2698,7 +2698,7 @@ async function checkManualItem(){
   const products=await window.InspectionCloud.refreshCatalog();
   if(sequence!==itemCheckSequence||item!==window.InspectionCloud.itemKey(el("ip-item").value))return;
   if(!products)throw Error("The catalog query was superseded. Select Check again.");
-  const found=window.InspectionCloud.exactCatalogItem(products,item);checkedItem=item;
+  const found=window.InspectionCloud.catalogItem(products,item);checkedItem=item;
   itemCheckStatus(found?"Already in catalog: "+item+" · "+[found.brand,found.description].filter(Boolean).join(" · ")+". Review this record instead of creating a duplicate.":"No exact record for "+item+" in the official catalog. You can prepare a new product.",found?"exists":"new");
  }catch(error){if(sequence===itemCheckSequence){checkedItem="";itemCheckStatus(window.InspectionCloud.catalogError(error),"error");}}
 }
@@ -2740,14 +2740,15 @@ function compare(product,original,provided){
 function prepare(entries){
  const seen=new Map();
  staged=entries.map((entry,index)=>{
-  const p=productFrom(entry.data),found=window.InspectionCloud.exactCatalogItem(demo,p.item),existing=found?{...found}:null;
+  const p=productFrom(entry.data),found=window.InspectionCloud.catalogItem(demo,p.item),existing=found?{...found}:null;
+  const sourceItem=p.item;if(found)p.item=found.item;
   const provided=new Set(entry.provided||keys);if(provided.has("size"))provided.add("pack");
   const valid=/^[A-Za-z0-9_.-]{1,64}$/.test(p.item)&&!!(p.description||existing?.description)&&!!(p.brand||existing?.brand)&&window.InspectionProduct.visible(p)&&(!p.category||["Meat","Poultry"].includes(p.category));
   const diffs=compare(p,existing,provided);
-  const duplicate=seen.has(p.item);
-  if(p.item)seen.set(p.item,index);
+  const identity=window.InspectionCloud.itemIdentity(p.item),duplicate=seen.has(identity);
+  if(p.item)seen.set(identity,index);
   const status=!valid?"invalid":duplicate?"duplicate":!existing?"new":diffs.length?"changed":"same";
-  return {index,line:entry.line||index+1,p,existing,provided,diffs,status,selectedFields:new Set(),action:status==="new"?"add":"skip"};
+  return {index,line:entry.line||index+1,sourceItem,p,existing,provided,diffs,status,selectedFields:new Set(),action:status==="new"?"add":"skip"};
  });
  draw();
 }
@@ -2810,7 +2811,7 @@ el("ip-stage-manual").onclick=async()=>{
  busy=true;draw();
  try{
   const products=await window.InspectionCloud.refreshCatalog();if(!products)throw Error("Catalog query was superseded. Retry the review.");
-  const existing=window.InspectionCloud.exactCatalogItem(products,item);
+  const existing=window.InspectionCloud.catalogItem(products,item);
   if(!existing&&(!trim(data.brand)||!trim(data.description)))throw Error("Item No., Brand and Description are required for a new product.");
   prepare([{data,provided:keys.filter(k=>trim(data[k])),line:1}]);
   notice(existing?"Matched record. Compare and choose individual fields, or keep the existing product.":"New product ready for review. Nothing has been saved.");
@@ -3322,7 +3323,7 @@ function exactCatalogItem(products,value){
  if(matches.length>1)throw Error('Multiple catalog identifiers match after trimming boundary whitespace. Enter the full stored identifier.');
  return matches[0]||null;
 }
-// Search aliases only: preserve full identifiers for catalog edits, imports and delivery matching.
+// Six-digit identity for identification; stored identifiers and source documents remain intact.
 function catalogSearchBase(value){
  const match=itemKey(value).match(/^(\d{6}|\d{2}-\d{2}-\d{2})(?:\s*[-/]\s*\d+)?$/);
  return match?match[1].replace(/-/g,''):null;
@@ -3330,6 +3331,12 @@ function catalogSearchBase(value){
 function searchCatalogItems(products,value){
  const exact=exactCatalogItem(products,value);if(exact)return [exact];
  const base=catalogSearchBase(value);return base?products.filter(p=>catalogSearchBase(p.item)===base):[];
+}
+function itemIdentity(value){return catalogSearchBase(value)||itemKey(value).toUpperCase();}
+function catalogItem(products,value){
+ const matches=searchCatalogItems(products,value);
+ if(matches.length>1)throw Error('Several catalog records use Item '+(catalogSearchBase(value)||itemKey(value))+'. Select a full catalog identifier before continuing.');
+ return matches[0]||null;
 }
 function catalogError(error){return error.status===401||error.status===403?'Catalog access denied. Sign in with an authorized account.':error.network||error instanceof TypeError?'Catalog connection failed. Retry the search; no result has been classified as not found.':'Catalog query failed: '+error.message;}
 async function refreshCatalog(){
@@ -3576,7 +3583,7 @@ function editClient(existing=null,{name:initialName='',onSaved=null}={}){
  };dialog.showModal();
 }
 
-function deliveryItemKey(value){return String(value??'').trim().toUpperCase();}
+function deliveryItemKey(value){return itemIdentity(value);}
 function deliverySourceNumber(value,weight=false){
  const text=String(value??'').trim().replace(weight?/\s*(?:lbs?\.?|pounds?)\s*$/i:/$^/,'').trim();
  if(!text)return '';
@@ -3916,7 +3923,8 @@ async function addImportedCatalog(products){
  const brandKey=v=>String(v||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();
  const names=[...Object.keys(brands),...Object.values(catalog).map(p=>p.brand)].filter(Boolean);
  for(const p of products){
-  if(!p.item||seen.has(p.item)||Object.hasOwn(catalog,p.item))throw Error('Item '+p.item+' already exists or is repeated. Refresh the preview.');seen.add(p.item);
+  const identity=catalogSearchBase(p.item)||itemKey(p.item);
+  if(!p.item||seen.has(identity)||catalogItem(Object.entries(catalog).map(([item,p])=>({...p,item})),p.item))throw Error('Item '+p.item+' already exists or is repeated. Refresh the preview.');seen.add(identity);
   if(!['Meat','Poultry'].includes(p.category)||!String(p.brand||'').trim()||!String(p.description||'').trim())throw Error('Missing required fields for Item '+p.item);
   const brand=names.find(n=>brandKey(n)===brandKey(p.brand))||String(p.brand).trim();
   const product=Object.fromEntries(['category','description','pack','plant','family'].map(k=>[k,String(p[k]||'').trim()]));product.brand=brand;product.pack=window.InspectionProduct.packSize(p.pack,p.size);
@@ -4122,7 +4130,7 @@ async function readPicture(body){
  const owner=session.user.id;const result=await request('/functions/v1/inspection-picture',{method:'POST',body,timeoutMs:65000});
  if(session?.user.id!==owner)throw Error('Account changed. Reopen From Picture.');return result;
 }
-window.InspectionCloud={readPicture,saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,searchCatalogItems,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={readPicture,saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,searchCatalogItems,catalogItem,itemIdentity,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
