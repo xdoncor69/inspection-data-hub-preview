@@ -519,9 +519,10 @@ window.__inspectionOfferMissing=(item,done=()=>{})=>{
  if(!window.InspectionCloud.isAdministrator()){alert('Item '+item+' is not in the catalog. It stays in your draft with unknown data blank. Only the administrator can add it.');$('item-input').focus();$('item-input').select();done();return;}
 
  const next=()=>{const input=$("item-input");input.focus();input.select();done();};
- modal('<h2>Item not found</h2><p>Item '+esc(item)+' does not exist in the database. Would you like to add it?</p><p>A PO draft keeps this Item number with blank product data until you fill it in.</p><div class="row"><button class="btn primary" id="missing-item-yes">Yes, add Item</button><button class="btn" id="missing-item-no">No, continue searching</button></div>');
+ modal('<h2>Item not found</h2><p>Item '+esc(item)+' does not exist in the database. Would you like to add it?</p><p>A PO draft keeps this Item number with blank product data until you fill it in.</p><div class="row"><button class="btn" type="button" id="missing-item-yes">Yes, add Item</button><button class="btn primary" type="button" autofocus id="missing-item-no">No, continue searching</button></div>');
  $("missing-item-no").onclick=()=>{closeModal();next();};
  $("missing-item-yes").onclick=()=>editCatalogProduct({item,category:"Meat"},true,next);
+ $("missing-item-no").focus();
 };
 $("edit-btn").onclick=()=>editCatalogProduct(selected||{item:""},!selected||!!selected.missing);
 
