@@ -155,7 +155,7 @@ window.InspectionTableTools={
 <label><span class="label">EST</span><select class="input" id="iq-plant"><option value="">Select EST…</option></select></label>
 <label><span class="label">Description field</span><select class="input" id="iq-description-state"><option value="">Select description status…</option><option value="blank">Blank field</option><option value="filled">With description</option></select></label><label class="iq-full"><span class="label">Description contains</span><input class="input" type="search" id="iq-description" placeholder="e.g. ham, turkey, chicken…" autocomplete="off"></label>
 </div></div>
-<label style="display:block;margin:12px 0"><span class="label">Exact Item numbers · one per line</span><textarea class="input" id="iq-items" rows="2" style="width:100%" placeholder="110790-631&#10;272316"></textarea><span class="small muted">Exact Item searches use the complete catalog and ignore the filters above.</span></label><div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
+<label style="display:block;margin:12px 0"><span class="label">Item numbers · one per line</span><textarea class="input" id="iq-items" rows="2" style="width:100%" placeholder="110790-631&#10;272316"></textarea><span class="small muted">Six-digit Item numbers also match numeric suffixes. Item searches use the complete catalog and ignore the filters above.</span></label><div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results hidden">
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><span id="iq-edit-all-controls" hidden><button type="button" class="btn mini" id="iq-edit-all">Edit all results</button><button type="button" class="btn mini primary" id="iq-save-all" hidden>Save all</button><button type="button" class="btn mini" id="iq-cancel-all" hidden>Cancel</button></span><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST</option><option value="brand">Brand</option><option value="pack">Pack / Size</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
@@ -472,12 +472,12 @@ async function lookup(){
  if(sequence!==lookupSequence)return;
  if(!products){status.textContent='Search superseded by another catalog query. Press Find Item to retry.';return;}
  if(q!==window.InspectionCloud.itemKey($("item-input").value)){status.textContent='Item number changed. Press Find Item to search.';return;}
- selected=window.InspectionCloud.exactCatalogItem(products,q);
- if(selected&&!window.InspectionProduct.visible(selected)){selected=null;showProduct();status.textContent='This product type is currently inactive.';return;}
- status.textContent=selected?'Found in the official catalog.':'No exact Item found in the official catalog. Check the complete identifier, including suffixes and leading zeros.';
+ const matches=window.InspectionCloud.searchCatalogItems(products,q),visible=matches.filter(p=>window.InspectionProduct.visible(p));
+ if(matches.length&&!visible.length){selected=null;showProduct();status.textContent='This product type is currently inactive.';return;}
+ if(visible.length>1){status.textContent=visible.length+' matching catalog records.';modal('<h2>Item matches</h2><p>Several catalog records use this Item number. Select the record to open.</p>'+visible.map((p,i)=>'<button class="btn" data-item-choice="'+i+'">'+esc(p.item)+' · '+esc(p.description)+'</button>').join(''));document.querySelectorAll('[data-item-choice]').forEach(b=>b.onclick=()=>{$('item-input').value=visible[Number(b.dataset.itemChoice)].item;closeModal();lookup();});return;}
+ selected=visible[0]||null;
+ status.textContent=selected?'Found in the official catalog.':'Item not found in the official catalog. Check the Item number and leading zeros.';
  if(!selected){
-  const suggestions=products.filter(p=>String(p.item).startsWith(q+'-'));
-  if(suggestions.length){modal('<h2>No exact Item match</h2><p>The catalog contains these full identifiers. Select the correct Item explicitly.</p>'+suggestions.map((p,i)=>'<button class="btn" data-exact-choice="'+i+'">'+esc(p.item)+' · '+esc(p.description)+'</button>').join(''));document.querySelectorAll('[data-exact-choice]').forEach(b=>b.onclick=()=>{$('item-input').value=suggestions[Number(b.dataset.exactChoice)].item;closeModal();lookup();});return;}
   const blank={item:q,category:"",brand:"",description:"",family:"",plant:"",pack:"",missing:true};selected=blank;showProduct();
   const ask=()=>window.__inspectionOfferMissing(q);
   if(window.__inspectionSearchOnly?.())ask();else window.__inspectionOnLookup?.(blank,ask);
@@ -2373,7 +2373,7 @@ async function run(){
  if(sequence!==querySequence||query!==signature())return;
  if(!products){status.textContent='Search superseded by another catalog query. Press Search products to retry.';return;}
  const ids=exactItems(),missing=[];
- if(ids.length){matched=ids.map(id=>{const product=window.InspectionCloud.exactCatalogItem(products,id);if(!product)missing.push(id);return product&&window.InspectionProduct.visible(product)?product:null;}).filter(Boolean);status.textContent=missing.length?'No exact match: '+missing.join(', ')+'. Check full identifiers; no approximate matches were substituted.':'Exact matches from the complete official catalog. Other filters were ignored.';}
+ if(ids.length){const seen=new Set();matched=ids.flatMap(id=>{const productsFound=window.InspectionCloud.searchCatalogItems(products,id);if(!productsFound.length)missing.push(id);return productsFound.filter(product=>{const key=window.InspectionCloud.itemKey(product.item);if(!window.InspectionProduct.visible(product)||seen.has(key))return false;seen.add(key);return true;});});status.textContent=missing.length?'Item not found: '+missing.join(', ')+'. Check Item numbers and leading zeros.':'Matches from the complete official catalog. Other filters were ignored.';}
  else {populate();matched=products.filter(x=>match(x));status.textContent='Official catalog queried successfully. Results use the visible filters.';}
  selectedIds=new Set();lastQuery=query;resultsDirty=false;$("iq-idle").hidden=true;draw();
  }catch(error){if(sequence===querySequence){matched=[];$("iq-results").classList.add('hidden');status.textContent=window.InspectionCloud.catalogError(error);}}
@@ -2417,7 +2417,7 @@ function refreshAfterEdit(){
 }
 // Filter controls drive the result list; there is no keyword bar or Search button.
 $("iq-run").onclick=run;
-$("iq-items").addEventListener("input",()=>{querySequence++;$("iq-results").classList.add("hidden");$("iq-filter-status").textContent="Press Search products to query these exact Item numbers.";});
+$("iq-items").addEventListener("input",()=>{querySequence++;$("iq-results").classList.add("hidden");$("iq-filter-status").textContent="Press Search products to query these Item numbers.";});
 for(const field of facets)$("iq-"+field).addEventListener("change",()=>changeFacet(field));
 $("iq-description").addEventListener("input",()=>{clearTimeout(searchTimer);if(!hasConditions()){showIdle();return;}searchTimer=setTimeout(run,180);});
 
@@ -3314,6 +3314,15 @@ function exactCatalogItem(products,value){
  if(matches.length>1)throw Error('Multiple catalog identifiers match after trimming boundary whitespace. Enter the full stored identifier.');
  return matches[0]||null;
 }
+// Search aliases only: preserve full identifiers for catalog edits, imports and delivery matching.
+function catalogSearchBase(value){
+ const match=itemKey(value).match(/^(\d{6}|\d{2}-\d{2}-\d{2})(?:\s*[-/]\s*\d+)?$/);
+ return match?match[1].replace(/-/g,''):null;
+}
+function searchCatalogItems(products,value){
+ const exact=exactCatalogItem(products,value);if(exact)return [exact];
+ const base=catalogSearchBase(value);return base?products.filter(p=>catalogSearchBase(p.item)===base):[];
+}
 function catalogError(error){return error.status===401||error.status===403?'Catalog access denied. Sign in with an authorized account.':error.network||error instanceof TypeError?'Catalog connection failed. Retry the search; no result has been classified as not found.':'Catalog query failed: '+error.message;}
 async function refreshCatalog(){
  requireDatabaseConnection();if(!canConsult())throw Error('The database is disconnected. Reconnect and retry the search.');
@@ -4105,7 +4114,7 @@ async function readPicture(body){
  const owner=session.user.id;const result=await request('/functions/v1/inspection-picture',{method:'POST',body,timeoutMs:65000});
  if(session?.user.id!==owner)throw Error('Account changed. Reopen From Picture.');return result;
 }
-window.InspectionCloud={readPicture,saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={readPicture,saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,searchCatalogItems,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
