@@ -125,7 +125,7 @@ window.InspectionTableTools={
 @media print{#cloud-blocker,#cloud-banner,.online-dialog{display:none!important}}
 .approval-card{margin:14px 0;padding:16px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);background:var(--sk-surface2)}.approval-card pre{white-space:pre-wrap;word-break:break-word;font:11px/1.5 monospace;max-height:220px;overflow:auto}.approval-card td{vertical-align:top}.approval-card img{max-width:220px;max-height:180px;object-fit:contain;margin:8px}.approval-card .approval-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 </style>
-<button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Pending sends</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Pending sends for this account</h3><button class="btn" id="pending-writes-close" type="button">Close</button></div><p class="muted small">Only pending submissions are stored on this device. A conflict requires reviewing the values before editing again.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status">Connecting to the official database…</div>
+<button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Pending sends</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Pending sends for this account</h3><button class="btn" id="pending-writes-close" type="button">Close</button></div><p class="muted small">Only pending submissions are stored on this device. A conflict requires reviewing the values before editing again.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status" hidden>Connecting to the official database…</div>
 <div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Sign in</button><button class="btn" id="blocker-pending-button" type="button" hidden>View pending sends</button><button class="btn" id="blocker-account-button" type="button" hidden>Account / sign out</button></div></div>
 <dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
@@ -134,7 +134,7 @@ window.InspectionTableTools={
 <main class="main">
 <div class="top"><div><div class="eyebrow">Warehouse inspection workspace</div><h1 class="title" id="page-title">Purchase Orders</h1><div class="subtitle" id="page-subtitle">Look up Items and manage Purchase Orders</div></div><div class="topright"><button class="btn mini context-help" id="context-help" type="button" title="Open help for this section">ⓘ Help</button><span class="pill">◉ OFFICIAL ONLINE DATABASE</span><span class="pill">⚙ Admin access</span><div class="avatar">AD</div></div></div>
 <!-- Legacy hidden compatibility nodes for older demo scripts; not a navigable screen. -->
-<section id="global-view" class="hidden"><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item Number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count" hidden>—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
+<section id="global-view" class="hidden"><div id="product-catalog-actions" class="product-catalog-actions" hidden><button type="button" class="btn primary" id="product-import-open">Import products</button><button type="button" class="btn" id="product-template-export">Export template (.xlsx)</button></div><div id="product-lookup-workspace"><div class="panel panel-pad inspection-single-lookup"><div class="toolbar"><div class="field item"><div class="label">Item Number</div><input class="input" id="item-input" placeholder="e.g. 272319" autocomplete="off"></div><button class="btn primary" id="lookup-btn">Find Item ↵</button><span class="muted small" id="item-count" hidden>—</span><span id="lookup-status" class="small muted" role="status" aria-live="polite"></span></div></div>
 <div class="layout"><div class="panel product"><div class="product-header"><div><div class="label" id="plant-label">EST</div><div class="est-number" id="plant-value">—</div><div class="product-name" id="product-name">Select or scan a product</div><span class="chip" id="product-chip">NO ITEM SELECTED</span></div><button class="btn mini compact-edit" id="edit-btn" title="Edit product" aria-label="Edit product">✎</button></div><div class="detail-grid"><div><div class="label">Item number</div><div class="value" id="d-item">—</div></div><div><div class="label">Brand</div><div class="value" id="d-brand">—</div></div><div><div class="label">Product family</div><div class="value" id="d-family">—</div></div><div><div class="label">Description</div><div class="value" id="d-description">—</div></div><div><div class="label">Pack / Size</div><div class="value" id="d-pack">—</div></div></div></div><div class="panel photo"><div class="section-head"><h3>Case photo</h3><span class="hint">Click to manage</span></div><div class="photo-space" id="photo-area"><div class="photo-icon">▧</div><strong>Click to select a photo</strong><div class="small">Gallery or upload a new image</div></div></div></div>
 <div class="panel history"><div class="section-head"><h3>Recent inspections</h3><div class="row"><span class="hint">Most recent searches</span><button class="btn mini" id="history-all">View history →</button></div></div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Item</th><th>Brand</th><th>Description</th><th>Status</th></tr></thead><tbody id="recent-rows"></tbody></table></div></div></div><div class="panel panel-pad global-query-panel"><div id="inspection-query-workspace">
 <div class="inspection-query-intro"><div><strong>Global Search · Catalog query</strong><div class="muted small">Combine conditions to view and edit matching Items. This mode never creates or changes a PO.</div></div><span class="hint">Choose any combination of filters</span></div>
@@ -151,9 +151,9 @@ window.InspectionTableTools={
 </div></div>
 <label style="display:block;margin:12px 0"><span class="label">Exact Item numbers · one per line</span><textarea class="input" id="iq-items" rows="2" style="width:100%" placeholder="110790-631&#10;272316"></textarea><span class="small muted">Exact Item searches use the complete catalog and ignore the filters above.</span></label><div class="iq-filter-actions"><button type="button" class="btn primary" id="iq-run">Search products</button><button type="button" class="btn" id="iq-reset">Reset filters</button></div>
 <p id="iq-idle" class="muted small" role="status">Choose a filter or enter a description to search products. Results appear only after you set a search condition.</p><div id="iq-results" class="inspection-query-results hidden">
-<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
+<div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><span id="iq-edit-all-controls" hidden><button type="button" class="btn mini" id="iq-edit-all">Edit all results</button><button type="button" class="btn mini primary" id="iq-save-all" hidden>Save all</button><button type="button" class="btn mini" id="iq-cancel-all" hidden>Cancel</button></span><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST</option><option value="brand">Brand</option><option value="pack">Pack / Size</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
-<div class="muted small iq-edit-note">Select Edit to unlock an Item’s fields, then Save or Cancel. Select multiple rows for a bulk change. Administrator changes update the official catalog reference, not physical verification history.</div>
+<p class="small" id="iq-batch-status" role="status" aria-live="polite"></p><div class="muted small iq-edit-note">Select Edit for one Item, or Edit all results to unlock the result table and Save all to apply your changes. Administrator changes update the official catalog reference, not physical verification history.</div>
 <p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:160px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:126px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Actions</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
 <input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select>
@@ -356,6 +356,7 @@ window.InspectionOrderOverview=(()=>{
  return Object.freeze({sync,dismiss,capture,restore,isOpen:()=>!!document.getElementById('order-overview-dialog')?.open});
 })();
 </script>
+<style id="product-catalog-tools-style">.product-catalog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}#iq-edit-all-controls{display:inline-flex;flex-wrap:wrap;gap:6px}.iq-result-actions{display:flex;flex-wrap:wrap;gap:6px}#iq-batch-status:empty{display:none}#iq-batch-status{margin:10px 12px;overflow-wrap:anywhere}</style>
 <style id="order-overview-style">
 #order-overview-dialog{width:1100px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box}
 #order-overview-dialog *{box-sizing:border-box}
@@ -373,6 +374,23 @@ window.InspectionOrderOverview=(()=>{
 .order-action-modal::backdrop{background:transparent}
 @media(max-width:620px){#order-overview-dialog{padding:14px}#order-overview-dialog :is(.section-head,.po-details-head)>.row{flex-basis:100%}}
 </style>
+<script id="catalog-batch-policy">
+window.InspectionCatalogBatch=Object.freeze({
+ prepare(catalog,rows){
+  const fields=['brand','plant','description','pack','family','category'],next={...catalog},seen=new Set(),changed=[];
+  for(const row of rows){
+   if(!row.item||seen.has(row.item)||!Object.hasOwn(catalog,row.item))throw Error('Item '+row.item+' is missing or repeated. Search again.');
+   seen.add(row.item);const current=catalog[row.item];
+   for(const k of fields)if(String(current[k]??'')!==String(row.base[k]??''))throw Error('Item '+row.item+' changed since editing began. Cancel and search again before saving.');
+   if(Object.keys(row.changes).some(k=>!fields.includes(k)))throw Error('Unsupported catalog field. Item numbers cannot be changed.');
+   const value={...current,...row.changes};
+   if(!String(value.brand||'').trim()||!String(value.description||'').trim()||!['Meat','Poultry'].includes(value.category))throw Error('Item '+row.item+': choose Meat or Poultry and fill Brand and Description.');
+   if(fields.some(k=>String(value[k]??'')!==String(current[k]??''))){Object.defineProperty(next,row.item,{value,enumerable:true,configurable:true,writable:true});changed.push(row.item);}
+  }
+  return {catalog:next,changed};
+ }
+});
+</script>
 <script id="product-field-policy">
 /* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
 window.InspectionProduct=Object.freeze({
@@ -2115,6 +2133,77 @@ function matchesFacet(x,field,value){
  if(field==="photo")return value==="with"?(imagesByItem[x.item]||[]).length>0:!(imagesByItem[x.item]||[]).length;
  return value==="blank"?isBlankCatalogField(x.description):!isBlankCatalogField(x.description);
 }
+let batchEditing=false,batchBusy=false,batchBase=new Map();
+function batchControls(){
+ const admin=window.InspectionCloud.isAdministrator(),active=batchEditing;
+ $("product-catalog-actions").hidden=!admin;$("iq-edit-all-controls").hidden=!admin;
+ $("iq-edit-all").hidden=active;$("iq-save-all").hidden=!active;$("iq-cancel-all").hidden=!active;
+ $("iq-edit-all").disabled=!matched.length||!window.InspectionCloud.canEdit();$("iq-save-all").disabled=batchBusy||!window.InspectionCloud.canEdit();$("iq-cancel-all").disabled=batchBusy;
+ for(const id of ["iq-run","iq-reset","iq-items","iq-description",...facets.map(k=>"iq-"+k),"iq-select-all","iq-bulk-field","iq-bulk-value","product-import-open","product-template-export"])$(id).disabled=active;
+ if(active)$("iq-bulk-apply").disabled=true;
+ $("product-import-open").disabled=active||!admin||!window.InspectionCloud.canEdit();$("product-template-export").disabled=active||!admin;
+ $("iq-rows").querySelectorAll("[data-iq-item]").forEach(row=>{
+  const editing=row.dataset.iqEditing==="true";
+  row.querySelector(".iq-edit").hidden=!admin||active||editing;
+  row.querySelector(".iq-save").hidden=!admin||active||!editing;
+  row.querySelector(".iq-cancel").hidden=!admin||active||!editing;
+  row.querySelectorAll(".iq-select,.iq-photo-upload").forEach(n=>n.disabled=active);
+ });
+}
+window.__inspectionBatchEditControls=batchControls;
+$("iq-edit-all").onclick=()=>{
+ if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ if(!matched.length)return;
+ batchBase=new Map(matched.map(p=>[String(p.item),Object.fromEntries(editable.map(k=>[k,p[k]??""]))]));
+ batchEditing=true;
+ $("iq-rows").querySelectorAll("[data-iq-item]").forEach(row=>{row.dataset.iqEditing="true";row.querySelectorAll(".iq-cell").forEach(n=>n.readOnly=false);});
+ $("iq-batch-status").textContent="Editing all "+matched.length+" results. Change the fields, then Save all or Cancel. Item numbers stay fixed.";batchControls();
+};
+function finishBatch(){
+ batchEditing=false;batchBase.clear();
+ matched=matched.map(p=>window.InspectionCloud.exactCatalogItem(demo,p.item)).filter(Boolean);
+ refreshAfterEdit();batchControls();
+}
+$("iq-cancel-all").onclick=()=>{if(batchBusy)return;finishBatch();$("iq-batch-status").textContent="Batch edits cancelled. No catalog changes were sent.";};
+$("iq-save-all").onclick=async()=>{
+ if(batchBusy||!batchEditing)return;
+ if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ const rows=[];
+ for(const row of $("iq-rows").querySelectorAll("[data-iq-item]")){
+  const base=batchBase.get(row.dataset.iqItem);if(!base){alert("Results changed. Cancel and search again.");return;}
+  const values={};for(const input of row.querySelectorAll(".iq-cell"))values[input.dataset.field]=input.value.trim();
+  values.description=productDescription(values.description,values.brand);
+  const changes=Object.fromEntries(editable.filter(k=>String(values[k]??"")!==String(base[k]??"")).map(k=>[k,values[k]]));
+  if(Object.keys(changes).length){if(!values.brand||!values.description||!["Meat","Poultry"].includes(values.category)){alert("Item "+row.dataset.iqItem+": choose Meat or Poultry and fill Brand and Description.");return;}rows.push({item:row.dataset.iqItem,base,changes});}
+ }
+ if(!rows.length){finishBatch();$("iq-batch-status").textContent="No changes to save.";return;}
+ if(!confirm("Save updates to "+rows.length+" catalog products? EST edits update catalog references only."))return;
+ batchBusy=true;batchControls();$("iq-batch-status").textContent="Saving "+rows.length+" product updates…";
+ try{
+  const result=await window.InspectionCloud.saveCatalogResults(rows);
+  finishBatch();$("iq-batch-status").textContent=result.pending?"Product updates are pending on this device; they are not synchronized yet. See Pending sends.":result.count+" product updates saved to the official catalog.";
+ }catch(error){$("iq-batch-status").textContent="Updates were not confirmed: "+error.message;}
+ finally{batchBusy=false;batchControls();}
+};
+$("product-import-open").onclick=()=>{
+ if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ window.__inspectionNavigate("import");$("ip-mode-excel").click();
+};
+$("product-template-export").onclick=async()=>{
+ const button=$("product-template-export");if(!window.InspectionCloud.isAdministrator())return window.InspectionCloud.deny();
+ button.disabled=true;
+ try{
+  const XLSX=await window.__inspectionLoadXLSX(),book=XLSX.utils.book_new();
+  const sheet=XLSX.utils.aoa_to_sheet([["Item No.","Description","Brand","Product type","Product family","Pack / Size","EST"]]);
+  for(let i=2;i<=10001;i++)sheet["A"+i]={t:"s",v:"",z:"@"};
+  sheet["!ref"]="A1:G10001";sheet["!cols"]=[{wch:22},{wch:55},{wch:25},{wch:16},{wch:22},{wch:22},{wch:22}];
+  XLSX.utils.book_append_sheet(book,sheet,"Products");
+  const guide=XLSX.utils.aoa_to_sheet([["Product import template"],["Fill the Products sheet. Item No. is text to preserve leading zeros."],["Product type: Meat or Poultry. Brand and Description are required for new products."],["Keep Brand separate from Description. Pack / Size retains its original units."],["EST is a catalog reference. Importing does not record a physical observation."],["Import Products compares existing Items and requires review before applying updates."],["Blank update fields keep existing values. No quantities, weights or prices are imported."]]);
+  guide["!cols"]=[{wch:110}];XLSX.utils.book_append_sheet(book,guide,"Instructions");XLSX.writeFile(book,"Product_Import_Template.xlsx",{bookType:"xlsx",compression:true});
+ }catch(error){alert("Could not export template: "+error.message);}
+ finally{button.disabled=false;}
+};
+
 function groupOf(x){
  // Dairy remains distinct; poultry is identified using the existing product type logic.
  if(String(x.category||"").toLowerCase()==="dairy")return "Dairy";
@@ -2137,8 +2226,10 @@ function selectionLabel(){
  $("iq-select-all").checked=matched.length>0&&matched.every(x=>selectedIds.has(x.item));
  $("iq-select-all").indeterminate=selectedIds.size>0&&!$("iq-select-all").checked;
  $("iq-bulk-apply").disabled=selectedIds.size===0;
+ batchControls();
 }
 function draw(){
+ if(batchEditing){selectionLabel();return;}
  $("iq-results").classList.remove("hidden");
  $("iq-count").textContent=matched.length+" of "+demo.length+" products";
  sortResults();
@@ -2154,6 +2245,7 @@ function draw(){
 function exactItems(){return [...new Set($("iq-items").value.split(/\r?\n/).map(window.InspectionCloud.itemKey).filter(Boolean))];}
 function hasConditions(){return exactItems().length>0||facets.some(field=>$("iq-"+field).value)||!!$("iq-description").value.trim();}
 function showIdle(){
+ if(batchEditing)return;
  matched=[];selectedIds.clear();lastQuery="";resultsDirty=true;
  $("iq-rows").replaceChildren();$("iq-results").classList.add("hidden");
  $("iq-idle").hidden=false;$("iq-count").textContent="";
@@ -2161,6 +2253,7 @@ function showIdle(){
 }
 let querySequence=0;
 async function run(){
+ if(batchEditing){$("iq-batch-status").textContent="Save all or Cancel before changing the search.";return;}
  clearTimeout(searchTimer);searchTimer=null;
  const sequence=++querySequence;
  if(!hasConditions()){showIdle();return;}
@@ -2252,6 +2345,7 @@ $("iq-rows").onchange=async e=>{
  selectionLabel();
 };
 $("iq-rows").onclick=async e=>{
+ if(batchEditing)return;
  const action=e.target.closest(".iq-edit,.iq-cancel,.iq-save");if(!action)return;
  if(!window.InspectionCloud.canEdit()){window.InspectionCloud.deny();return;}
  const row=action.closest("[data-iq-item]"),product=demo.find(p=>String(p.item)===row.dataset.iqItem);if(!product)return;
@@ -2277,6 +2371,7 @@ $("iq-rows").onclick=async e=>{
  refreshAfterEdit();
 };
 $("iq-bulk-apply").onclick=()=>{
+ if(batchEditing)return;
  const field=$("iq-bulk-field").value,value=$("iq-bulk-value").value.trim(),ids=[...selectedIds];
  if(!ids.length){alert("Select at least one Item.");return;}
  if(!value){alert("Enter a new value.");return;}
@@ -2550,7 +2645,7 @@ const mappings={
  description:[/^description$/,/^materialdescription$/,/^itemdescription$/,/^productdescription$/,/^shorttext$/,/description/,/shorttext/],
  brand:[/^brand$/,/^manufacturer$/,/brand/,/manufacturer/],
  family:[/^productfamily$/,/^family$/,/^subcategory$/,/^productclass$/],
- category:[/^category$/,/^productgroup$/,/^itemgroup$/,/^type$/,/^materialgroup$/,/category/,/productgroup/],
+ category:[/^category$/,/^producttype$/,/^productgroup$/,/^itemgroup$/,/^type$/,/^materialgroup$/,/category/,/productgroup/],
  pack:[/^pack$/,/^casepack$/,/^packsize$/,/^casecount$/,/^unitspercase$/,/^caseqty$/,/pack/,/casecount/],
  size:[/^size$/,/^sizeunit$/,/^unitsize$/,/^netcontent$/,/^productsize$/,/size/],
  plant:[/^est$/,/^estnumber$/,/^establishment$/,/^establishmentnumber$/,/^plant$/,/^plantnumber$/,/^usdaplant$/,/^dairyplant$/,/establishment/,/plantnumber/]
@@ -3088,7 +3183,7 @@ function record(k){const v=memory.get(k);return v?JSON.parse(v):null}
 function collect(k,get,set){collectors.set(k,{get,set})}
 function overlay(text,busy=false){const el=document.getElementById('cloud-blocker');el.hidden=false;document.getElementById('cloud-blocker-text').textContent=text;document.getElementById('cloud-retry').hidden=busy;document.querySelector('.shell').inert=true;document.getElementById('required-login-button').hidden=!!session;document.getElementById('blocker-pending-button').hidden=!session||!queueCount;document.getElementById('blocker-account-button').hidden=!session;}
 function unblock(){document.getElementById('cloud-blocker').hidden=true;document.querySelector('.shell').inert=false;}
-function message(text,error=false){const el=document.getElementById('cloud-message');if(el){el.textContent=text;el.classList.toggle('cloud-error',error)}const banner=document.getElementById('cloud-banner');banner.textContent=text;banner.classList.toggle('cloud-error',error)}
+function message(text,error=false){const el=document.getElementById('cloud-message');if(el){el.textContent=text;el.classList.toggle('cloud-error',error)}const banner=document.getElementById('cloud-banner');banner.textContent=text;banner.classList.toggle('cloud-error',error);banner.hidden=!error}
 function updateRole(){
  let validationButton=document.getElementById('catalog-initialize-validation');
  if(!validationButton){validationButton=document.createElement('button');validationButton.id='catalog-initialize-validation';validationButton.className='btn';validationButton.textContent='Initialize catalog validation';validationButton.onclick=()=>initializeCatalogValidation(validationButton);document.getElementById('settings-view').appendChild(validationButton);}
@@ -3104,7 +3199,9 @@ function updateRole(){
 
  const editable=canConsult(),adminActive=editable&&administrator;
  document.body.classList.toggle('normal-user',!administrator);
- document.querySelectorAll('#edit-btn,#edit-est,#edit-product-note,#manage-gallery,.iq-edit,.iq-save,.iq-cancel,.iq-photo-add,[data-catalog-request],.inspection-query-bulk,#admin-clients-panel,[data-view="history"],[data-view="brands"],[data-view="clients"]').forEach(el=>el.hidden=!administrator);
+ document.querySelectorAll('#edit-btn,#edit-est,#edit-product-note,#manage-gallery,.iq-photo-add,[data-catalog-request],.inspection-query-bulk,#admin-clients-panel,[data-view="history"],[data-view="brands"],[data-view="clients"]').forEach(el=>el.hidden=!administrator);
+ document.querySelectorAll('#product-catalog-actions,#iq-edit-all-controls').forEach(el=>el.hidden=!administrator);
+ document.querySelectorAll('[data-iq-item]').forEach(row=>{const editing=row.dataset.iqEditing==='true';for(const [selector,hide]of [['.iq-edit',editing],['.iq-save',!editing],['.iq-cancel',!editing]]){const b=row.querySelector(selector);if(b)b.hidden=!administrator||hide;}});
  document.querySelectorAll('.iq-cell').forEach(el=>el.readOnly=!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true');
 
  const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ User · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Sign in';if(pill.textContent!==text)pill.textContent=text;pill.title='Account, sign out or change user'}
@@ -3122,6 +3219,7 @@ function updateRole(){
  document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell'))||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||false;});
  document.querySelectorAll(ADMIN_MUTATING).forEach(el=>{if(el.matches('button,input,select,textarea'))el.disabled=!administrator||el.hasAttribute('data-unknown-item');});
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
+ window.__inspectionBatchEditControls?.();
 }
 async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={}){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);activeControllers.add(controller);
@@ -3564,6 +3662,22 @@ async function commit(extra=null){
  catch(error){if(error.network||error.name==='TimeoutError'){offline=true;ready=false;message(queueCount?'The pending send is saved on this device. It will retry when the connection returns.':'The send was confirmed, but the view could not refresh because the connection was interrupted.',true);}else{message(error.message,true);if(!session)openLogin();}}
  finally{dirtyDomains.clear();saving=false;await showQueueCount();updateRole();if(session&&ready&&!offline&&!photoBusy)unblock();else overlay('Offline. Pending sends are saved and will retry when the connection returns.');}
 }
+async function saveCatalogResults(rows){
+ if(!administrator||!canEdit()){deny();throw Error('Administrator access and an active connection are required.');}
+ if(saving||photoBusy||(await ownJobs()).length)throw Error('Resolve pending sends and current saves before updating products.');
+ const catalogKey='inspection-data-hub-catalog-overrides-v1',refsKey='inspection-data-hub-est-references-v1';
+ const result=window.InspectionCatalogBatch.prepare(clone(record(catalogKey)||{}),rows);
+ if(!result.changed.length)return {pending:false,count:0};
+ const refs=clone(record(refsKey)||{});
+ for(const item of result.changed)if(refs[item]&&typeof refs[item]==='object')refs[item].primary=result.catalog[item].plant;
+ await commit({[catalogKey]:result.catalog,[refsKey]:refs});
+ const pending=await ownJobs();if(pending.length)return {pending:true,count:result.changed.length};
+ if(!ready||offline)throw Error('Connection interrupted. Reconnect and check the catalog before retrying.');
+ const saved=record(catalogKey)||{};
+ for(const item of result.changed)if(Object.keys(result.catalog[item]).some(k=>JSON.stringify(saved[item]?.[k])!==JSON.stringify(result.catalog[item][k])))throw Error('The catalog changed or the save was rejected. Refresh the search before retrying.');
+ return {pending:false,count:result.changed.length};
+}
+
 async function addImportedCatalog(products){
  if(!administrator||!canEdit()){deny();throw Error('Administrator access and an active connection are required.');}
  if((await ownJobs()).length)throw Error('Resolve pending sends before adding more catalog products.');
@@ -3628,8 +3742,8 @@ async function uploadPhotos(item,files){
  finally{photoBusy=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('Offline. Your pending sends are saved on this device.');}
 }
 
-const ADMIN_MUTATING='#po-fill-missing-est,#po-missing-est-save,[data-missing-est],[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-directory-delete],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='#order-import-po,#order-import-delivery,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const ADMIN_MUTATING='#product-import-open,#iq-edit-all,#iq-save-all,#po-fill-missing-est,#po-missing-est-save,[data-missing-est],[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-directory-delete],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
+const MUTATING='#product-import-open,#iq-edit-all,#iq-save-all,#order-import-po,#order-import-delivery,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');const item=input?.value;if(official["inspection-data-hub-catalog-overrides-v1"]?.[item])window.__inspectionEditProductItem?.(item);else if(item)window.__inspectionOfferMissing?.(item);}
@@ -3773,7 +3887,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='inspection-open-notifications')openOrderNotifications();if(event.data?.type==='inspection-notification-dismissed')refreshOrderNotifications();});
 notificationPanel();
 
-window.InspectionCloud={renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+window.InspectionCloud={saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
