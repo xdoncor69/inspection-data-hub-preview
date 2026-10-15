@@ -524,6 +524,13 @@ window.__inspectionOfferMissing=(item,done=()=>{})=>{
  $("missing-item-yes").onclick=()=>editCatalogProduct({item,category:"Meat"},true,next);
  $("missing-item-no").focus();
 };
+// Capture before the lookup input can start another search while this prompt is open.
+window.addEventListener('keydown',event=>{
+ const next=document.getElementById('missing-item-no');
+ if(event.key!=='Enter'||event.isComposing||!next||event.target?.closest?.('#missing-item-yes'))return;
+ event.preventDefault();event.stopImmediatePropagation();
+ if(!event.repeat)next.click();
+},true);
 $("edit-btn").onclick=()=>editCatalogProduct(selected||{item:""},!selected||!!selected.missing);
 
 ["demo-export","demo-backup","demo-sync"].forEach(id=>{const el=$(id);if(el)el.onclick=()=>alert("Visual preview only. This function belongs to the Windows application / future integration.");});
