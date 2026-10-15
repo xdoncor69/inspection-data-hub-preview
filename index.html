@@ -3985,7 +3985,9 @@ connect();
 </style>
 <style id="adjustable-table-style">
 .idh-table-layout-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 6px;font-size:11px;color:var(--sk-muted,#627d92);min-width:0}
-.idh-adjustable-table th{position:relative;padding-right:19px!important;white-space:normal!important;overflow-wrap:anywhere}
+.idh-adjustable-table th{position:relative;padding-right:19px!important;white-space:nowrap!important;overflow-wrap:normal;word-break:normal}
+.idh-adjustable-table th .query-sort{white-space:nowrap!important}
+.idh-adjustable-table .po-catalog-editor{min-width:0;max-width:100%}
 .idh-adjustable-table td{min-width:0!important;max-width:none!important;white-space:normal!important;overflow-wrap:anywhere}
 .idh-adjustable-table :is(input.input,textarea.input){min-width:0!important;max-width:100%!important;width:100%;box-sizing:border-box}
 .idh-col-resize{position:absolute;right:-3px;top:0;width:10px;height:100%;cursor:col-resize;touch-action:none;z-index:3;border-right:2px solid transparent}
@@ -3995,7 +3997,7 @@ connect();
 .idh-col-move:hover,.idh-col-move:focus-visible{opacity:1}
 .idh-dragging-column{opacity:.5}
 .idh-resizing-columns,.idh-resizing-columns *{cursor:col-resize!important;user-select:none!important}
-@media print{.idh-table-layout-bar,.idh-col-resize,.idh-col-move{display:none!important}}
+@media print{.idh-table-layout-bar,.idh-col-resize,.idh-col-move{display:none!important}.idh-adjustable-table th,.idh-adjustable-table th .query-sort{white-space:normal!important}}
 </style><script id="adjustable-table-script">
 (function(){
 'use strict';
@@ -4003,10 +4005,42 @@ const PREFIX='idh-table-layout-v1:';
 const states=new WeakMap();
 let queued=false,drag=null;
 const clamp=value=>Math.max(50,Math.min(1400,Math.round(Number(value)||100)));
+let fontRevision=0;
+const measureContext=(()=>{try{return document.createElement('canvas').getContext('2d');}catch{return null;}})();
+const metricKey=()=>[document.documentElement.dataset.skin||'',window.innerWidth,fontRevision].join(':');
+const columnWidth=(state,key,value)=>Math.max(state.minimums[key]||50,clamp(value));
+function headerMinimum(cell,label){
+ const button=cell.querySelector('.query-sort'),style=getComputedStyle(button||cell),box=getComputedStyle(cell);
+ let text=String(label).replace(/\s+/g,' ').trim();
+ if(style.textTransform==='uppercase')text=text.toUpperCase();
+ else if(style.textTransform==='lowercase')text=text.toLowerCase();
+ else if(style.textTransform==='capitalize')text=text.replace(/\b\p{L}/gu,c=>c.toUpperCase());
+ if(button)text+=' ↕';
+ const size=parseFloat(style.fontSize)||12;
+ let width=text.length*size*.65;
+ if(measureContext){measureContext.font=[style.fontStyle||'normal',style.fontWeight||'400',style.fontSize||'12px',style.fontFamily||'sans-serif'].join(' ');width=measureContext.measureText(text).width;}
+ width+=Math.max(0,text.length-1)*(parseFloat(style.letterSpacing)||0);
+ width+=(text.match(/ /g)||[]).length*(parseFloat(style.wordSpacing)||0);
+ if(button)width+=(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0)+(parseFloat(style.columnGap)||0);
+ // Reserve the actual drag grip, resize edge, cell padding and a small rounding allowance.
+ return clamp(Math.ceil(width+24+(parseFloat(box.paddingLeft)||0)+Math.max(19,parseFloat(box.paddingRight)||0)+(parseFloat(box.borderLeftWidth)||0)+(parseFloat(box.borderRightWidth)||0)+2));
+}
+function compactDefault(label,minimum,customerTable=false){
+ return Math.max(minimum,/description|descripci[oó]n/i.test(label)?260:/customer|client|cliente/i.test(label)||(customerTable&&/^name$/i.test(label))?180:minimum);
+}
+function measureColumns(state){
+ const customerTable=/client|customer/i.test(state.table.dataset.layoutKey||state.table.id||'');
+ for(const [i,key]of state.base.entries()){
+  state.minimums[key]=headerMinimum(state.headers.get(key),state.labels[i]);
+  state.defaults[key]=compactDefault(state.labels[i],state.minimums[key],customerTable);
+ }
+ state.metrics=metricKey();
+}
+
 const account=()=>window.InspectionCloud?.layoutAccount?.()||'';
 const rowCells=row=>[...row.children].filter(el=>el.tagName==='TD'||el.tagName==='TH');
 function load(key){try{const value=JSON.parse(localStorage.getItem(key)||'null');return value&&Array.isArray(value.order)&&value.widths&&typeof value.widths==='object'?value:null;}catch{return null;}}
-function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=clamp(state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
+function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=columnWidth(state,key,state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
 function place(parent,nodes){const current=[...parent.children];if(nodes.every((node,i)=>current[i]===node)&&current.length===nodes.length)return;for(const node of nodes)parent.appendChild(node);}
 function apply(state){
  const {table,base,order}=state;
@@ -4018,14 +4052,14 @@ function apply(state){
  let cols=[...group.children];if(cols.length!==base.length){group.replaceChildren(...base.map(key=>{const col=document.createElement('col');col.dataset.idhCol=key;return col;}));cols=[...group.children];}
  if(cols.some(col=>!col.dataset.idhCol))cols.forEach((col,i)=>col.dataset.idhCol=base[i]);
  const map=new Map(cols.map(col=>[col.dataset.idhCol,col]));place(group,order.map(key=>map.get(key)));
- for(const key of base){map.get(key).style.width=clamp(state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle)handle.setAttribute('aria-valuenow',String(clamp(state.widths[key])));map.get(key).hidden=header.hidden;}
- const width=base.reduce((total,key)=>total+(state.headers.get(key).hidden?0:clamp(state.widths[key])),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
+ for(const key of base){map.get(key).style.width=columnWidth(state,key,state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle){handle.setAttribute('aria-valuenow',String(columnWidth(state,key,state.widths[key])));handle.setAttribute('aria-valuemin',String(state.minimums[key]));}map.get(key).hidden=header.hidden;}
+ const width=base.reduce((total,key)=>total+(state.headers.get(key).hidden?0:columnWidth(state,key,state.widths[key])),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
 }
 function restore(state){
- const uid=account();if(state.uid===uid)return;
+ const uid=account(),remeasure=state.metrics!==metricKey();if(remeasure)measureColumns(state);if(state.uid===uid&&!remeasure)return;
  state.uid=uid;const preference=uid?load(PREFIX+uid+':'+state.key):null;
  state.order=preference?[...new Set(preference.order.filter(key=>state.base.includes(key))),...state.base.filter(key=>!preference.order.includes(key))]:[...state.base];
- state.widths={...state.defaults};if(preference)for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=clamp(preference.widths[key]);
+ state.widths={...state.defaults};if(preference)for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=columnWidth(state,key,preference.widths[key]);
 }
 function move(state,source,target){const i=state.order.indexOf(source),j=state.order.indexOf(target);if(i<0||j<0||i===j)return;state.order.splice(i,1);state.order.splice(j,0,source);state.table.dataset.idhSuppressClick=String(Date.now()+300);apply(state);save(state);}
 function install(table){
@@ -4038,11 +4072,10 @@ function install(table){
  const base=cells.map((cell,i)=>{const label=cell.dataset.sort||labels[i];const n=seen.get(label)||0;seen.set(label,n+1);return label+':'+n;});
  const root=table.id||table.tBodies[0]?.id||table.parentElement?.closest('[id]')?.id||table.closest('section')?.id||'table';
  const key=(table.dataset.layoutKey||root)+':'+base.join('|');
- const cols=[...table.querySelectorAll(':scope > colgroup > col')];const defaults={};
- cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];const explicit=parseFloat(cols[i]?.style.width||'');const measured=cell.getBoundingClientRect().width;defaults[base[i]]=clamp(explicit||measured||(/catalog actions/i.test(labels[i])?340:/description|valor|value|note/i.test(labels[i])?280:/item|brand|marca|est|plant/i.test(labels[i])?140:110));});
+ const defaults={};cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];});
  const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.textContent='Drag headers to reorder · drag column edges to resize';
  table.before(notice);
- state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,order:[...base],defaults,widths:{...defaults},uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
+ state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,labels,order:[...base],minimums:{},defaults,widths:{},metrics:null,uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
  cells.forEach((cell,i)=>{
   const col=base[i];cell.draggable=true;cell.title='Drag to reorder '+labels[i];
   const handle=document.createElement('span');handle.className='idh-col-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','Resize '+labels[i]);handle.setAttribute('aria-valuemin','50');handle.setAttribute('aria-valuemax','1400');cell.appendChild(handle);
@@ -4070,10 +4103,10 @@ function install(table){
    mover.addEventListener('pointermove',track);mover.addEventListener('pointerup',finish);mover.addEventListener('pointercancel',finish);
   };
   mover.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();const index=state.order.indexOf(col),target=state.order[index+(e.key==='ArrowLeft'?-1:1)];if(target)move(state,col,target);mover.focus();};
-  handle.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();state.widths[col]=clamp(state.widths[col]+(e.key==='ArrowLeft'?-10:10));apply(state);save(state);};
+  handle.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();state.widths[col]=columnWidth(state,col,state.widths[col]+(e.key==='ArrowLeft'?-10:10));apply(state);save(state);};
   handle.onpointerdown=e=>{
    if(e.button!==0)return;e.preventDefault();e.stopPropagation();const start=e.clientX,width=state.widths[col];cell.draggable=false;handle.setPointerCapture?.(e.pointerId);document.documentElement.classList.add('idh-resizing-columns');
-   const resize=event=>{state.widths[col]=clamp(width+event.clientX-start);apply(state);};
+   const resize=event=>{state.widths[col]=columnWidth(state,col,width+event.clientX-start);apply(state);};
    const finish=event=>{if(event.type==='pointerup')resize(event);handle.removeEventListener('pointermove',resize);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);document.documentElement.classList.remove('idh-resizing-columns');cell.draggable=true;table.dataset.idhSuppressClick=String(Date.now()+300);save(state);};
    handle.addEventListener('pointermove',resize);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
   };
@@ -4087,6 +4120,9 @@ function install(table){
 function refresh(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;document.querySelectorAll('table').forEach(install);});}
 document.addEventListener('click',e=>{if(e.target.closest('.idh-col-resize,.idh-col-move')||Number(e.target.closest('table')?.dataset.idhSuppressClick)>Date.now()){e.preventDefault();e.stopImmediatePropagation();}},true);
 new MutationObserver(refresh).observe(document.body,{childList:true,subtree:true});
+window.addEventListener('resize',refresh);
+new MutationObserver(refresh).observe(document.documentElement,{attributes:true,attributeFilter:['data-skin']});
+if(document.fonts)document.fonts.ready.then(()=>{fontRevision++;refresh();});
 window.InspectionTableLayout={refresh};refresh();
 })();
 
