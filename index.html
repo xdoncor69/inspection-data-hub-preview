@@ -254,7 +254,7 @@ window.InspectionTableTools={
 </div>
 <div id="ip-manual">
 <div class="ip-fields">
-<label><span class="label">Item Number *</span><input class="input" id="ip-item" placeholder="e.g. 272319" autocomplete="off"></label>
+<label><span class="label">Item Number *</span><input class="input" id="ip-item" placeholder="e.g. 272319" autocomplete="off"><span class="small muted" id="ip-item-status" role="status" aria-live="polite">Enter the Item No. to check the official catalog.</span></label>
 <label><span class="label">Product type *</span><select class="input" id="ip-category"><option>Meat</option><option>Poultry</option></select></label>
 <label><span class="label">Brand *</span><input class="input" id="ip-brand" list="ip-brands" placeholder="Choose or enter a brand"></label>
 <label><span class="label">Product family</span><input class="input" id="ip-family" placeholder="e.g. Deli Turkey"></label>
@@ -263,7 +263,7 @@ window.InspectionTableTools={
 
 <label><span class="label">EST reference</span><input class="input" id="ip-plant" placeholder="e.g. P-1029"></label>
 </div><datalist id="ip-brands"></datalist>
-<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn primary" id="ip-stage-manual">Review Product</button><button type="button" class="btn" id="ip-manual-clear">Clear fields</button></div>
+<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="btn primary" id="ip-stage-manual">Review Product</button><button type="button" class="btn" id="ip-manual-clear">Clear fields</button><button type="button" class="btn" id="ip-item-retry" hidden>Check again</button></div>
 </div>
 <div id="ip-excel" class="hidden">
 <div class="ip-fields">
@@ -286,7 +286,7 @@ window.InspectionTableTools={
 <div class="panel panel-pad" id="ip-review-panel" style="margin-top:14px">
 <div class="section-head"><div><h3>Import Review</h3><span class="hint">Choose an action for each Item before committing changes</span></div><button type="button" class="btn mini" id="ip-clear-review">Clear review</button></div>
 <div class="ip-review-stats" id="ip-review-stats">No products staged for review.</div>
-<div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" class="btn mini" id="ip-accept-new">Select all new</button><button type="button" class="btn mini" id="ip-skip-existing">Skip existing Items</button><button type="button" class="btn mini" id="ip-skip-all">Skip all</button></div>
+<div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" class="btn mini" id="ip-accept-new">Select all new</button></div>
 <div class="tablewrap"><table class="ip-review-table"><thead><tr><th>Item</th><th>Brand</th><th>Type</th><th>Description</th><th>Pack / Size</th><th>EST</th><th>Comparison</th><th>Changes</th><th>Decision</th></tr></thead><tbody id="ip-review-rows"><tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr></tbody></table></div>
 <div class="row" style="gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:14px"><span class="muted small" id="ip-selection">0 selected</span><button type="button" class="btn primary" id="ip-commit" disabled>Apply selected changes</button></div>
 </div></section>
@@ -356,6 +356,7 @@ window.InspectionOrderOverview=(()=>{
  return Object.freeze({sync,dismiss,capture,restore,isOpen:()=>!!document.getElementById('order-overview-dialog')?.open});
 })();
 </script>
+<style id="product-import-review-style">#ip-item-status{display:block;line-height:1.45;overflow-wrap:anywhere}#ip-item-status.error{color:var(--sk-negative-ink)}.ip-field-comparison{margin:8px 0;padding:8px;border:1px solid var(--sk-border);border-radius:var(--sk-radius);overflow-wrap:anywhere}.ip-field-comparison label{display:flex;align-items:center;gap:6px}.ip-decisions .btn{white-space:normal;margin:3px 0;width:100%}</style>
 <style id="product-catalog-tools-style">.product-catalog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}#iq-edit-all-controls{display:inline-flex;flex-wrap:wrap;gap:6px}.iq-result-actions{display:flex;flex-wrap:wrap;gap:6px}#iq-batch-status:empty{display:none}#iq-batch-status{margin:10px 12px;overflow-wrap:anywhere}</style>
 <style id="order-overview-style">
 #order-overview-dialog{width:1100px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box}
@@ -2564,15 +2565,39 @@ body:has(.nav.active[data-view="global"]) #lookup-view{display:none!important}
 "use strict";
 const el=id=>document.getElementById(id);
 const keys=["category","brand","family","description","pack","plant"];
+const fieldLabels={category:"Product type",brand:"Brand",family:"Product family",description:"Description",pack:"Pack / Size",plant:"EST"};
 const sourceKeys=[...keys,"size"];
 const trim=s=>String(s??"").replace(/^\uFEFF/,"").trim();
 const norm=s=>trim(s).toLowerCase().replace(/[^a-z0-9]/g,"");
 const html=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let staged=[],rawRows=[],headers=[],activeMode="manual",busy=false;
+let staged=[],rawRows=[],headers=[],activeMode="manual",busy=false,fileReadSequence=0;
+let itemCheckSequence=0,itemCheckTimer=null,itemCheckState="empty",checkedItem="";
+function itemCheckStatus(text,state){
+ itemCheckState=state;el("ip-item-status").textContent=text;el("ip-item-status").classList.toggle("error",state==="error");el("ip-item-retry").hidden=state!=="error";importReviewControls();
+}
+async function checkManualItem(){
+ clearTimeout(itemCheckTimer);const item=window.InspectionCloud.itemKey(el("ip-item").value),sequence=++itemCheckSequence;
+ checkedItem="";if(!item){itemCheckStatus("Enter the Item No. to check the official catalog.","empty");return;}
+ itemCheckStatus("Checking the official catalog…","checking");
+ try{
+  const products=await window.InspectionCloud.refreshCatalog();
+  if(sequence!==itemCheckSequence||item!==window.InspectionCloud.itemKey(el("ip-item").value))return;
+  if(!products)throw Error("The catalog query was superseded. Select Check again.");
+  const found=window.InspectionCloud.exactCatalogItem(products,item);checkedItem=item;
+  itemCheckStatus(found?"Already in catalog: "+item+" · "+[found.brand,found.description].filter(Boolean).join(" · ")+". Review this record instead of creating a duplicate.":"No exact record for "+item+" in the official catalog. You can prepare a new product.",found?"exists":"new");
+ }catch(error){if(sequence===itemCheckSequence){checkedItem="";itemCheckStatus(window.InspectionCloud.catalogError(error),"error");}}
+}
+el("ip-item").addEventListener("input",()=>{
+ itemCheckSequence++;clearTimeout(itemCheckTimer);checkedItem="";
+ if(!window.InspectionCloud.itemKey(el("ip-item").value)){itemCheckStatus("Enter the Item No. to check the official catalog.","empty");return;}
+ itemCheckStatus("Checking the official catalog…","checking");itemCheckTimer=setTimeout(checkManualItem,300);
+});
+el("ip-item-retry").onclick=checkManualItem;
+
 function notice(text,error=false){el("ip-feedback").textContent=text;el("ip-feedback").classList.toggle("error",error);}
 function count(){el("ip-catalog-count").textContent=demo.length+" catalog Items";el("ip-brands").innerHTML=[...new Set(demo.map(x=>x.brand).filter(Boolean))].sort().map(b=>'<option value="'+html(b)+'"></option>').join("");}
 function setMode(mode){activeMode=mode;for(const m of ["manual","excel"]){el("ip-"+m).classList.toggle("hidden",m!==mode);el("ip-mode-"+m).classList.toggle("active",m===mode);el("ip-mode-"+m).setAttribute("aria-pressed",String(m===mode));}}
-el("ip-mode-manual").onclick=()=>setMode("manual");el("ip-mode-excel").onclick=()=>setMode("excel");
+el("ip-mode-manual").onclick=()=>{setMode("manual");if(trim(el("ip-item").value))checkManualItem();};el("ip-mode-excel").onclick=()=>{clearTimeout(itemCheckTimer);itemCheckSequence++;if(itemCheckState==="checking"){checkedItem="";itemCheckStatus("Enter the Item No. to check the official catalog.","empty");}setMode("excel");};
 function canonicalGroup(value){
  const v=norm(value);
  if(!v)return "";
@@ -2600,46 +2625,85 @@ function compare(product,original,provided){
 function prepare(entries){
  const seen=new Map();
  staged=entries.map((entry,index)=>{
-  const p=productFrom(entry.data),existing=demo.find(x=>x.item===p.item);
+  const p=productFrom(entry.data),found=window.InspectionCloud.exactCatalogItem(demo,p.item),existing=found?{...found}:null;
   const provided=new Set(entry.provided||keys);if(provided.has("size"))provided.add("pack");
   const valid=/^[A-Za-z0-9_.-]{1,64}$/.test(p.item)&&!!(p.description||existing?.description)&&!!(p.brand||existing?.brand)&&window.InspectionProduct.visible(p)&&(!p.category||["Meat","Poultry"].includes(p.category));
   const diffs=compare(p,existing,provided);
   const duplicate=seen.has(p.item);
   if(p.item)seen.set(p.item,index);
   const status=!valid?"invalid":duplicate?"duplicate":!existing?"new":diffs.length?"changed":"same";
-  return {index,line:entry.line||index+1,p,existing,provided,diffs,status,action:status==="new"?"add":"skip"};
+  return {index,line:entry.line||index+1,p,existing,provided,diffs,status,selectedFields:new Set(),action:status==="new"?"add":"skip"};
  });
  draw();
 }
-function actionOptions(r){
- const allowed=r.status==="new"?[["add","Import new"],["skip","Skip"]]:r.status==="changed"?[["skip","Skip"],["update","Update existing"]]:[["skip","Skip"]];
- return allowed.map(([value,label])=>'<option value="'+value+'" '+(r.action===value?"selected":"")+'>'+label+'</option>').join("");
+function reviewBlockers(){return staged.filter(r=>r.status!=="new"||r.pending);}
+function importReviewControls(){
+ const admin=window.InspectionCloud.isAdministrator(),allowed=admin&&window.InspectionCloud.canEdit(),blocked=reviewBlockers().length;
+ el("ip-commit").disabled=busy||!allowed||blocked>0||!staged.some(r=>r.status==="new"&&r.action==="add");
+ el("ip-stage-manual").disabled=busy||!allowed||!["exists","new"].includes(itemCheckState)||checkedItem!==window.InspectionCloud.itemKey(el("ip-item").value);
+ el("ip-stage-file").disabled=busy||!allowed||!headers.length;
+ for(const id of ["ip-item","ip-item-retry","ip-file","ip-file-clear","ip-manual-clear","ip-clear-review","ip-mode-manual","ip-mode-excel","ip-accept-new"])el(id).disabled=busy;
+
+ el("ip-review-rows").querySelectorAll("button,input,select").forEach(n=>n.disabled=busy||!allowed||!!staged[Number(n.closest("[data-ip-index]")?.dataset.ipIndex)]?.pending);
 }
+window.__inspectionImportReviewControls=importReviewControls;
 function draw(){
  const totals={new:0,changed:0,same:0,duplicate:0,invalid:0};for(const r of staged)totals[r.status]++;
- el("ip-review-stats").textContent=staged.length?staged.length+" rows · "+totals.new+" new · "+totals.changed+" changed · "+totals.same+" unchanged · "+totals.duplicate+" duplicate in file · "+totals.invalid+" invalid":"No products staged for review.";
+ const blockers=reviewBlockers();
+ el("ip-review-stats").textContent=staged.length?staged.length+" rows · "+totals.new+" new · "+(totals.changed+totals.same)+" matched in catalog · "+totals.duplicate+" repeated in file · "+totals.invalid+" invalid"+(blockers.length?" · Review "+blockers.length+" row(s) individually before importing new products.":" · Ready to import new products."):"No products staged for review.";
  el("ip-review-rows").innerHTML=staged.map((r,i)=>{
-  const p=r.p,details=r.diffs.map(d=>'<div><strong>'+html(d.key)+':</strong> '+html(d.from||"—")+' → '+html(d.to||"—")+'</div>').join("");
-  const changes=r.status==="duplicate"?"Repeated Item Number in this file; review the source rows.":r.status==="invalid"?"Missing/invalid Item Number, Brand or Description.":r.status==="new"?"New catalog record":r.status==="same"?"No changes to mapped fields":details;
-  return '<tr class="ip-row-'+r.status+'"><td><strong>'+html(p.item||"—")+'</strong><div class="muted small">Row '+r.line+'</div></td><td>'+html(p.brand||r.existing?.brand||"—")+'</td><td>'+html(window.InspectionProduct.classLabel(p.category||r.existing?.category)||"—")+'</td><td>'+html(p.description||r.existing?.description||"—")+'</td><td>'+html(p.pack||r.existing?.pack||"—")+'</td><td>'+html(p.plant||r.existing?.plant||"—")+'</td><td><span class="ip-tag '+r.status+'">'+({new:"NEW",changed:"CHANGED",same:"UNCHANGED",duplicate:"DUPLICATE",invalid:"INVALID"}[r.status])+'</span></td><td class="ip-changes">'+changes+'</td><td><select class="input" data-ip-action="'+i+'" aria-label="Decision for Item '+html(p.item)+'">'+actionOptions(r)+'</select></td></tr>';
- }).join("")||'<tr><td colspan="9" class="empty">Import a product or spreadsheet to preview changes.</td></tr>';
- const add=staged.filter(r=>r.action==="add").length,update=staged.filter(r=>r.action==="update").length;
- el("ip-selection").textContent=add+" new + "+update+" updates selected";
- el("ip-commit").disabled=busy||add+update===0;
- el("ip-commit").textContent="Apply "+(add+update)+" selected changes";
+  const p=r.p,existing=r.existing;
+  const comparison=existing?'<details><summary>Compare catalog and source</summary>'+keys.filter(k=>r.provided.has(k)).map(k=>{
+   const diff=r.diffs.some(d=>d.key===k),checked=r.selectedFields.has(k);
+   return '<div class="ip-field-comparison">'+(diff?'<label><input type="checkbox" data-ip-field="'+i+'" data-field="'+k+'"'+(checked?' checked':'')+'> '+html(fieldLabels[k])+'</label>':'<strong>'+html(fieldLabels[k])+'</strong>')+'<div>Catalog: '+html(existing[k]||"—")+'</div><div>Source: '+html(p[k]||"—")+(p[k]?"":" (keep catalog value)")+'</div></div>';
+  }).join("")+'</details>':r.status==="duplicate"?"Repeated Item No. in this file. Discard this row or correct and compare the source again.":r.status==="invalid"?"Invalid Item No., Brand, Description or product type. Correct the source or discard this row.":"New catalog record";
+  const decision=r.pending?'<span class="small muted">Submitted · awaiting confirmation. Check Pending sends, then compare again.</span>':r.status==="new"?'<select class="input" data-ip-action="'+i+'"><option value="add"'+(r.action==="add"?' selected':'')+'>Import new</option><option value="skip"'+(r.action==="skip"?' selected':'')+'>Skip new</option></select>':(r.status==="changed"&&r.diffs.length?'<button type="button" class="btn mini primary" data-ip-resolve="'+i+'">Apply selected fields</button>':'')+'<button type="button" class="btn mini" data-ip-dismiss="'+i+'">'+(existing?"Keep existing / dismiss":"Discard row")+'</button>';
+  return '<tr data-ip-index="'+i+'" class="ip-row-'+r.status+'"><td><strong>'+html(p.item||"—")+'</strong><div class="muted small">Row '+r.line+'</div></td><td>'+html(p.brand||existing?.brand||"—")+'</td><td>'+html(window.InspectionProduct.classLabel(p.category||existing?.category)||"—")+'</td><td>'+html(p.description||existing?.description||"—")+'</td><td>'+html(p.pack||existing?.pack||"—")+'</td><td>'+html(p.plant||existing?.plant||"—")+'</td><td><span class="ip-tag '+r.status+'">'+({new:"NEW",changed:"MATCHED · CHANGES",same:"MATCHED",duplicate:"REPEATED",invalid:"INVALID"}[r.status])+'</span></td><td class="ip-changes">'+comparison+'</td><td class="ip-decisions">'+decision+'</td></tr>';
+ }).join("")||'<tr><td colspan="9" class="empty">Import a product or spreadsheet to compare with the official catalog.</td></tr>';
+ const adds=staged.filter(r=>r.status==="new"&&r.action==="add").length;
+ el("ip-selection").textContent=adds+" new selected"+(blockers.length?" · "+blockers.length+" row(s) need individual review":"");
+ el("ip-commit").textContent="Import "+adds+" new products";importReviewControls();
 }
-el("ip-review-rows").onchange=e=>{const i=e.target.dataset.ipAction;if(i!==undefined&&staged[Number(i)]){staged[Number(i)].action=e.target.value;draw();}};
-el("ip-accept-new").onclick=()=>{for(const r of staged)if(r.status==="new")r.action="add";draw();};
-el("ip-skip-existing").onclick=()=>{for(const r of staged)if(r.status!=="new")r.action="skip";draw();};
-el("ip-skip-all").onclick=()=>{for(const r of staged)r.action="skip";draw();};
-el("ip-clear-review").onclick=()=>{staged=[];draw();notice("Review cleared. No catalog data was changed.");};
-function manualData(){const data={};for(const key of ["item",...keys])data[key]=el("ip-"+key).value;return data;}
-el("ip-stage-manual").onclick=()=>{
- const data=manualData();if(!trim(data.item)||!trim(data.brand)||!trim(data.description)){notice("Item Number, Brand and Description are required.",true);return;}
- prepare([{data,provided:keys,line:1}]);
- notice("Review the Item below. Existing products default to Skip; choose Update existing to replace changed fields.");
+el("ip-review-rows").onchange=e=>{
+ const i=Number(e.target.dataset.ipField??e.target.dataset.ipAction),r=staged[i];if(!r||busy||r.pending)return;
+ if(e.target.dataset.ipField!==undefined){if(e.target.checked)r.selectedFields.add(e.target.dataset.field);else r.selectedFields.delete(e.target.dataset.field);return;}
+ if(r.status==="new"&&["add","skip"].includes(e.target.value)){r.action=e.target.value;draw();}
 };
-el("ip-manual-clear").onclick=()=>{for(const key of ["item","brand","family","description","pack","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";};
+el("ip-review-rows").onclick=async e=>{
+ if(busy)return;const button=e.target.closest("[data-ip-resolve],[data-ip-dismiss]");if(!button)return;
+ if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ const row=staged[Number(button.dataset.ipResolve??button.dataset.ipDismiss)];if(!row||row.pending)return;
+ if(button.dataset.ipDismiss!==undefined){staged=staged.filter(r=>r!==row);draw();notice("Row dismissed. Its catalog record was not changed.");return;}
+ const changes=Object.fromEntries(row.diffs.filter(d=>row.selectedFields.has(d.key)).map(d=>[d.key,d.to]));
+ if(!Object.keys(changes).length){notice("Select the individual fields to update, or choose Keep existing / dismiss.",true);return;}
+ if(!confirm("Update only the selected fields for Item "+row.p.item+"?"))return;
+ busy=true;draw();
+ try{
+  const result=await window.InspectionCloud.saveCatalogResults([{item:row.p.item,base:Object.fromEntries(keys.map(k=>[k,row.existing[k]??""])),changes}]);
+  if(result.pending){row.pending=true;notice("This update is pending on this device, not synchronized. Resolve Pending sends before continuing.",true);return;}
+  staged=staged.filter(r=>r!==row);notice("Item "+row.p.item+" updated. Other fields were kept.");
+ }catch(error){notice(error.message+" Compare the source again if the catalog changed.",true);}
+ finally{busy=false;draw();count();}
+};
+el("ip-accept-new").onclick=()=>{if(busy)return;for(const r of staged)if(r.status==="new")r.action="add";draw();};
+el("ip-clear-review").onclick=()=>{if(busy)return;staged=[];draw();notice("Review cleared. Previously submitted operations remain pending until the server confirms them.");};
+function manualData(){const data={};for(const key of ["item",...keys])data[key]=el("ip-"+key).value;return data;}
+el("ip-stage-manual").onclick=async()=>{
+ if(busy)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ const data=manualData(),item=window.InspectionCloud.itemKey(data.item);
+ if(checkedItem!==item||!["exists","new"].includes(itemCheckState)){notice("Complete the Item No. catalog check before preparing this product.",true);return;}
+ busy=true;draw();
+ try{
+  const products=await window.InspectionCloud.refreshCatalog();if(!products)throw Error("Catalog query was superseded. Retry the review.");
+  const existing=window.InspectionCloud.exactCatalogItem(products,item);
+  if(!existing&&(!trim(data.brand)||!trim(data.description)))throw Error("Item No., Brand and Description are required for a new product.");
+  prepare([{data,provided:keys.filter(k=>trim(data[k])),line:1}]);
+  notice(existing?"Matched record. Compare and choose individual fields, or keep the existing product.":"New product ready for review. Nothing has been saved.");
+ }catch(error){notice(window.InspectionCloud.catalogError(error),true);}
+ finally{busy=false;draw();}
+};
+el("ip-manual-clear").onclick=()=>{itemCheckSequence++;clearTimeout(itemCheckTimer);checkedItem="";for(const key of ["item","brand","family","description","pack","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";itemCheckStatus("Enter the Item No. to check the official catalog.","empty");};
+el("ip-item").addEventListener("change",()=>{if(!busy&&window.InspectionCloud.itemKey(el("ip-item").value)!==checkedItem)checkManualItem();});
 const mappings={
  item:[/^item(number|no|id|code)?$/,/^material(number|no|id)?$/,/^sku$/,/^product(code|number|id)?$/,/^article(number)?$/,/item/,/material/],
  description:[/^description$/,/^materialdescription$/,/^itemdescription$/,/^productdescription$/,/^shorttext$/,/description/,/shorttext/],
@@ -2682,7 +2746,7 @@ async function xlsxLib(){
  });
 }
 el("ip-file").onchange=async e=>{
- const file=e.target.files?.[0];headers=[];rawRows=[];el("ip-stage-file").disabled=true;
+ const file=e.target.files?.[0],sequence=++fileReadSequence;headers=[];rawRows=[];staged=[];draw();el("ip-stage-file").disabled=true;
  if(!file)return;
  try{
   if(file.size>12*1024*1024)throw Error("Maximum file size is 12 MB.");
@@ -2690,18 +2754,24 @@ el("ip-file").onchange=async e=>{
   if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
   else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const XLSX=await xlsxLib();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false});}
   else throw Error("Supported file formats: XLSX, XLS, CSV and TSV.");
+  if(sequence!==fileReadSequence)return;
   if(!rows||rows.length<2)throw Error("File needs a header row and at least one product.");
   if(rows.length>10001)throw Error("Maximum 10,000 product rows per import.");
   const index=rows.findIndex(r=>Array.isArray(r)&&r.some(x=>trim(x)));
   headers=(rows[index]||[]).map((x,i)=>trim(x)||"Column "+(i+1));
   rawRows=rows.slice(index+1).map((values,i)=>({values,line:index+i+2})).filter(r=>r.values.some(v=>trim(v)));
   setMaps();notice(file.name+" · "+rawRows.length+" product rows loaded. Check column mapping and click Compare spreadsheet.");
- }catch(err){notice(err.message||String(err),true);console.error("Product import",err);}
+ }catch(err){if(sequence!==fileReadSequence)return;notice(err.message||String(err),true);console.error("Product import",err);}
+ finally{importReviewControls();}
 };
-el("ip-file-clear").onclick=()=>{el("ip-file").value="";headers=[];rawRows=[];setMaps();notice("File cleared. Previously staged review remains until you clear it.");};
-el("ip-stage-file").onclick=()=>{
+el("ip-file-clear").onclick=()=>{fileReadSequence++;el("ip-file").value="";headers=[];rawRows=[];staged=[];setMaps();draw();notice("File and review cleared. Previously submitted operations remain pending until the server confirms them.");};
+el("ip-stage-file").onclick=async()=>{
+ if(busy)return;if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
  const itemCol=el("ip-map-item").value;if(itemCol===""){notice("Choose the Item Number column.",true);return;}
  const mapped={};for(const key of sourceKeys)mapped[key]=el("ip-map-"+key).value;
+ busy=true;importReviewControls();
+ try{
+ const products=await window.InspectionCloud.refreshCatalog();if(!products)throw Error("Catalog query was superseded. Retry comparison.");
  const rows=rawRows.map(r=>{
   const data={item:trim(r.values[Number(itemCol)])};
   const provided=[];
@@ -2711,39 +2781,23 @@ el("ip-stage-file").onclick=()=>{
  }).filter(r=>r.data.item);
  if(!rows.length){notice("No Item Numbers found in the mapped column.",true);return;}
  prepare(rows);
- notice("Comparison ready. New Items are selected; existing Items require individual approval before updates.");
+ notice("Comparison ready. Resolve each matched, repeated or invalid row individually before importing the new products.");
+ }catch(error){notice(window.InspectionCloud.catalogError(error),true);}finally{busy=false;draw();}
 };
-el("ip-commit").onclick=()=>{
+el("ip-commit").onclick=async()=>{
  if(busy)return;
- const actions=staged.filter(r=>r.action==="add"||r.action==="update");
- if(!actions.length)return;
- const adds=actions.filter(r=>r.action==="add").length,updates=actions.length-adds;
- if(!confirm("Apply "+adds+" new products and "+updates+" updates to the catalog?\nExisting values will only change for the approved rows and mapped non-empty fields.\nNo POs or physical verifications will be created."))return;
- const snapshot=demo.map(x=>({...x}));
+ if(!window.InspectionCloud.isAdministrator()||!window.InspectionCloud.canEdit())return window.InspectionCloud.deny();
+ if(reviewBlockers().length){notice("Review each matched, repeated or invalid row individually before importing new products.",true);return;}
+ const actions=staged.filter(r=>r.status==="new"&&r.action==="add");if(!actions.length)return;
+ if(!confirm("Import "+actions.length+" new products? Existing catalog records will not be replaced."))return;
  busy=true;draw();
  try{
-  // Revalidate against live catalog to prevent accidental duplicates after another import.
-  for(const r of actions){
-   const original=demo.find(x=>x.item===r.p.item);
-   if(r.action==="add"){
-    if(original)throw Error("Item "+r.p.item+" now exists. Refresh comparison before saving.");
-    const p={item:r.p.item,category:r.p.category||"Meat",brand:r.p.brand||"Other",family:r.p.family||"",description:r.p.description||"",pack:r.p.pack||"",plant:r.p.plant||""};
-    if(!p.description||!p.brand)throw Error("Missing required fields for Item "+p.item);
-    demo.push(p);
-   }else{
-    if(!original)throw Error("Item "+r.p.item+" no longer exists. Refresh comparison.");
-    for(const key of keys)if(r.provided.has(key)&&trim(r.p[key]))original[key]=r.p[key];
-    // Product and brand notes remain separate from catalog import fields.
-   }
-  }
-  if(!window.__inspectionSaveCatalog?.())throw Error("Could not persist catalog. No changes were applied.");
-  notice(window.InspectionCloud.isAdministrator()?"Saving "+adds+" new Items and "+updates+" updates to Supabase…":"Submitting "+adds+" new Items and "+updates+" updates for approval. Official catalog values remain unchanged.");
-  staged=[];draw();count();
-  if(el("item-count"))el("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";
+  const confirmed=await window.InspectionCloud.addImportedCatalog(actions.map(r=>r.p));
+  if(!confirmed){for(const r of actions)r.pending=true;notice("The import is not confirmed. Check Pending sends and reconnect before comparing again.",true);return;}
+  staged=staged.filter(r=>!actions.includes(r));notice(actions.length+" new products saved to the official catalog. Existing records were not replaced.");
   window.dispatchEvent(new CustomEvent("inspection:catalog-updated"));
- }catch(error){
-  demo.splice(0,demo.length,...snapshot);notice(error.message||String(error),true);console.error("Catalog import commit",error);
- }finally{busy=false;draw();}
+ }catch(error){notice(error.message+" Compare the source again before retrying.",true);}
+ finally{busy=false;draw();count();}
 };
 document.querySelector('[data-view="import"]').addEventListener("click",count);
 count();draw();
@@ -3219,7 +3273,7 @@ function updateRole(){
  document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell'))||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||false;});
  document.querySelectorAll(ADMIN_MUTATING).forEach(el=>{if(el.matches('button,input,select,textarea'))el.disabled=!administrator||el.hasAttribute('data-unknown-item');});
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
- window.__inspectionBatchEditControls?.();
+ window.__inspectionBatchEditControls?.();window.__inspectionImportReviewControls?.();
 }
 async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={}){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);activeControllers.add(controller);
@@ -3645,7 +3699,7 @@ function differences(){const changes={};for(const [k,c]of collectors)memory.set(
 function scheduleSave(){if(scheduled||!started||saving||photoBusy||signingOut)return;scheduled=true;queueMicrotask(()=>{scheduled=false;commit().catch(()=>{})})}
 function markDomains(event){
  if(!(event.target instanceof Element)||!['click','change'].includes(event.type))return;
- const selectors=[['#save-demo,.iq-save,#iq-bulk-apply,#ip-commit',['catalog-overrides','est-references','product-notes']],['#save-refs',['est-references']],['#save-product-note',['product-notes']],['#save-brand-note',['brand-notes']],['#bp-save',['brand-profiles']],['#ob-save,#ob-edit-save,[data-ob-delete],#est-confirm-save,#q-save,#quick-confirm-selected,[data-po-confirm]',['observations','est-references']],['[data-po-fixed]',['fixed-est']],['#est-toggle-stable',['stability-overrides']]];
+ const selectors=[['#save-demo,.iq-save,#iq-bulk-apply',['catalog-overrides','est-references','product-notes']],['#save-refs',['est-references']],['#save-product-note',['product-notes']],['#save-brand-note',['brand-notes']],['#bp-save',['brand-profiles']],['#ob-save,#ob-edit-save,[data-ob-delete],#est-confirm-save,#q-save,#quick-confirm-selected,[data-po-confirm]',['observations','est-references']],['[data-po-fixed]',['fixed-est']],['#est-toggle-stable',['stability-overrides']]];
  for(const[selector,domains]of selectors)if(event.target.closest(selector))for(const key of domains)dirtyDomains.add('inspection-data-hub-'+key+'-v1');
 }
 async function commit(extra=null){
