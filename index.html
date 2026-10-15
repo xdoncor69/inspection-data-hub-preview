@@ -114,6 +114,12 @@ window.InspectionTableTools={
 #purchase-orders-view .order-directory-more>summary{list-style:none;cursor:pointer}
 #purchase-orders-view .order-directory-more>summary::-webkit-details-marker{display:none}
 #purchase-orders-view .order-directory-more>div{display:flex;flex-direction:column;gap:5px;margin-top:5px}
+</style><style id="mobile-entry-no-focus-zoom">
+/* iOS focuses controls smaller than 16px with automatic zoom. Keep pinch zoom available. */
+@media screen and (max-width:900px), screen and (any-pointer:coarse){
+ body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]),
+ body textarea,body select{font-size:16px!important}
+}
 </style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
@@ -2134,6 +2140,16 @@ function matchesFacet(x,field,value){
  if(field==="photo")return value==="with"?(imagesByItem[x.item]||[]).length>0:!(imagesByItem[x.item]||[]).length;
  return value==="blank"?isBlankCatalogField(x.description):!isBlankCatalogField(x.description);
 }
+function setQueryCellEditing(cell,editing){
+ if(cell.tagName==="SELECT")cell.disabled=!editing;
+ else cell.readOnly=!editing;
+}
+function queryCategoryCell(product){
+ const value=String(product.category??"");
+ return '<select class="input iq-cell" data-field="category" disabled aria-label="Product type for Item '+safe(product.item)+'">'+
+ '<option value="" disabled'+(!["Meat","Poultry"].includes(value)?' selected':'')+'>Select type</option>'+
+ ["Meat","Poultry"].map(type=>'<option value="'+type+'"'+(value===type?' selected':'')+'>'+type+'</option>').join("")+'</select>';
+}
 let batchEditing=false,batchBusy=false,batchBase=new Map();
 function batchControls(){
  const admin=window.InspectionCloud.isAdministrator(),active=batchEditing;
@@ -2157,7 +2173,7 @@ $("iq-edit-all").onclick=()=>{
  if(!matched.length)return;
  batchBase=new Map(matched.map(p=>[String(p.item),Object.fromEntries(editable.map(k=>[k,p[k]??""]))]));
  batchEditing=true;
- $("iq-rows").querySelectorAll("[data-iq-item]").forEach(row=>{row.dataset.iqEditing="true";row.querySelectorAll(".iq-cell").forEach(n=>n.readOnly=false);});
+ $("iq-rows").querySelectorAll("[data-iq-item]").forEach(row=>{row.dataset.iqEditing="true";row.querySelectorAll(".iq-cell").forEach(n=>setQueryCellEditing(n,true));});
  $("iq-batch-status").textContent="Editing all "+matched.length+" results. Change the fields, then Save all or Cancel. Item numbers stay fixed.";batchControls();
 };
 function finishBatch(){
@@ -2235,7 +2251,7 @@ function draw(){
  $("iq-count").textContent=matched.length+" of "+demo.length+" products";
  sortResults();
  $("iq-rows").innerHTML=matched.map(x=>{
-  const cells=editable.map(k=>'<td>'+(k==="description"?'<textarea rows="2" class="input iq-cell iq-description-cell" readonly data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" readonly data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
+  const cells=editable.map(k=>'<td>'+(k==="category"?queryCategoryCell(x):k==="description"?'<textarea rows="2" class="input iq-cell iq-description-cell" readonly data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" readonly data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
   // Item remains immutable; editable cells are identified by field, not position.
   return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><div class="iq-row-actions"><button type="button" class="btn mini iq-edit">Edit</button><button type="button" class="btn mini iq-save" hidden>Save</button><button type="button" class="btn mini iq-cancel" hidden>Cancel</button></div></td></tr>';
  }).join("")||'<tr><td colspan="10" class="empty">No matching products. Try removing a condition.</td></tr>';
@@ -2352,7 +2368,7 @@ $("iq-rows").onclick=async e=>{
  const row=action.closest("[data-iq-item]"),product=demo.find(p=>String(p.item)===row.dataset.iqItem);if(!product)return;
  if(action.matches(".iq-edit,.iq-cancel")){
   const editing=action.matches(".iq-edit");row.dataset.iqEditing=String(editing);
-  row.querySelectorAll(".iq-cell").forEach(input=>{if(!editing)input.value=product[input.dataset.field]??"";input.readOnly=!editing;});
+  row.querySelectorAll(".iq-cell").forEach(input=>{if(!editing)input.value=product[input.dataset.field]??"";setQueryCellEditing(input,editing);});
   row.querySelector(".iq-edit").hidden=editing;row.querySelector(".iq-save").hidden=!editing;row.querySelector(".iq-save").textContent=window.InspectionCloud.isAdministrator()?"Save":"Send request";row.querySelector(".iq-cancel").hidden=!editing;
   if(editing)row.querySelector(".iq-cell").focus();
   return;
@@ -3256,7 +3272,10 @@ function updateRole(){
  document.querySelectorAll('#edit-btn,#edit-est,#edit-product-note,#manage-gallery,.iq-photo-add,[data-catalog-request],.inspection-query-bulk,#admin-clients-panel,[data-view="history"],[data-view="brands"],[data-view="clients"]').forEach(el=>el.hidden=!administrator);
  document.querySelectorAll('#product-catalog-actions,#iq-edit-all-controls').forEach(el=>el.hidden=!administrator);
  document.querySelectorAll('[data-iq-item]').forEach(row=>{const editing=row.dataset.iqEditing==='true';for(const [selector,hide]of [['.iq-edit',editing],['.iq-save',!editing],['.iq-cancel',!editing]]){const b=row.querySelector(selector);if(b)b.hidden=!administrator||hide;}});
- document.querySelectorAll('.iq-cell').forEach(el=>el.readOnly=!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true');
+ document.querySelectorAll('.iq-cell').forEach(el=>{
+ const locked=!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true';
+ if(el.tagName==='SELECT')el.disabled=locked;else el.readOnly=locked;
+ });
 
  const pill=document.querySelector('.login-pill');if(pill){const text=session?(administrator?'♙ Admin · ':'♙ User · ')+(profileNames.get(session.user.id)||session.user.email):'♙ Sign in';if(pill.textContent!==text)pill.textContent=text;pill.title='Account, sign out or change user'}
  const avatar=document.querySelector('.avatar');if(avatar&&avatar.textContent!==(administrator?'AD':'US'))avatar.textContent=administrator?'AD':'US';
@@ -3270,7 +3289,7 @@ function updateRole(){
  
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
  if(!administrator){for(const id of ['change-history-rows']){const list=document.getElementById(id);if(list?.textContent)list.replaceChildren();}}
- document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell'))||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||false;});
+ document.querySelectorAll('.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-est],[data-po-note],[data-po-ref]').forEach(el=>{if(el.matches('input,textarea'))el.readOnly=!editable||(!administrator&&el.matches('.iq-cell'))||(!administrator&&el.matches('[data-po-ref],[data-po-est]'))||(el.matches('.iq-cell')&&el.closest('[data-iq-item]')?.dataset.iqEditing!=='true')||(el.matches('#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],[data-po-note],[data-po-est]')&&el.closest('tr')?.dataset.draftEditing!=='true');else if(el.matches('select'))el.disabled=!editable||(el.matches('.iq-cell')&&(!administrator||el.closest('[data-iq-item]')?.dataset.iqEditing!=='true'));});
  document.querySelectorAll(ADMIN_MUTATING).forEach(el=>{if(el.matches('button,input,select,textarea'))el.disabled=!administrator||el.hasAttribute('data-unknown-item');});
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
  window.__inspectionBatchEditControls?.();window.__inspectionImportReviewControls?.();
