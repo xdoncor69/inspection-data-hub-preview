@@ -120,7 +120,7 @@ window.InspectionTableTools={
  body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]),
  body textarea,body select{font-size:16px!important}
 }
-</style></head><body><style id="online-workspace-style">
+</style><style>#picture-import-dialog .row{gap:10px}#picture-import-dialog label{min-width:0}#picture-import-dialog .input{max-width:100%}#picture-import-dialog td .input{min-width:110px}#picture-import-dialog td:nth-child(3) .input{min-width:220px}#picture-import-dialog th{white-space:nowrap}#picture-pages{display:grid;gap:8px;margin:12px 0}</style></head><body><style id="online-workspace-style">
 #cloud-blocker{position:fixed;inset:0;z-index:1000;background:var(--sk-bg,#eef2f6);display:grid;place-items:center;padding:24px;text-align:center;color:var(--sk-ink,#20364b)}
 #cloud-blocker[hidden]{display:none}#cloud-blocker>div{max-width:540px}
 #cloud-banner{position:sticky;top:0;z-index:35;padding:8px 15px;background:var(--sk-accent-soft);color:var(--sk-ink);border-bottom:1px solid var(--sk-border);font-size:11px}
@@ -168,7 +168,19 @@ window.InspectionTableTools={
 </div>
 </section>
 <section id="clients-view" class="hidden"><div id="client-directory" class="panel panel-pad"></div></section>
-<section id="purchase-orders-view" class="hidden"><div class="order-import-actions" role="group" aria-label="Import orders"><button class="btn primary" type="button" id="order-import-po" aria-haspopup="dialog" aria-controls="po-import-dialog">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-haspopup="dialog" aria-controls="sap-delivery-dialog">Delivery First</button></div><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO No. or Del No.</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO No., Del No. or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO No., Del No., customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden"></section>
+<section id="purchase-orders-view" class="hidden"><div class="order-import-actions" role="group" aria-label="Import orders"><button class="btn primary" type="button" id="order-import-po" aria-haspopup="dialog" aria-controls="po-import-dialog">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-haspopup="dialog" aria-controls="sap-delivery-dialog">Delivery First</button><button class="btn" type="button" id="order-import-picture" aria-haspopup="dialog" aria-controls="picture-import-dialog">From Picture</button></div><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO No. or Del No.</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO No., Del No. or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO No., Del No., customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden"></section>
+<dialog id="picture-import-dialog" class="online-dialog" aria-labelledby="picture-title" style="width:1100px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);overflow:auto">
+<div class="section-head"><h2 id="picture-title">From Picture</h2><button type="button" class="btn" id="picture-close">Close</button></div>
+<p>Read third-party / crossdock invoices. Source identifiers are kept independently of the SAP catalog. Review before creating a draft.</p>
+<p class="small">Read page sends that photo to OpenAI for automatic extraction using the configured API account. Photos remain temporarily in this window; saved drafts keep the reviewed text and page references, not the original photos. Closing preserves this import in this tab; clearing or reloading removes it.</p>
+<div class="row" style="flex-wrap:wrap"><label>PO No. / invoice reference<input class="input" id="picture-number" type="text" maxlength="90" autocomplete="off"></label><label>Customer<input class="input" id="picture-customer" type="text" autocomplete="off"></label></div>
+<input type="file" id="picture-camera" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+<input type="file" id="picture-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
+<div class="row" style="flex-wrap:wrap;margin:12px 0"><button type="button" class="btn primary" id="picture-take">Take photo / Add another page</button><button type="button" class="btn" id="picture-add">Choose images / Add another page</button></div>
+<p id="picture-status" role="status" aria-live="polite"></p><p id="picture-summary"></p><div id="picture-pages"></div>
+<div class="tablewrap" style="overflow:auto"><table><thead><tr><th>Source</th><th>Item No.</th><th>Description</th><th>Brand</th><th>Class</th><th>Family</th><th>Pack</th><th>Size</th><th>EST</th><th>Actions</th></tr></thead><tbody id="picture-rows"></tbody></table></div>
+<label style="display:block;margin:14px 0"><input type="checkbox" id="picture-reviewed"> I reviewed all lines against the invoice and corrected ambiguous text. EST values are references awaiting administrator review.</label>
+<div class="row" style="flex-wrap:wrap"><button type="button" class="btn" id="picture-clear">Import again</button><button type="button" class="btn primary" id="picture-create" disabled>Move to Drafts</button></div></dialog>
 <dialog id="po-import-dialog" class="online-dialog" aria-labelledby="po-import-title"><div class="po-bulk-import" id="po-bulk-import">
 <div class="section-head" style="margin-bottom:0"><div><h3 id="po-import-title">Import PO</h3><span class="hint">Build your PO draft from a SAP / SIPI Excel export or CSV</span></div><button type="button" class="btn" id="po-import-close">Cancel</button></div>
 <div id="po-import-body">
@@ -1029,9 +1041,84 @@ el("po-import-create").onclick=()=>{
 };
 })();
 
+(function initPOPictureImport(){
+const el=id=>document.getElementById(id),cloud=window.InspectionCloud;
+const dialog=el('picture-import-dialog');let pages=[],owner='',busy=false,epoch=0;
+const fields=['item','description','brand','category','family','pack','size','plant'];
+const text=v=>String(v??'').trim();
+const status=message=>{el('picture-status').textContent=message;};
+function owned(){if(owner&&owner!==cloud.layoutAccount()){reset();dialog.close();return false;}return true;}
+function reset(){epoch++;pages=[];owner='';busy=false;el('picture-number').value='';el('picture-customer').value='';el('picture-customer').dataset.clientId='';el('picture-reviewed').checked=false;for(const id of ['picture-camera','picture-files'])el(id).value='';render();}
+function render(){
+ const rows=pages.flatMap(p=>p.rows||[]);el('picture-reviewed').checked=false;
+ el('picture-pages').innerHTML=pages.map((p,i)=>'<div class="panel panel-pad"><strong>Page '+(i+1)+'</strong> · '+safe(p.name)+' · '+safe(p.state)+(p.document_number?' · Document '+safe(p.document_number):'')+(p.supplier?' · '+safe(p.supplier):'')+'<div class="row"><button type="button" class="btn mini" data-picture-read="'+i+'" '+(busy?'disabled':'')+'>'+(p.rows?'Read again':'Read page')+'</button><button type="button" class="btn mini" data-picture-remove="'+i+'" '+(busy?'disabled':'')+'>Remove page</button></div></div>').join('');
+ el('picture-rows').innerHTML=pages.map((p,pi)=>(p.rows||[]).map((r,ri)=>'<tr><td>Page '+(pi+1)+' / line '+(r.sourceLine||ri+1)+(r.warning?'<p>'+safe(r.warning)+'</p>':'')+'</td>'+fields.map(k=>'<td><input class="input" data-picture-page="'+pi+'" data-picture-row="'+ri+'" data-picture-field="'+k+'" maxlength="2000" aria-label="'+k+' page '+(pi+1)+' line '+(ri+1)+'" value="'+safe(r[k])+'" '+(busy?'disabled':'')+'></td>').join('')+'<td><button type="button" class="btn mini" data-picture-delete="'+pi+':'+ri+'" '+(busy?'disabled':'')+'>Remove line</button></td></tr>').join('')).join('');
+ el('picture-summary').textContent=pages.length+' pages · '+rows.length+' product lines. External source data; repeated lines are preserved.';
+ for(const id of ['picture-take','picture-add','picture-create','picture-clear'])el(id).disabled=busy;
+ el('picture-create').disabled=busy||!rows.length||pages.some(p=>!p.rows);
+ el('picture-pages').querySelectorAll('[data-picture-read]').forEach(b=>b.onclick=()=>readPage(Number(b.dataset.pictureRead)));
+ el('picture-pages').querySelectorAll('[data-picture-remove]').forEach(b=>b.onclick=()=>{if(!owned()||busy)return;if(!confirm('Remove this page and its extracted lines?'))return;pages.splice(Number(b.dataset.pictureRemove),1);render();});
+ el('picture-rows').querySelectorAll('[data-picture-field]').forEach(input=>input.oninput=()=>{if(!owned()||busy)return;pages[Number(input.dataset.picturePage)].rows[Number(input.dataset.pictureRow)][input.dataset.pictureField]=input.value;el('picture-reviewed').checked=false;});
+ el('picture-rows').querySelectorAll('[data-picture-delete]').forEach(b=>b.onclick=()=>{if(!owned()||busy)return;const [pi,ri]=b.dataset.pictureDelete.split(':').map(Number);if(confirm('Remove this product line from the import?')){pages[pi].rows.splice(ri,1);render();}});
+}
+async function readPage(index){
+ if(!owned()||busy)return;if(!cloud.canEdit())return cloud.deny();const page=pages[index];if(!page)return;
+ if(page.rows&&!confirm('Read this page again? This replaces its edited lines after a successful reading.'))return;
+ const ticket=epoch;busy=true;page.state='Reading…';render();status('Reading page '+(index+1)+'…');
+ try{const result=await cloud.readPicture({image:page.image});if(ticket!==epoch||!owned())return;
+ page.rows=result.rows.map((r,i)=>({...r,sourceLine:i+1}));page.document_number=result.document_number;page.supplier=result.supplier;page.state=page.rows.length?'Ready for review':'No product lines found';
+ if(!el('picture-number').value&&result.document_number)el('picture-number').value=result.document_number;
+ status('Review all fields against the invoice. Correct empty or ambiguous values. The document reference is a suggestion; confirm the PO No.');
+ }catch(error){if(ticket!==epoch||!owned())return;page.state=page.rows?'Previous reading retained':'Not read';status(error.message);}
+ finally{if(ticket===epoch){busy=false;render();}}
+}
+async function addFiles(files){
+ if(!owned()||busy)return;if(!cloud.canEdit())return cloud.deny();
+ const ticket=epoch;busy=true;render();const added=[];let problem='';
+ try{for(const file of files){if(pages.length>=20){problem='Maximum 20 pages per import.';break;}
+ if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>6*1024*1024){problem='Use JPEG, PNG or WebP photos up to 6 MB. Convert HEIC to JPEG first.';continue;}
+ const image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not open the selected photo.'));reader.readAsDataURL(file);});
+ if(ticket!==epoch||!owned())return;added.push(pages.length);pages.push({name:file.name,image,state:'Not read'});
+ }}catch(error){problem=error.message;}finally{if(ticket===epoch){busy=false;render();}}
+ if(ticket!==epoch)return;
+ if(problem)status(problem);
+ // Read sequentially; retry buttons retain pages if the service is unavailable.
+ for(const index of added){if(ticket!==epoch||!owned())return;await readPage(index);if(pages[index]?.state==='Not read')break;}
+}
+cloud.bindClientInput(el('picture-customer'));
+el('order-import-picture').onclick=()=>{
+ if(!cloud.canEdit())return cloud.deny();if(!owned())return;
+ owner=cloud.layoutAccount();dialog.showModal();
+ if(!pages.length){status('Take an invoice photo or choose images. Photos are sent to OpenAI only when reading a page.');el('picture-camera').click();}
+};
+el('picture-take').onclick=()=>{if(owned()&&!busy){el('picture-camera').value='';el('picture-camera').click();}};
+el('picture-add').onclick=()=>{if(owned()&&!busy){el('picture-files').value='';el('picture-files').click();}};
+for(const id of ['picture-camera','picture-files'])el(id).onchange=e=>addFiles([...e.target.files]);
+el('picture-close').onclick=()=>dialog.close();
+el('picture-clear').onclick=()=>{if(!busy&&confirm('Clear these photos and extracted lines? Saved drafts are unaffected.')){reset();owner=cloud.layoutAccount();status('Ready for another invoice.');}};
+el('picture-create').onclick=()=>{
+ if(!owned()||busy)return;if(!cloud.canEdit())return cloud.deny();
+ const number=text(el('picture-number').value);if(!number||number.length>90){status('Enter a PO No. or invoice reference of 1–90 characters.');return;}
+ if(findExistingPO(number)||cloud.hasApprovedPO(number)){dialog.close();offerExistingPO(number,()=>{el('picture-number').value='';dialog.showModal();status('Choose another PO No. Photos and edited lines are retained.');},reset);return;}
+ const client=cloud.requireClient(el('picture-customer'));if(!client)return;
+ if(pages.some(p=>!p.rows)){status('Read or remove every page before moving to Drafts.');return;}
+ if(!el('picture-reviewed').checked){status('Review the extracted lines and confirm the review checkbox.');return;}
+ const rows=pages.flatMap((page,pi)=>(page.rows||[]).map(r=>{const product=Object.fromEntries(fields.map(k=>[k,text(r[k])]));return {...rowFor({item:product.item,description:product.description,missing:true}),...product,sourceMode:'external-picture',sourcePage:pi+1,sourceLine:r.sourceLine,sourceDocument:page.document_number,sourceSupplier:page.supplier,sourceFile:page.name,expectedEst:product.plant,importedProduct:{...product}};}));
+ if(!rows.length||rows.some(r=>!r.item||!r.description)){status('Each retained line needs an Item No. and description. Correct unreadable text or remove the line; do not invent identifiers.');return;}
+ if(rows.some(r=>r.category&&!['Meat','Poultry'].includes(r.category))){status('Class may be Meat, Poultry or blank. Leave it blank for unrelated goods.');return;}
+ if(!confirm('Create draft '+number+' with '+rows.length+' external product lines? No catalog products or physical checks are created. Invoice photos are not retained in the saved draft.'))return;
+ const po={id:'po-'+crypto.randomUUID(),createdBy:cloud.layoutAccount(),po:number,customer:client.name,clientId:client.id,savedAt:new Date().toISOString(),rows};invoices.unshift(po);
+ if(!persistPOWorkspace()){invoices.shift();status('Draft could not be prepared. Your photos and edits remain here.');return;}
+ dialog.close();reset();activatePO(po.id,false);renderPOArchive();alert('Draft prepared. Check the existing synchronization status to confirm it was saved to the shared workspace.');
+};
+// Reconnection can initialize a different account: never reuse that account’s photos.
+window.addEventListener('inspection:cloud-ready',owned);
+render();
+})();
+
 $("po-new").onclick=()=>createPOFlow();
 $("po-save").onclick=closeActivePO;$("po-clear").onclick=closeActivePO;
-$("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant,x.receivedQuantity||"",x.note||""])]);
+$("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,poDisplayProduct(x).brand),x.plant,x.receivedQuantity||"",x.note||""])]);
 $("log-print").onclick=()=>printTable("log");
 function normalizePOSearch(value){return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/\s+/g," ");}
 function matchesPOSearch(po,query){return window.InspectionCloud.orderMatches(po,query);}
@@ -1056,7 +1143,7 @@ root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.da
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
 root.querySelectorAll("[data-po-export]").forEach(b=>b.onclick=()=>{
  const p=invoices.find(x=>x.id===b.dataset.poExport);if(!p)return;const headers=["PO","Customer","Item","Type","Description","EST"];
- saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[headers,...p.rows.map(x=>[p.po,p.customer||"",x.item,x.category||demo.find(d=>d.item===x.item)?.category||"",productDescription(x.description,demo.find(d=>d.item===x.item)?.brand),x.plant])]);
+ saveCSV("PO_"+p.po.replace(/[^a-z0-9_-]/gi,"_")+".csv",[headers,...p.rows.map(x=>[p.po,p.customer||"",x.item,x.category||poDisplayProduct(x).category||"",productDescription(x.description,poDisplayProduct(x).brand),x.plant])]);
 });
 root.querySelectorAll("[data-po-delete]").forEach(b=>b.onclick=()=>deletePrivateDraft(b.dataset.poDelete));
 renderPODetails();
@@ -1068,9 +1155,9 @@ function deletePrivateDraft(id){
  invoices=invoices.filter(x=>x.id!==id);if(openPO===id)openPO=null;
  persistPOWorkspace();renderPOArchive();
 }
-function poCatalogBadge(row,index){if(demo.some(p=>p.item===row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
-function poDisplayProduct(row){return demo.find(p=>p.item===row.item)||row.importedProduct||{};}
-function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+estPriorityCell(r.item)+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
+function poCatalogBadge(row,index){if(row.sourceMode==='external-picture')return '<div class="notice small">External source · Page '+safe(row.sourcePage)+' / line '+safe(row.sourceLine)+'</div>';if(demo.some(p=>p.item===row.item))return '';return '<div class="notice small"><strong>Not in catalog</strong><div>Source PO data only · catalog addition is optional.</div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-add-catalog="'+index+'">Review / add to catalog</button>':'')+'</div>';}
+function poDisplayProduct(row){return row.sourceMode==='external-picture'?(row.importedProduct||row):demo.find(p=>p.item===row.item)||row.importedProduct||{};}
+function mobileInspectionHTML(p){return '<div class="po-mobile-lines">'+p.rows.map((r,i)=>{const product=poDisplayProduct(r),checked=window.InspectionCloud.isPORowVerified(r);return '<article class="panel panel-pad"><strong>Item '+safe(r.item)+'</strong>'+poCatalogBadge(r,i)+'<div class="small muted">'+safe(product?.brand||'')+'</div><p>'+safe(r.description)+'</p><p class="small">'+safe([window.InspectionProduct.packSize(product?.pack,product?.size),window.InspectionProduct.classLabel(product?.category)].filter(Boolean).join(' · '))+'</p>'+(window.InspectionCloud.isAdministrator()?'<div>'+(r.sourceMode==='external-picture'?'Review':estPriorityCell(r.item))+'</div>':'')+'<p><strong>EST: '+safe(r.plant||'Unknown')+'</strong></p>'+(window.InspectionCloud.isAdministrator()?'<div class="row"><button class="btn" data-po-select-only="'+i+'">Select EST only</button><button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button></div>':'')+'<button class="btn mini" data-po-product-detail="'+i+'">Product details / photos</button></article>';}).join('')+'</div>';}
 function openMissingESTEditor(poId){
  const cloud=window.InspectionCloud;
  if(!cloud.isAdministrator()||!cloud.canEdit()){cloud.deny();return;}
@@ -1100,18 +1187,18 @@ if(!p){root.innerHTML="";root.dataset.draftOwner="";window.InspectionOrderOvervi
 const folded=window.InspectionOrderOverview.capture(root,p.id);root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
 root.innerHTML='<div class="po-details-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'</div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="order-counts"><span>PO: '+p.rows.length+' item lines</span></div><details class="order-lines" data-order-fold="po"><summary>PO items ('+p.rows.length+')</summary><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
- return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+estPriorityCell(x.item)+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+(x.sourceMode==='external-picture'?'Review':estPriorityCell(x.item))+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
  }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p)+'</details><section id="draft-delivery-overview"></section>';
 window.InspectionCloud.renderDraftDeliveries?.(document.getElementById('draft-delivery-overview'),p);
 window.InspectionOrderOverview.restore(root,folded);window.InspectionOrderOverview.sync('draft',root,true,()=>{openPO=null;existingPOAccepted=false;renderPOArchive();});
 if(window.InspectionCloud.isAdministrator()&&p.rows.some(r=>!String(r.plant||'').trim())){const bulk=document.createElement('button');bulk.id='po-fill-missing-est';bulk.className='btn primary';bulk.textContent='Fill missing ESTs';bulk.onclick=()=>openMissingESTEditor(p.id);root.querySelector('.po-add-row').after(bulk);}
 $('mobile-inspection-toggle').onclick=()=>root.classList.toggle('mobile-table');
-$('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(window.InspectionProduct.classLabel(demo.find(x=>x.item===r.item)?.category))+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
+$('po-print-draft').onclick=()=>{const sheet=document.createElement('div');sheet.id='draft-print-sheet';sheet.innerHTML='<h2>DRAFT — NOT APPROVED</h2><p>PO '+safe(p.po)+' · '+safe(p.customer)+'</p><table><thead><tr><th>Item No.</th><th>Description</th><th>Class</th><th>EST suggestion</th></tr></thead><tbody>'+p.rows.map(r=>'<tr><td>'+safe(r.item)+'</td><td>'+safe(r.description)+'</td><td>'+safe(window.InspectionProduct.classLabel(poDisplayProduct(r).category))+'</td><td>'+safe(r.plant)+'</td></tr>').join('')+'</tbody></table>';document.body.appendChild(sheet);document.body.classList.add('print-draft');window.print();setTimeout(()=>{document.body.classList.remove('print-draft');sheet.remove();},1200);};
 root.querySelectorAll('[data-po-add-catalog]').forEach(b=>b.onclick=()=>{if(!window.InspectionCloud.isAdministrator())return;const row=p.rows[Number(b.dataset.poAddCatalog)];window.__inspectionAddImportedProduct(row,()=>renderPODetails());});
 root.querySelectorAll('[data-po-product-detail]').forEach(b=>b.onclick=async()=>{
  const row=p.rows[Number(b.dataset.poProductDetail)],item=row.item;
  const caption=b.textContent;b.disabled=true;b.textContent='Loading profile…';
- try{const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.exactCatalogItem(products,item);
+ try{if(row.sourceMode==='external-picture'){modal('<h2>External source product</h2><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}const products=await window.InspectionCloud.refreshCatalog();if(!products)return;selected=window.InspectionCloud.exactCatalogItem(products,item);
  if(!selected){modal('<h2>Not in catalog</h2><p>The official catalog was queried successfully. Source PO data only; adding this product is optional.</p><div class="edit-grid">'+Object.entries(row.importedProduct||{}).filter(([k,v])=>v).map(([k,v])=>'<div><strong>'+safe(k)+'</strong><p>'+safe(v)+'</p></div>').join('')+'</div>');return;}
  const profile=selected;window.__inspectionNavigate?.('global');selected=profile;showProduct();document.getElementById('product-name').scrollIntoView?.({block:'start'});
  }catch(error){alert(window.InspectionCloud.catalogError(error));}finally{b.disabled=false;b.textContent=caption;}
@@ -3298,8 +3385,8 @@ function updateRole(){
  document.querySelectorAll(MUTATING).forEach(el=>{el.setAttribute('aria-disabled',String(!editable));if(!editable&&el.tagName==='BUTTON')el.disabled=false;});
  window.__inspectionBatchEditControls?.();window.__inspectionImportReviewControls?.();
 }
-async function request(path,{method='GET',body,raw=false,auth=true,headers={}}={}){
- const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);activeControllers.add(controller);
+async function request(path,{method='GET',body,raw=false,auth=true,headers={},timeoutMs=20000}={}){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);activeControllers.add(controller);
  try{
  if(signingOut){controller.abort();throw new DOMException('Signing out','AbortError');}
  if(auth&&session?.expires_at&&session.expires_at*1000<Date.now()+60000)await refreshSession();
@@ -3820,7 +3907,7 @@ async function uploadPhotos(item,files){
 }
 
 const ADMIN_MUTATING='#product-import-open,#iq-edit-all,#iq-save-all,#po-fill-missing-est,#po-missing-est-save,[data-missing-est],[data-import-edit],[data-import-add],[data-import-field],[data-import-brand],#po-catalog-edit-all,#po-catalog-add-all,#directory-client-new,[data-directory-edit],[data-directory-delete],[data-po-add-catalog],[data-po-select-only],[data-po-observed],#client-save,#shared-account-label,#edit-btn,#edit-est,#edit-product-note,#manage-gallery,#edit-product-cancel,.iq-edit,.iq-save,.iq-photo-add,#save-demo,#save-refs,#save-product-note,[data-catalog-request],#approved-po-edit,#approved-po-delete,#approved-po-editor,[data-po-approve],#po-approve,#iq-bulk-apply,#ip-stage-manual,#ip-stage-file,#ip-commit,#brand-edit-note,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,#thumb-add,#brand-new,[data-brand-edit],#bp-save,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,[data-po-confirm],[data-po-fixed],[data-po-ref],[data-po-est],[data-po-verify],[data-fixed-item]';
-const MUTATING='#product-import-open,#iq-edit-all,#iq-save-all,#order-import-po,#order-import-delivery,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
+const MUTATING='#product-import-open,#iq-edit-all,#iq-save-all,#order-import-po,#order-import-delivery,#order-import-picture,#picture-create,#picture-take,#picture-add,#sap-delivery-save,#item-create-po,#po-existing-open,#po-existing-new,#po-delete-active,#approved-po-edit,#approved-po-delete,#approved-editor-save,[data-draft-edit],[data-catalog-request],.iq-edit,.iq-cancel,[data-po-approve],#po-approve,.iq-cell,#log-rows input,[data-po-item],[data-po-desc],[data-po-qty],[data-po-weight],[data-po-ref],#po-edit-details,#po-edit-save,#po-add-item-btn,[data-po-delete],[data-po-confirm],[data-po-up],[data-po-down],#thumb-add,#edit-btn,#edit-est,#edit-product-note,#brand-edit-note,#manage-gallery,#gallery-new,#upload-multi,.iq-photo-add,.iq-photo-upload,.iq-save,#iq-bulk-apply,#brand-new,[data-brand-edit],#bp-save,#save-demo,#save-refs,#save-product-note,#save-brand-note,#weekly-record,#ob-save,#ob-add-from-list,#ob-edit-save,[data-ob-edit],[data-ob-delete],#est-verify-now,#est-confirm-save,#est-toggle-stable,#quick-confirm-selected,[data-quick-change],[data-quick-check],#q-save,#po-new,#po-confirm-save,#po-import-create,[data-po-remove],[data-po-verify],[data-po-fixed],[data-po-save],[data-po-add],#log-add-manual,#log-add-current,#log-save,#log-clear,#po-save,#po-clear,[data-fixed-item],[data-po-item-save],[data-po-item-add],[data-delete],[data-move],#ip-stage-manual,#ip-stage-file,#ip-commit';
 document.addEventListener('click',e=>{
  const edit=e.target.closest('[data-draft-edit]');if(edit){if(!canEdit()){deny();return;}const row=edit.closest('tr');row.dataset.draftEditing=row.dataset.draftEditing==='true'?'false':'true';edit.textContent=row.dataset.draftEditing==='true'?'Done':'Edit';updateRole();return;}
  const button=e.target.closest('[data-catalog-request]');if(button){const row=button.closest('tr'),input=row.querySelector('[data-po-item],input[data-field="item"]');const item=input?.value;if(official["inspection-data-hub-catalog-overrides-v1"]?.[item])window.__inspectionEditProductItem?.(item);else if(item)window.__inspectionOfferMissing?.(item);}
@@ -3964,7 +4051,12 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='inspection-open-notifications')openOrderNotifications();if(event.data?.type==='inspection-notification-dismissed')refreshOrderNotifications();});
 notificationPanel();
 
-window.InspectionCloud={saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
+async function readPicture(body){
+ if(!canEdit()){deny();throw Error('Reconnect before reading an invoice photo.');}
+ const owner=session.user.id;const result=await request('/functions/v1/inspection-picture',{method:'POST',body,timeoutMs:65000});
+ if(session?.user.id!==owner)throw Error('Account changed. Reopen From Picture.');return result;
+}
+window.InspectionCloud={readPicture,saveCatalogResults,renderDraftDeliveries,orderSummary,orderMatches,refreshCatalog,itemKey,exactCatalogItem,catalogError,catalogMeta:()=>catalogMetadata,addImportedCatalog,record,collect,canEdit,canConsult,deny,updateRole,openLogin,uploadPhotos,removePhoto,isAdministrator:()=>administrator,photoMap:()=>photoDisplay,layoutAccount:()=>session?.user.id||"",bindClientInput,requireClient,approvePO,isPORowVerified,openApprovedPO:number=>{const a=approvedPOs.find(p=>p.po_key===String(number).trim().toLowerCase());if(!a)return false;selectedApproved=a.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');document.getElementById("approved-po-details")?.scrollIntoView?.({block:"start"});return true;},hasApprovedPO:number=>approvedPOs.some(p=>p.po_key===String(number).trim().toLowerCase())};
 let connectionPromise=null,applicationInitializationError=null;
 function connect(){
  if(connectionPromise)return connectionPromise;
@@ -4231,6 +4323,7 @@ window.addEventListener('inspection:cloud-ready',()=>{const header=document.quer
 .client-option:hover,.client-option[aria-selected="true"]{background:var(--sk-accent-soft);color:var(--sk-accent)}.client-create{font-weight:700}.client-empty{padding:12px;color:var(--sk-muted)}
 #directory-client-search{width:min(100%,520px)}#client-directory td,#client-directory th{padding:9px 12px}#client-directory td:first-child{white-space:normal;min-width:160px}
 </style><style id="po-catalog-editor-style">#po-import-rows td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}#po-import-rows td:nth-child(3),#po-import-rows td:nth-child(4){min-width:200px}.po-catalog-editor{min-width:260px;max-width:360px;display:grid;gap:8px;margin-top:8px}.po-catalog-editor label{display:block;font-size:11px}.po-catalog-editor .input{width:100%;min-width:0}.po-catalog-editor textarea{min-height:75px}.po-brand-options{max-height:160px;overflow:auto;border:1px solid var(--sk-border);background:var(--sk-surface)}.po-brand-options:empty{display:none}.po-brand-options button{display:block;width:100%;white-space:normal;text-align:left}.po-import-est-input{width:150px!important;min-height:42px}.po-catalog-editor .btn{min-height:40px;white-space:normal}</style></body></html>
+
 
 
 
