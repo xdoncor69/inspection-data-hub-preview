@@ -414,6 +414,36 @@ window.InspectionCatalogBatch=Object.freeze({
  }
 });
 </script>
+<script id="inspection-approval-policy">
+(function(){
+ const text=v=>String(v??'').trim();
+ const brandKey=v=>text(v).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ');
+ const escape=v=>v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ function pattern(brand){return text(brand).split(/(['’‘`])/).map(s=>/^[’‘'`]$/.test(s)?"\\s*['’‘`]\\s*":s.trim().split(/\s+/).map(escape).join('\\s+')).join('');}
+ function clean(description,brand,names=[]){
+  let value=text(description),name=text(brand);const known=[...new Set(names.map(text).filter(Boolean))];
+  if(name)name=known.find(n=>brandKey(n)===brandKey(name))||name;
+  else name=known.sort((a,b)=>b.length-a.length).find(n=>new RegExp('^'+pattern(n)+'(?=$|[^\\p{L}\\p{N}])','iu').test(value))||'';
+  if(name){value=value.replace(new RegExp('(^|[^\\p{L}\\p{N}])'+pattern(name)+'(?=$|[^\\p{L}\\p{N}])','giu'),'$1').replace(/[ \t]{2,}/g,' ').replace(/^[\s,;:–—-]+|[\s,;:–—-]+$/g,'').trim();}
+  return {brand:name,description:value};
+ }
+ function prepare(po,products,brands,itemIdentity){
+  const names=[...brands,...products.map(p=>p.brand)].filter(Boolean),groups=new Map();
+  for(const row of po.rows||[]){
+   const identity=itemIdentity(row.item);if(products.some(p=>itemIdentity(p.item)===identity))continue;
+   const item=/^\d{6}$/.test(identity)?identity:text(row.item);let entry=groups.get(identity);
+   if(!entry){entry={item,description:'',brand:'',category:'',family:'',pack:'',size:'',notes:'',estValues:[],sourceItems:[]};groups.set(identity,entry);}
+   const source={...(row.importedProduct||{})};for(const key of ['description','brand','category','family','pack','size'])if(text(row[key]))source[key]=row[key];
+   for(const key of ['description','brand','category','family','pack','size','notes'])if(!text(entry[key])&&text(source[key]))entry[key]=text(source[key]);
+   if(!entry.sourceItems.includes(text(row.sourceItem||row.item)))entry.sourceItems.push(text(row.sourceItem||row.item));
+   for(const est of text(row.plant).split(',').map(text).filter(Boolean))if(!entry.estValues.includes(est))entry.estValues.push(est);
+   for(const est of text(source.alternativeEst).split(',').map(text).filter(Boolean))if(!entry.estValues.includes(est))entry.estValues.push(est);
+  }
+  return [...groups.values()].map(p=>({...p,...clean(p.description,p.brand,names)}));
+ }
+ window.InspectionApproval=Object.freeze({brandKey,clean,prepare});
+})();
+</script>
 <script id="product-field-policy">
 /* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
 window.InspectionProduct=Object.freeze({
@@ -437,12 +467,7 @@ try{
   for(const key of ["category","brand","family","description","pack","plant"])if(typeof o[key]==="string")product[key]=o[key];
  }
 }catch(error){console.warn("Could not load local catalog overrides",error);}
-function productDescription(description,brand){
- const text=String(description||"" ).trim(),name=String(brand||"" ).trim();
- if(!name||text.slice(0,name.length).toLocaleLowerCase()!==name.toLocaleLowerCase())return text;
- const rest=text.slice(name.length);if(!/^[\s:–—-]/.test(rest))return text;
- return rest.replace(/^[\s:–—-]+/,"").trim()||text;
-}
+function productDescription(description,brand){return window.InspectionApproval.clean(description,brand).description;}
 window.__inspectionProductDescription=productDescription;
 for(const p of demo){Object.assign(p,window.InspectionProduct.catalog(p));delete p.size;delete p.producer;delete p.salesUnit;p.description=productDescription(p.description,p.brand);}
 window.__inspectionSaveCatalog=function(){
@@ -860,7 +885,7 @@ function ensureXLSX(){
 window.__inspectionLoadXLSX=ensureXLSX;
 const poSourceFields=["description","brand","category","family","pack","size","plant","alternativeEst","notes"];
 const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
-function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;return window.InspectionProduct.catalog(out);}
+function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;Object.assign(out,window.InspectionApproval.clean(out.description,out.brand,[...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{})]));return window.InspectionProduct.catalog(out);}
 function bestColumn(kind){
  if(poSourcePatterns[kind])return headers.findIndex(v=>poSourcePatterns[kind].test(norm(v)));
  const patterns=kind==="weight"?[/^(catchweight|catchwt|cw|actualweight|netweight|receivedweight|weight)$/,/catch.*(weight|wt)/]:kind==="quantity"?[/^(receivedquantity|quantityreceived|qtyreceived|receivedqty|received|cantidadrecibida|goodsreceiptquantity|grquantity|quantity|qty)$/,/received.*(qty|quantity)/,/(qty|quantity).*received/,/quantity/,/qty/]:kind==="item"?[/^item(number|no|id|code)?$/,/^(material|materialnumber|sku|productcode|productnumber|article|articlenumber)$/,/item/,/material/,/sku/]:[/^description$/,/^(itemdescription|productdescription|materialdescription|productname|itemname)$/,/description/,/productname/];
@@ -895,12 +920,8 @@ function currentPreview(){
 }
 function importBrandKey(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘`]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();}
 function importBrandNames(){return [...new Set([...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{}),...[...catalogEdits.values()].map(p=>p.selectedBrand)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));}
-function stripImportBrand(description,brand){
- const text=clean(description),name=importBrandKey(brand);if(!name)return text;
- // Remove only a complete leading brand; preserve flavor, size and the original source column.
- for(let i=1;i<=text.length;i++)if(importBrandKey(text.slice(0,i))===name&&(i===text.length||/[\s:–—-]/.test(text[i]))){return text.slice(i).replace(/^[\s:–—-]+/,'').trim()||text;}
- return text;
-}
+function stripImportBrand(description,brand){return window.InspectionApproval.clean(description,brand).description;}
+
 function editImportItem(row){
  if(catalogEdits.has(row.item))return;
  const p={...row.sourceProduct,item:row.item};
@@ -3276,6 +3297,7 @@ async function sendQueuedJob(job){
  if(job.type==='save-delivery')return request('/rest/v1/rpc/inspection_save_delivery_v2',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='manage-approved-po')return request('/rest/v1/rpc/inspection_manage_approved_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
  if(job.type==='approve-po')return request('/rest/v1/rpc/inspection_approve_po',{method:'POST',body:{operation_id:job.id,...job.payload}});
+ if(job.type==='approve-po-products')return request('/rest/v1/rpc/inspection_approve_po_with_products',{method:'POST',body:{operation_id:job.id,...job.payload}});
  
  if(job.type==='photos'){
   if(!administrator)throw Error('Only the administrator can upload photos.');
@@ -3295,7 +3317,7 @@ async function drainQueue(){
 }
 async function openPendingWrites(){
  const jobs=await ownJobs(),root=document.getElementById('pending-writes-list');
- root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Photos for Item '+j.item:['save-delivery','delivery-v3'].includes(j.type)?'Del No. '+j.payload.delivery_number:j.type==='review'?'Retired legacy operation':j.type==='approve-po'?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Waiting for connection')+'</p><details><summary>View pending data</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Retry</button><button class="btn" data-queue-discard="'+j.id+'">Discard send</button></div></article>').join('')||'<p>There are no pending sends for this account.</p>';
+ root.innerHTML=jobs.map(j=>'<article class="approval-card"><strong>'+escapeHTML(j.type==='photos'?'Photos for Item '+j.item:['save-delivery','delivery-v3'].includes(j.type)?'Del No. '+j.payload.delivery_number:j.type==='review'?'Retired legacy operation':['approve-po','approve-po-products'].includes(j.type)?'Approve for Inspection':'Draft / change')+'</strong><p>'+escapeHTML(new Date(j.created).toLocaleString())+' · '+escapeHTML(j.error||'Waiting for connection')+'</p><details><summary>View pending data</summary><pre class="history-change-value">'+escapeHTML(JSON.stringify(j.type==='photos'?j.files.map(f=>f.name):j.payload.changed_records||j.payload,null,2))+'</pre></details><div class="row"><button class="btn" data-queue-retry="'+j.id+'">Retry</button><button class="btn" data-queue-discard="'+j.id+'">Discard send</button></div></article>').join('')||'<p>There are no pending sends for this account.</p>';
  root.querySelectorAll('[data-queue-retry]').forEach(btn=>btn.onclick=async()=>{const j=jobs.find(x=>x.id===btn.dataset.queueRetry);delete j.state;delete j.error;await queueStore('put',j);try{await connect()}catch(e){message(e.message,true)}await openPendingWrites();});
  root.querySelectorAll('[data-queue-discard]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Discard this pending send? It will not be applied to the database.'))return;await queueStore('delete',btn.dataset.queueDiscard);await showQueueCount();await openPendingWrites();});
  const dialog=document.getElementById('pending-writes-dialog');if(!dialog.open)dialog.showModal();
@@ -3821,7 +3843,7 @@ function approvalValidation(po){
 function replaceableApproval(job,poId,owner,generation){
  // This explicit validation rejection guarantees that this approval did not run.
  // Network-uncertain operations keep their original ID and payload for idempotent retry.
- return job.owner===owner&&job.generation===generation&&job.type==='approve-po'&&job.payload?.po_id===poId&&job.state==='conflict'&&/^(?:Supabase HTTP 400: )?Every Item needs a selected EST \/ Plant before approval$/.test(job.error||'');
+ return job.owner===owner&&job.generation===generation&&['approve-po','approve-po-products'].includes(job.type)&&job.payload?.po_id===poId&&job.state==='conflict'&&/^(?:Supabase HTTP (?:400|409): )?(?:Every Item needs a selected EST \/ Plant before approval|This PO contains new products. Reopen approval to review and add them.|Catalog changed. Reopen approval to review new products.)$/.test(job.error||'');
 }
 async function retireRejectedApproval(poId){
  const owner=session.user.id;
@@ -3836,33 +3858,54 @@ async function explainApprovalPending(){
  message(reason?'PO not approved. A pending send needs review: '+reason:'PO not approved yet. Submitted changes are still pending.',true);
  await openPendingWrites();
 }
+let approvalBusy=false;
+function reviewApprovalProducts(po){
+ const owner=session.user.id,products=Object.entries(official['inspection-data-hub-catalog-overrides-v1']||{}).map(([item,p])=>({...p,item})),brands=Object.keys(official['inspection-data-hub-brand-profiles-v1']||{});
+ const additions=window.InspectionApproval.prepare(po,products,brands,itemIdentity),names=[...brands,...products.map(p=>p.brand)];
+ let dialog=document.getElementById('po-approval-review');if(!dialog){dialog=document.createElement('dialog');dialog.id='po-approval-review';dialog.className='online-dialog';dialog.style.maxWidth='1000px';document.body.appendChild(dialog);}
+ dialog.innerHTML='<h3>Approve PO '+escapeHTML(po.po)+'</h3><p>'+(additions.length?'Approving this PO confirms adding <strong>'+additions.length+' new product(s)</strong> to the database with the selected EST references. Review all available product fields below.':'This PO has no new products to add. Approval publishes its selected EST values.')+'</p><p class="small muted">Each product is added once; repeated PO lines remain separate. Available source data is retained. Fields not present in the document can stay blank.</p><div id="po-approval-products">'+additions.map((p,i)=>'<section class="panel panel-pad" data-approval-product="'+i+'" style="margin-top:12px"><h4>Item '+escapeHTML(p.item)+'</h4><p class="small muted">Source: '+escapeHTML(p.sourceItems.join(', '))+'</p><div class="po-import-grid">'+[['brand','Brand'],['description','Description'],['category','Product type / Class'],['family','Product family'],['pack','Pack / Size'],['size','Source size'],['notes','Product notes']].map(([k,label])=>'<label><span class="label">'+label+'</span><input class="input" style="width:100%" data-approval-field="'+k+'" maxlength="'+(k==='notes'?2000:1000)+'" value="'+escapeHTML(p[k])+'"></label>').join('')+'<label><span class="label">Selected EST references</span><input class="input" style="width:100%" readonly value="'+escapeHTML(p.estValues.join(', '))+'"></label></div></section>').join('')+'</div><p class="cloud-error" id="po-approval-status" role="status"></p><div class="row" style="margin-top:16px"><button class="btn" id="po-approval-cancel">Cancel</button><button class="btn primary" id="po-approval-confirm">'+(additions.length?'Approve PO and add '+additions.length+' product(s)':'Approve PO')+'</button></div>';
+ return new Promise(resolve=>{
+  let finished=false;const finish=value=>{if(finished)return;finished=true;dialog.close();resolve(value);};
+  dialog.oncancel=event=>{event.preventDefault();finish(null);};dialog.onclose=()=>{if(!finished){finished=true;resolve(null);}};
+  dialog.querySelector('#po-approval-cancel').onclick=()=>finish(null);
+  dialog.querySelector('#po-approval-confirm').onclick=()=>{
+   if(owner!==session?.user.id||!canEdit()){deny();return;}
+   const current=official[PO_KEY]?.invoices?.find(p=>p.id===po.id);
+   if(JSON.stringify(current)!==JSON.stringify(po)){dialog.querySelector('#po-approval-status').textContent='The PO changed. Cancel and reopen approval to review the current version.';return;}
+   for(const section of dialog.querySelectorAll('[data-approval-product]')){
+    const p=additions[Number(section.dataset.approvalProduct)];for(const input of section.querySelectorAll('[data-approval-field]'))p[input.dataset.approvalField]=input.value.trim();
+    Object.assign(p,window.InspectionApproval.clean(p.description,p.brand,names));
+    section.querySelector('[data-approval-field="brand"]').value=p.brand;section.querySelector('[data-approval-field="description"]').value=p.description;
+    if(!p.description){dialog.querySelector('#po-approval-status').textContent='Enter a product description for Item '+p.item+'.';section.querySelector('[data-approval-field="description"]').focus();return;}
+   }
+   finish(additions.map(p=>({...p})));
+  };
+  dialog.showModal();dialog.querySelector('#po-approval-cancel').focus();
+ });
+}
 async function approvePO(poId){
- if(!administrator||!canEdit()){deny();return}
- const current=collectors.get(PO_KEY)?.get()||record(PO_KEY);
- const validation=approvalValidation(current?.invoices?.find(p=>p.id===poId));
- if(validation){alert(validation);return}
- if(!confirm('As the inspector, do you approve this PO for inspection and publish its selected EST values for all users? This draft will move to Approved for Inspection. Only individually verified Items keep their physical verification; this approval does not verify any additional Item.'))return;
- let approvalQueued=false;
+ if(approvalBusy||!administrator||!canEdit()){if(!approvalBusy)deny();return;}
+ const current=collectors.get(PO_KEY)?.get()||record(PO_KEY),validation=approvalValidation(current?.invoices?.find(p=>p.id===poId));
+ if(validation){alert(validation);return;}
+ let approvalQueued=false;approvalBusy=true;
  try{
-  await retireRejectedApproval(poId);
-  await commit();
-  if(!ready||offline){message('Reconnect to the database before approving this PO.',true);return}
-  // commit() may have no new changes; existing submitted writes still need retrying.
-  await drainQueue();await showQueueCount();
-  if(queueCount){await explainApprovalPending();return}
+  await retireRejectedApproval(poId);await commit();
+  if(!ready||offline){message('Reconnect to the database before approving this PO.',true);return;}
+  await drainQueue();await showQueueCount();if(queueCount){await explainApprovalPending();return;}
   await loadState();
   const existing=approvedPOs.find(a=>a.snapshot.id===poId);
-  if(existing){selectedApproved=existing.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');message('This PO is already Approved for Inspection.');return}
-  const po=official[PO_KEY]?.invoices?.find(p=>p.id===poId);
-  const invalid=approvalValidation(po);if(invalid){alert(invalid);return}
-  const job={id:crypto.randomUUID(),owner:session.user.id,generation:catalogGeneration,created:Date.now(),type:'approve-po',payload:{po_id:poId,expected_po:clone(po)}};
-  await queueStore('put',job);approvalQueued=true;saving=true;overlay('Publishing PO Approved for Inspection…',true);
+  if(existing){selectedApproved=existing.id;renderApprovedPOs();window.__inspectionNavigate?.('purchase-orders');message('This PO is already Approved for Inspection.');return;}
+  const po=official[PO_KEY]?.invoices?.find(p=>p.id===poId),invalid=approvalValidation(po);if(invalid){alert(invalid);return;}
+  const expected=clone(po),owner=session.user.id,newProducts=await reviewApprovalProducts(expected);if(!newProducts)return;
+  if(owner!==session?.user.id||!canEdit()){deny();return;}
+  const job={id:crypto.randomUUID(),owner,generation:catalogGeneration,created:Date.now(),type:'approve-po-products',payload:{po_id:poId,expected_po:expected,new_products:newProducts}};
+  await queueStore('put',job);approvalQueued=true;saving=true;overlay('Approving PO and saving new products…',true);
   await drainQueue();await loadState();selectedApproved=approvedPOs.find(a=>a.snapshot.id===poId)?.id||null;renderApprovedPOs();
   if(queueCount)await explainApprovalPending();
-  else if(selectedApproved)message('PO approved for inspection and published. The draft moved to Approved for Inspection; recorded Item verifications are unchanged.');
+  else if(selectedApproved)message('PO approved for inspection.'+(newProducts.length?' '+newProducts.length+' new product(s) added to the database.':''));
   else message('Approval could not be confirmed. Refresh the workspace before trying again.',true);
- }catch(error){if(error.network){ready=false;offline=true;message(approvalQueued?'Approval saved on this device. It will retry when the connection returns.':'Connection interrupted before a new approval was submitted. Saved pending changes will retry when the connection returns.',true)}else{message(error.message,true)}}
- finally{saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending sends are saved on this device.');}
+ }catch(error){if(error.network){ready=false;offline=true;message(approvalQueued?'Approval saved on this device. It will retry when the connection returns.':'Connection interrupted before approval. Saved draft changes will retry when the connection returns.',true);}else message(error.message,true);}
+ finally{approvalBusy=false;saving=false;await showQueueCount();updateRole();if(ready&&!offline)unblock();else overlay('No connection. Pending sends are saved on this device.');}
 }
 
 async function loadState({hydrate=true}={}){
