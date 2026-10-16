@@ -1,10 +1,25 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script id="inspection-view-preferences">
+/* Device/browser-local visual preferences only. User IDs scope preferences, never authorization. */
+window.InspectionViewPreferences=(()=>{
+ const storage=window.localStorage;let initialOwner='';
+ try{initialOwner=JSON.parse(storage.getItem('inspection-data-hub-auth-session-v2')||'null')?.user?.id||'';}catch{}
+ const owner=()=>window.InspectionCloud?window.InspectionCloud.layoutAccount()||'':initialOwner;
+ const scoped=(base,uid)=>base+':user:'+uid;
+ function read(base){const uid=owner();if(!uid)return null;try{const saved=storage.getItem(scoped(base,uid));if(saved!==null)return saved;
+   // Attribute pre-account visual preferences only to the account already signed in on this browser.
+   if(initialOwner&&uid===initialOwner){const old=storage.getItem(base);if(old!==null){storage.setItem(scoped(base,uid),old);storage.removeItem(base);return old;}}
+  }catch{}return null;}
+ function write(base,value){const uid=owner();if(!uid)return false;try{storage.setItem(scoped(base,uid),String(value));return true;}catch{return false;}}
+ return Object.freeze({owner,read,write});
+})();
+</script>
 <script id="inspection-skin-boot">
 /* Restore only appearance before the interface renders. */
 (function(){
  let skin="executive";
- try{const saved=localStorage.getItem("inspection-data-hub-appearance-v1");if(["executive","editorial","graphite"].includes(saved))skin=saved;}catch(_){}
+ try{const saved=window.InspectionViewPreferences.read("inspection-data-hub-appearance-v1");if(["executive","editorial","graphite"].includes(saved))skin=saved;}catch(_){}
  document.documentElement.setAttribute("data-skin",skin);
 })();
 </script>
@@ -260,7 +275,7 @@ window.InspectionTableTools={
 <div class="skin-choice-info"><span><strong>03 · Graphite Studio</strong><small>Dark charcoal, mineral gray and mint accents. A focused modern control room.</small></span><span class="skin-selected"><span class="skin-dot"></span> Selected</span></div>
 </button>
 </div>
-<div class="skin-setting-footer"><div><strong>Your choice is saved in this browser.</strong><div class="muted small">Switch anytime. Aesthetic preferences are saved in this browser.</div></div><button class="btn" type="button" id="skin-reset">Restore Slate Executive</button></div>
+<div class="skin-setting-footer"><div><strong>Saved separately for each account on this device.</strong><div class="muted small">Switch anytime. Signing out keeps your saved preferences.</div></div><button class="btn" type="button" id="skin-reset">Restore Slate Executive</button></div>
 </div>
 <section id="import-view" class="hidden">
 <div class="panel panel-pad">
@@ -358,12 +373,13 @@ window.InspectionPOLayout=(()=>{
  const labels={approved:'Inspected',draft:'Draft',delivery:'Deliveries'};
  const selectors={approved:'#approved-po-panel',draft:'.po-archive',delivery:'#delivery-po-panel'};
  function normalize(value){const order=Array.isArray(value?.order)?value.order.filter((x,i,a)=>defaults.includes(x)&&a.indexOf(x)===i):[];return {layout:value?.layout==='columns'?'columns':'rows',order:[...order,...defaults.filter(x=>!order.includes(x))],collapsed:defaults.filter(x=>Array.isArray(value?.collapsed)&&value.collapsed.includes(x))};}
- let state;try{state=normalize(JSON.parse(localStorage.getItem(key)));}catch{state=normalize(null);}
- function save(){try{localStorage.setItem(key,JSON.stringify(state));return true;}catch{return false;}}
+ let state=normalize(null),loadedOwner=null;
+ function restoreOwner(){const uid=window.InspectionViewPreferences.owner();if(uid===loadedOwner)return;loadedOwner=uid;try{state=normalize(JSON.parse(window.InspectionViewPreferences.read(key)));}catch{state=normalize(null);}}
+ function save(){return window.InspectionViewPreferences.write(key,JSON.stringify(state));}
  function move(stage,delta){const index=state.order.indexOf(stage),next=index+delta;if(index<0||next<0||next>=state.order.length)return;[state.order[index],state.order[next]]=[state.order[next],state.order[index]];apply();const saved=save();announce(saved?'Order saved.':'Order changed for this session; browser storage unavailable.');}
  function announce(text){const node=document.getElementById('po-workspace-status');if(node)node.textContent=text;}
  function buttons(stage){const group=document.createElement('span');group.className='po-stage-move';group.setAttribute('role','group');group.setAttribute('aria-label','Reorder '+labels[stage]);for(const [delta,symbol,label]of [[-1,'↑','Move earlier'],[1,'↓','Move later']]){const b=document.createElement('button');b.type='button';b.className='btn mini';b.textContent=symbol;b.title=label;b.setAttribute('aria-label',label+': '+labels[stage]);b.disabled=delta<0?state.order[0]===stage:state.order.at(-1)===stage;b.onclick=()=>{move(stage,delta);const target=document.querySelector('[data-po-stage="'+stage+'"] .po-stage-move button'+(delta<0?':first-child':':last-child'));if(target&&!target.disabled)target.focus();};group.appendChild(b);}return group;}
- function apply(){const root=document.getElementById('purchase-orders-view');if(!root)return;let grid=document.getElementById('po-stage-grid');if(!grid){grid=document.createElement('div');grid.id='po-stage-grid';root.appendChild(grid);}grid.dataset.layout=state.layout;
+ function apply(){restoreOwner();const root=document.getElementById('purchase-orders-view');if(!root)return;let grid=document.getElementById('po-stage-grid');if(!grid){grid=document.createElement('div');grid.id='po-stage-grid';root.appendChild(grid);}grid.dataset.layout=state.layout;
   let rail=document.getElementById('po-stage-collapsed');if(!rail){rail=document.createElement('div');rail.id='po-stage-collapsed';rail.setAttribute('aria-label','Hidden stages');root.insertBefore(rail,grid);}
   let visible=0;
   for(const stage of state.order){const panel=root.querySelector(selectors[stage]);if(!panel)continue;const collapsed=state.collapsed.includes(stage);panel.dataset.poStage=stage;panel.dataset.poCollapsed=String(collapsed);(collapsed?rail:grid).appendChild(panel);if(!collapsed)visible++;
@@ -373,7 +389,7 @@ window.InspectionPOLayout=(()=>{
   const select=document.getElementById('po-workspace-layout');if(select){select.value=state.layout;select.disabled=window.matchMedia?!window.matchMedia('(min-width:1024px) and (hover:hover) and (pointer:fine)').matches:false;}
   const list=document.getElementById('po-stage-settings-order');if(list){list.replaceChildren();for(const stage of state.order){const li=document.createElement('li'),name=document.createElement('span');name.textContent=labels[stage];li.appendChild(name);const controls=buttons(stage);for(const b of controls.children){const delta=b===controls.firstChild?-1:1;b.onclick=()=>{move(stage,delta);const item=[...list.children].find(n=>n.dataset.stage===stage);const target=item?.querySelector('button'+(delta<0?':first-child':':last-child'));if(target&&!target.disabled)target.focus();};}li.dataset.stage=stage;li.appendChild(controls);list.appendChild(li);}}
  }
- function mount(){const appearance=document.querySelector('.skin-settings');if(appearance&&!document.getElementById('po-workspace-settings')){const section=document.createElement('section');section.id='po-workspace-settings';section.innerHTML='<h3>Purchase Orders layout</h3><label class="label" for="po-workspace-layout">Desktop view mode</label><select class="input" id="po-workspace-layout"><option value="rows">Vertical — stacked rows</option><option value="columns">Horizontal — three equal columns (desktop)</option></select><p class="small muted">Desktop only: choose stacked rows or three equal columns. Phones and touch screens always use stacked rows. Your desktop choice stays saved in this browser. Use the arrows to reorder blocks.</p><ol id="po-stage-settings-order"></ol><button class="btn mini" type="button" id="po-workspace-reset">Restore default layout</button><p class="small muted" id="po-workspace-status" role="status" aria-live="polite"></p>';appearance.insertBefore(section,appearance.querySelector("#skin-theme-heading"));section.querySelector('select').onchange=e=>{state.layout=e.target.value;apply();const saved=save();announce(saved?'Layout saved.':'Layout changed for this session; browser storage unavailable.');};section.querySelector('#po-workspace-reset').onclick=()=>{state=normalize(null);apply();const saved=save();announce(saved?'Default layout restored.':'Default layout restored for this session.');};}apply();}
+ function mount(){const appearance=document.querySelector('.skin-settings');if(appearance&&!document.getElementById('po-workspace-settings')){const section=document.createElement('section');section.id='po-workspace-settings';section.innerHTML='<h3>Purchase Orders layout</h3><label class="label" for="po-workspace-layout">Desktop view mode</label><select class="input" id="po-workspace-layout"><option value="rows">Vertical — stacked rows</option><option value="columns">Horizontal — three equal columns (desktop)</option></select><p class="small muted">Desktop only: choose stacked rows or three equal columns. Phones and touch screens always use stacked rows. Saved for your account on this device, including after sign-out. Use the arrows to reorder blocks.</p><ol id="po-stage-settings-order"></ol><button class="btn mini" type="button" id="po-workspace-reset">Restore default layout</button><p class="small muted" id="po-workspace-status" role="status" aria-live="polite"></p>';appearance.insertBefore(section,appearance.querySelector("#skin-theme-heading"));section.querySelector('select').onchange=e=>{state.layout=e.target.value;apply();const saved=save();announce(saved?'Layout saved.':'Layout changed for this session; browser storage unavailable.');};section.querySelector('#po-workspace-reset').onclick=()=>{state=normalize(null);apply();const saved=save();announce(saved?'Default layout restored.':'Default layout restored for this session.');};}apply();}
  function count(id,n,label){const node=document.getElementById(id);if(node){node.textContent=n+' '+label+(n===1?'':'s');node.setAttribute('aria-label',node.textContent);}}
  window.matchMedia?.('(min-width:1024px) and (hover:hover) and (pointer:fine)').addEventListener('change',apply);
  window.addEventListener?.('pageshow',apply);window.addEventListener?.('inspection:cloud-ready',apply);
@@ -3266,20 +3282,21 @@ count();draw();
 (function(){
  const key="inspection-data-hub-appearance-v1",allowed=["executive","editorial","graphite"];
  const labels={executive:"Slate Executive",editorial:"Ivory Editorial",graphite:"Graphite Studio"};
- function apply(skin){
+ function apply(skin,persist=true){
   if(!allowed.includes(skin))skin="executive";
   document.documentElement.setAttribute("data-skin",skin);
-  try{localStorage.setItem(key,skin);}catch(_){}
+  if(persist)window.InspectionViewPreferences.write(key,skin);
   const label=document.getElementById("skin-active-name");if(label)label.textContent=labels[skin];
   document.querySelectorAll("[data-skin-choice]").forEach(b=>{
    const active=b.dataset.skinChoice===skin;
    b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
   });
  }
- let initial="executive";try{initial=localStorage.getItem(key)||initial;}catch(_){}
+ let initial=window.InspectionViewPreferences.read(key)||"executive";
  document.querySelectorAll("[data-skin-choice]").forEach(b=>b.addEventListener("click",()=>apply(b.dataset.skinChoice)));
  document.getElementById("skin-reset").addEventListener("click",()=>apply("executive"));
- apply(initial);
+ apply(initial,false);
+ window.addEventListener("inspection:cloud-ready",()=>apply(window.InspectionViewPreferences.read(key)||"executive",false));
 })();
 </script><style id="content-heading-system">
 /* One type scale for equivalent content headings, including dynamic panels. */
