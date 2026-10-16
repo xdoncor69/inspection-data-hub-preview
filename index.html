@@ -203,7 +203,7 @@ window.InspectionTableTools={
 </div></div></div></dialog>
 
 <section id="guide-view" class="hidden">
-<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Create drafts using Import PO, Delivery First or From Picture at the top of Purchase Orders. Select a saved customer and review the product and EST values. Drafts remain pending administrator approval.</p><p>Approved for Inspection contains approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to POs with Delivery. Open it to view deliveries, download originals or export the summary. Approval publishes the selected EST values; physical verification is a separate action.</p><p>The badge beside each stage title counts the orders currently shown, including any active search filter.</p></div>
+<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Create drafts using Import PO, Delivery First or From Picture at the top of Purchase Orders. Select a saved customer and review the product and EST values. Drafts remain pending administrator approval.</p><p>Approved for Inspection contains approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to POs with Delivery. Open it to view deliveries, download originals or export the summary. Approval publishes the selected EST values; physical verification is a separate action.</p><p>The badge beside each stage title counts the orders currently shown, including any active search filter. Drag a column grip to reorder columns or drag a column edge to resize. The grip also supports left/right arrow keys.</p></div>
 <div class="panel panel-pad" id="guide-products"><h3>Product identification</h3><p>Use the Item number, description, brand, Pack / Size, notes and photos to identify a product. Published delivery ESTs come from the approved PO version.</p></div>
 <div class="panel panel-pad" id="guide-priorities"><h3>Review priority</h3><p>High, Medium and Low priorities guide the administrator's review. Internal rules determine the priority; the interface does not display their underlying records.</p></div>
 <div class="panel panel-pad" id="guide-stability"><h3>Stable EST</h3><p>The administrator can manage stable-reference rules for products and brands.</p></div>
@@ -1227,7 +1227,7 @@ window.InspectionPOLayout.count("po-count",filtered.length,"draft");
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
 root.innerHTML=window.InspectionOrderDirectory.tableHTML(filtered.map(p=>({
  summary:window.InspectionCloud.orderSummary(p),
- actions:'<button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open</button><details class="order-directory-more"><summary class="btn mini" aria-label="More actions for draft '+safe(p.po)+'">More</summary><div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-approve="'+safe(p.id)+'">Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">CSV</button>'+(draftEditable(p)?'<button class="btn mini" data-po-delete="'+safe(p.id)+'">Delete draft</button>':'')+'</div></details>'
+ actions:'<button class="btn mini primary" data-po-open="'+safe(p.id)+'">Open</button><details class="order-directory-more"><summary class="btn mini" aria-label="More actions for draft '+safe(p.po)+'">⋯</summary><div>'+(window.InspectionCloud.isAdministrator()?'<button class="btn mini" data-po-approve="'+safe(p.id)+'">Approve for Inspection</button>':'')+'<button class="btn mini" data-po-export="'+safe(p.id)+'">CSV</button>'+(draftEditable(p)?'<button class="btn mini" data-po-delete="'+safe(p.id)+'">Delete draft</button>':'')+'</div></details>'
 })),{layoutKey:'purchase-order-drafts',escape:safe,empty:normalizePOSearch(query)?'No drafts match this PO No., Del No. or customer.':'No drafts yet.'});
 root.querySelectorAll("[data-po-open]").forEach(b=>b.onclick=()=>activatePO(b.dataset.poOpen,true));
 root.querySelectorAll("[data-po-approve]").forEach(b=>b.onclick=()=>window.InspectionCloud.approvePO(b.dataset.poApprove));
@@ -4354,7 +4354,17 @@ connect();
 .idh-dragging-column{opacity:.5}
 .idh-resizing-columns,.idh-resizing-columns *{cursor:col-resize!important;user-select:none!important}
 @media print{.idh-table-layout-bar,.idh-col-resize,.idh-col-move{display:none!important}.idh-adjustable-table th,.idh-adjustable-table th .query-sort{white-space:normal!important}}
-</style><script id="adjustable-table-script">
+</style><style id="compact-directory-alignment">
+/* Keep header labels and values on the same left edge; grips occupy the trailing gutter. */
+:root[data-skin] #purchase-orders-view .order-directory-table th,:root[data-skin] #purchase-orders-view .order-directory-table td{padding:6px!important;text-align:left;vertical-align:middle;line-height:1.35}
+:root[data-skin] #purchase-orders-view .order-directory-table th{padding-right:34px!important}
+#purchase-orders-view .order-directory-table .idh-col-move{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:22px;min-width:22px;min-height:24px;height:24px;padding:0;line-height:24px;font-size:13px}
+#purchase-orders-view .order-directory-table .order-directory-actions{gap:4px;align-items:center}
+#purchase-orders-view .order-directory-table .order-directory-actions .btn{min-height:26px;padding:4px 6px;font-size:11px;line-height:1.3}
+#purchase-orders-view .idh-directory-layout-bar{display:none}
+#purchase-orders-view #approved-po-list,#purchase-orders-view #delivery-po-list{margin-top:0!important}
+</style>
+<script id="adjustable-table-script">
 (function(){
 'use strict';
 const PREFIX='idh-table-layout-v1:';
@@ -4379,7 +4389,8 @@ function headerMinimum(cell,label){
  width+=(text.match(/ /g)||[]).length*(parseFloat(style.wordSpacing)||0);
  if(button)width+=(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0)+(parseFloat(style.columnGap)||0);
  // Reserve the actual drag grip, resize edge, cell padding and a small rounding allowance.
- return clamp(Math.ceil(width+24+(parseFloat(box.paddingLeft)||0)+Math.max(19,parseFloat(box.paddingRight)||0)+(parseFloat(box.borderLeftWidth)||0)+(parseFloat(box.borderRightWidth)||0)+2));
+ const grip=cell.closest('.order-directory-table')?0:24;
+ return clamp(Math.ceil(width+grip+(parseFloat(box.paddingLeft)||0)+Math.max(19,parseFloat(box.paddingRight)||0)+(parseFloat(box.borderLeftWidth)||0)+(parseFloat(box.borderRightWidth)||0)+2));
 }
 function compactDefault(label,minimum,customerTable=false){
  return Math.max(minimum,/description|descripci[oó]n/i.test(label)?260:/customer|client|cliente/i.test(label)||(customerTable&&/^name$/i.test(label))?180:minimum);
@@ -4396,7 +4407,7 @@ function measureColumns(state){
 const account=()=>window.InspectionCloud?.layoutAccount?.()||'';
 const rowCells=row=>[...row.children].filter(el=>el.tagName==='TD'||el.tagName==='TH');
 function load(key){try{const value=JSON.parse(localStorage.getItem(key)||'null');return value&&Array.isArray(value.order)&&value.widths&&typeof value.widths==='object'?value:null;}catch{return null;}}
-function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=columnWidth(state,key,state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
+function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=columnWidth(state,key,state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths,compactVersion:state.table.classList.contains("order-directory-table")?2:undefined}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
 function place(parent,nodes){const current=[...parent.children];if(nodes.every((node,i)=>current[i]===node)&&current.length===nodes.length)return;for(const node of nodes)parent.appendChild(node);}
 function apply(state){
  const {table,base,order}=state;
@@ -4415,7 +4426,7 @@ function restore(state){
  const uid=account(),remeasure=state.metrics!==metricKey();if(remeasure)measureColumns(state);if(state.uid===uid&&!remeasure)return;
  state.uid=uid;const preference=uid?load(PREFIX+uid+':'+state.key):null;
  state.order=preference?[...new Set(preference.order.filter(key=>state.base.includes(key))),...state.base.filter(key=>!preference.order.includes(key))]:[...state.base];
- state.widths={...state.defaults};if(preference)for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=columnWidth(state,key,preference.widths[key]);
+ state.widths={...state.defaults};if(preference&&(!state.table.classList.contains("order-directory-table")||preference.compactVersion===2))for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=columnWidth(state,key,preference.widths[key]);
 }
 function move(state,source,target){const i=state.order.indexOf(source),j=state.order.indexOf(target);if(i<0||j<0||i===j)return;state.order.splice(i,1);state.order.splice(j,0,source);state.table.dataset.idhSuppressClick=String(Date.now()+300);apply(state);save(state);}
 function install(table){
@@ -4429,7 +4440,7 @@ function install(table){
  const root=table.id||table.tBodies[0]?.id||table.parentElement?.closest('[id]')?.id||table.closest('section')?.id||'table';
  const key=(table.dataset.layoutKey||root)+':'+base.join('|');
  const defaults={};cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];});
- const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.textContent='Drag headers to reorder · drag column edges to resize';
+ const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.textContent='Drag headers to reorder · drag column edges to resize';if(table.classList.contains('order-directory-table'))notice.classList.add('idh-directory-layout-bar');
  table.before(notice);
  state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,labels,order:[...base],minimums:{},defaults,widths:{},metrics:null,uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
  cells.forEach((cell,i)=>{
