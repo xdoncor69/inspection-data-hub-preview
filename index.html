@@ -203,7 +203,7 @@ window.InspectionTableTools={
 </div></div></div></dialog>
 
 <section id="guide-view" class="hidden">
-<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Import a PO or delivery, select a saved customer, review the EST values and publish the order as Approved for Inspection. Approval publishes the selected EST values.</p></div>
+<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Create drafts using Import PO, Delivery First or From Picture at the top of Purchase Orders. Select a saved customer and review the product and EST values. Drafts remain pending administrator approval.</p><p>Approved for Inspection contains approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to POs with Delivery. Open it to view deliveries, download originals or export the summary. Approval publishes the selected EST values; physical verification is a separate action.</p><p>The badge beside each stage title counts the orders currently shown, including any active search filter.</p></div>
 <div class="panel panel-pad" id="guide-products"><h3>Product identification</h3><p>Use the Item number, description, brand, Pack / Size, notes and photos to identify a product. Published delivery ESTs come from the approved PO version.</p></div>
 <div class="panel panel-pad" id="guide-priorities"><h3>Review priority</h3><p>High, Medium and Low priorities guide the administrator's review. Internal rules determine the priority; the interface does not display their underlying records.</p></div>
 <div class="panel panel-pad" id="guide-stability"><h3>Stable EST</h3><p>The administrator can manage stable-reference rules for products and brands.</p></div>
@@ -329,6 +329,8 @@ window.InspectionTableTools={
 #purchase-orders-view [data-po-stage="approved"]{--po-stage-head:var(--po-delivery-head);--po-stage-ink:var(--po-delivery-ink)}
 #purchase-orders-view [data-po-stage="delivery"]{--po-stage-head:var(--po-approved-head);--po-stage-ink:var(--po-approved-ink)}
 :root[data-skin] #purchase-orders-view #po-stage-grid .order-directory-table thead th{background:var(--po-stage-head);color:var(--po-stage-ink);border-color:var(--sk-border)}
+:root[data-skin] #purchase-orders-view #po-stage-grid>.panel>.section-head h3{display:flex;align-items:center;flex-wrap:wrap;gap:7px;color:var(--po-stage-ink);margin:0}
+#po-stage-grid .po-stage-count{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:var(--po-stage-head);color:var(--po-stage-ink);font-size:11px;line-height:1.5;font-weight:600;white-space:nowrap}
 #po-stage-grid .tablewrap{min-width:0;max-width:100%;overflow-x:auto}
 #po-stage-grid>.panel>.section-head{flex-wrap:wrap;gap:8px}
 #po-stage-grid>.panel>.section-head>div:first-child{min-width:0;flex:1 1 160px}
@@ -357,7 +359,8 @@ window.InspectionPOLayout=(()=>{
   const list=document.getElementById('po-stage-settings-order');if(list){list.replaceChildren();for(const stage of state.order){const li=document.createElement('li'),name=document.createElement('span');name.textContent=labels[stage];li.appendChild(name);const controls=buttons(stage);for(const b of controls.children){const delta=b===controls.firstChild?-1:1;b.onclick=()=>{move(stage,delta);const item=[...list.children].find(n=>n.dataset.stage===stage);const target=item?.querySelector('button'+(delta<0?':first-child':':last-child'));if(target&&!target.disabled)target.focus();};}li.dataset.stage=stage;li.appendChild(controls);list.appendChild(li);}}
  }
  function mount(){const appearance=document.querySelector('.skin-settings');if(appearance&&!document.getElementById('po-workspace-settings')){const section=document.createElement('section');section.id='po-workspace-settings';section.innerHTML='<h3>Purchase Orders layout</h3><label class="label" for="po-workspace-layout">Arrange blocks</label><select class="input" id="po-workspace-layout"><option value="rows">Rows — stacked blocks</option><option value="columns">Columns — three equal columns</option></select><p class="small muted">Use the arrows to reorder blocks. In columns, all three widths adjust equally; wide tables scroll inside each block. Saved in this browser.</p><ol id="po-stage-settings-order"></ol><button class="btn mini" type="button" id="po-workspace-reset">Restore default layout</button><p class="small muted" id="po-workspace-status" role="status" aria-live="polite"></p>';appearance.appendChild(section);section.querySelector('select').onchange=e=>{state.layout=e.target.value;apply();const saved=save();announce(saved?'Layout saved.':'Layout changed for this session; browser storage unavailable.');};section.querySelector('#po-workspace-reset').onclick=()=>{state=normalize(null);apply();const saved=save();announce(saved?'Default layout restored.':'Default layout restored for this session.');};}apply();}
- return Object.freeze({mount,apply,normalize});
+ function count(id,n,label){const node=document.getElementById(id);if(node){node.textContent=n+' '+label+(n===1?'':'s');node.setAttribute('aria-label',node.textContent);}}
+ return Object.freeze({mount,apply,normalize,count});
 })();
 </script>
 <script id="order-directory-model">
@@ -847,7 +850,7 @@ window.__inspectionPOChanges=()=>invoices.flatMap(p=>p.rows.filter(x=>x.verified
 loadPOWorkspace();
 const oldRecent=$("product-lookup-workspace").querySelector(".history");
 if(oldRecent)oldRecent.remove();
-add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Purchase Orders</h3><span class="hint" id="po-workspace-hint">Select an existing PO or create a new one</span></div><div class="row"><button class="btn mini primary" id="po-new">＋ New PO</button><span class="pill" id="po-count">0 saved</span></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO No. or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
+add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Drafts <span class="po-stage-count" id="po-count">0 drafts</span></h3></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO No. or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
 $("purchase-orders-view").appendChild(document.querySelector(".po-archive"));
 $("po-search-form").hidden=true;
 $("purchase-orders-search").addEventListener("input",()=>{openPO=null;$("po-search-input").value=$("purchase-orders-search").value;renderPOArchive();const approvedSearch=$("approved-po-search");if(approvedSearch){approvedSearch.value=$("purchase-orders-search").value;approvedSearch.dispatchEvent(new Event("input"));}});
@@ -1207,7 +1210,6 @@ window.addEventListener('inspection:cloud-ready',owned);
 render();
 })();
 
-$("po-new").onclick=()=>createPOFlow();
 $("po-save").onclick=closeActivePO;$("po-clear").onclick=closeActivePO;
 $("log-csv").onclick=()=>saveCSV("Current_PO_Worklog.csv",[["#","Item","Description","EST reference","Received quantity","Note"],...log.map((x,i)=>[i+1,x.item,productDescription(x.description,poDisplayProduct(x).brand),x.plant,x.receivedQuantity||"",x.note||""])]);
 $("log-print").onclick=()=>printTable("log");
@@ -1218,13 +1220,10 @@ $("po-search-input").oninput=()=>renderPOArchive();
 $("po-search-clear").onclick=()=>{$("po-search-input").value="";renderPOArchive();$("po-search-input").focus();};
 function renderPOArchive(){
 const root=$("po-list"),active=invoices.find(p=>p.id===openPO);
-$("po-count").textContent=invoices.length+" drafts";
-$("po-workspace-title").textContent=active?"Draft · pending inspection":"Drafts";
-$("po-workspace-hint").textContent=active?"Draft · pending inspection · "+active.po+" · "+(active.customer||"Customer not specified"):"Drafts are shared with all signed-in users. Approved POs and POs with delivery are listed below.";
-$("po-new").classList.toggle("hidden",!!active);
 root.classList.toggle("hidden",false);
 $("po-search-form").classList.toggle("hidden",!!active);
 const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
+window.InspectionPOLayout.count("po-count",filtered.length,"draft");
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
 root.innerHTML=window.InspectionOrderDirectory.tableHTML(filtered.map(p=>({
  summary:window.InspectionCloud.orderSummary(p),
@@ -3484,7 +3483,7 @@ function updateRole(){
  const login=document.getElementById('cloud-login');if(login)login.hidden=!!session;
  const logout=document.getElementById('cloud-logout');if(logout)logout.hidden=!session;
  for(const v of ['history','import']){const n=document.querySelector('[data-view="'+v+'"]');if(n)n.classList.toggle('hidden',!administrator)}
- for(const [selector,text] of [['#po-new','＋ New draft'],['#po-save','✓ Save draft'],['#po-current-worklog h3','Current draft'],['#po-search-form label','Search drafts'],['#po-import-create','Move to Drafts'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
+ for(const [selector,text] of [['#po-save','✓ Save draft'],['#po-current-worklog h3','Current draft'],['#po-search-form label','Search drafts'],['#po-import-create','Move to Drafts'],['#po-close-active','Close draft']]){const el=document.querySelector(selector);if(el&&el.textContent!==text)el.textContent=text;}
  const hint=document.querySelector('.po-inline-hint');if(hint){const text=administrator?'Draft PO: review the selected EST values, then Approve for Inspection to publish the final version. Physical verification is recorded separately.':'Shared draft pending inspection. The administrator approves the order; the approved version then appears below.';if(hint.textContent!==text)hint.textContent=text;}
  
  const approvals=document.getElementById('approvals-view');if(approvals)approvals.classList.toggle('hidden',!administrator);
@@ -3527,10 +3526,10 @@ function approvedPanel(){
  let root=document.getElementById('approved-po-panel');if(root)return root;
  const archive=document.querySelector('.po-archive');if(!archive)return null;
  root=document.createElement('div');root.id='approved-po-panel';root.className='panel panel-pad';
- root.innerHTML='<div class="section-head"><div><h3>Approved for Inspection</h3><p class="hint">Approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to POs with Delivery.</p></div><button class="btn mini" id="approved-po-refresh">Refresh</button></div><label class="label" for="approved-po-search">Search approved POs</label><input class="input" id="approved-po-search" type="search" placeholder="PO No. or customer name (full or partial)" style="width:100%"><div id="approved-po-list" style="margin-top:16px"></div><div id="approved-po-details"></div>';
+ root.innerHTML='<div class="section-head"><div><h3>Approved for Inspection <span class="po-stage-count" id="approved-stage-count">0 POs</span></h3></div><button class="btn mini" id="approved-po-refresh">Refresh</button></div><label class="label" for="approved-po-search">Search approved POs</label><input class="input" id="approved-po-search" type="search" placeholder="PO No. or customer name (full or partial)" style="width:100%"><div id="approved-po-list" style="margin-top:16px"></div><div id="approved-po-details"></div>';
  archive.after(root);
  const deliveries=document.createElement('div');deliveries.id='delivery-po-panel';deliveries.className='panel panel-pad';
- deliveries.innerHTML='<div class="section-head"><div><h3>POs with Delivery</h3><p class="hint">Approved POs with associated deliveries. Open an order to view its deliveries, download originals or export the summary.</p></div><button class="btn mini" id="delivery-po-refresh">Refresh</button></div><div id="delivery-po-list" style="margin-top:16px"></div>';
+ deliveries.innerHTML='<div class="section-head"><div><h3>POs with Delivery <span class="po-stage-count" id="delivery-stage-count">0 POs</span></h3></div><button class="btn mini" id="delivery-po-refresh">Refresh</button></div><div id="delivery-po-list" style="margin-top:16px"></div>';
  root.after(deliveries);
  const approvedSearch=document.getElementById('approved-po-search');approvedSearch.hidden=true;approvedSearch.previousElementSibling.hidden=true;approvedSearch.value=document.getElementById('purchase-orders-search').value;approvedSearch.oninput=()=>{selectedApproved=null;renderApprovedPOs();};
  document.getElementById('approved-po-refresh').onclick=async()=>{if(!canEdit())return;await connect()};
@@ -3856,6 +3855,7 @@ function renderApprovedPOs(){
  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
  const rows=approvedPOs.filter(a=>orderMatches(a.snapshot,term,a.id));
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
+ window.InspectionPOLayout.count("approved-stage-count",groups.approved.length,"PO");window.InspectionPOLayout.count("delivery-stage-count",groups.withDelivery.length,"PO");
  document.getElementById('approved-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.approved.map(approvedOrderEntry),{layoutKey:'purchase-order-approved',escape:escapeHTML,empty:term?'No matching POs approved for inspection.':'No POs in this stage.'});
  document.getElementById('delivery-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.withDelivery.map(approvedOrderEntry),{layoutKey:'purchase-order-delivery',escape:escapeHTML,empty:term?'No matching POs with delivery.':'No POs with delivery yet.'});
  const detailRoot=document.getElementById('approved-po-details');
