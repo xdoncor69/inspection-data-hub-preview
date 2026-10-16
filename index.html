@@ -175,7 +175,7 @@ window.InspectionTableTools={
 <div class="inspection-query-results-head"><div><strong>Matching products</strong><span id="iq-count" class="muted small"></span></div><div class="iq-result-actions"><span id="iq-edit-all-controls" hidden><button type="button" class="btn mini" id="iq-edit-all">Edit all results</button><button type="button" class="btn mini primary" id="iq-save-all" hidden>Save all</button><button type="button" class="btn mini" id="iq-cancel-all" hidden>Cancel</button></span><button type="button" class="btn mini" id="iq-print">⎙ Print list</button><button type="button" class="btn mini" id="iq-export">↓ Export for Excel (.csv)</button></div></div>
 <div class="inspection-query-bulk"><label class="inspection-query-select"><input type="checkbox" id="iq-select-all"> Select all results</label><span id="iq-selected-count" class="muted small">0 selected</span><span class="inspection-query-bulk-divider"></span><select class="input" id="iq-bulk-field" aria-label="Field to update"><option value="plant">EST</option><option value="brand">Brand</option><option value="pack">Pack / Size</option><option value="category">Product type</option><option value="family">Product family</option><option value="description">Description</option></select><input class="input" id="iq-bulk-value" placeholder="New value for selected Items" aria-label="New value"><button class="btn mini primary" id="iq-bulk-apply">Apply to selected</button></div>
 <p class="small" id="iq-batch-status" role="status" aria-live="polite"></p><div class="muted small iq-edit-note">Select Edit for one Item, or Edit all results to unlock the result table and Save all to apply your changes. Administrator changes update the official catalog reference, not physical verification history.</div>
-<p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:160px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:126px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Actions</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
+<p id="iq-filter-status" class="muted small" role="status" aria-live="polite"></p><div class="tablewrap"><table id="iq-table" class="query-table"><colgroup><col style="width:106px"><col style="width:132px"><col style="width:124px"><col style="width:320px"><col style="width:160px"><col style="width:140px"><col style="width:82px"><col style="width:48px"><col style="width:116px"><col style="width:126px"></colgroup><thead><tr><th data-sort="item"><button type="button" class="query-sort" data-label="Item">Item<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="brand"><button type="button" class="query-sort" data-label="Brand">Brand<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="plant"><button type="button" class="query-sort" data-label="EST">EST<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="description"><button type="button" class="query-sort" data-label="Description">Description<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="pack"><button type="button" class="query-sort" data-label="Pack / Size">Pack / Size<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th hidden data-sort="family"><button type="button" class="query-sort" data-label="Product family">Product family<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th data-sort="category"><button type="button" class="query-sort" data-label="Type">Type<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th>Select</th><th data-sort="__photo"><button type="button" class="query-sort" data-label="Photo">Photo<span class="sort-arrow" aria-hidden="true"> ↕</span></button></th><th hidden>Actions</th></tr></thead><tbody id="iq-rows"></tbody></table></div></div></div>
 </div><div class="legacy-global-compat hidden" aria-hidden="true">
 <input id="global-query"><select id="f-category"></select><select id="f-brand"></select><select id="f-pack"></select>
 <button id="global-search"></button><button id="global-clear"></button><span id="global-count"></span>
@@ -572,6 +572,17 @@ window.InspectionDocumentProducts=Object.freeze({
  }
 });
 </script>
+<script id="product-display-policy">
+window.InspectionProductDisplay=Object.freeze({
+ defaultType(description){return /\b(chicken|turkey)\b/i.test(String(description||''))?'Poultry':'Meat';},
+ fitDescription(el){if(!el.isConnected||!el.getBoundingClientRect().width)return;const reference=el.closest('tr')?.querySelector('input.iq-cell'),height=reference?.getBoundingClientRect().height||31,style=getComputedStyle(el),border=(parseFloat(style.borderTopWidth)||0)+(parseFloat(style.borderBottomWidth)||0);el.style.height=height+'px';el.style.height=Math.max(height,el.scrollHeight+border)+'px';}
+});
+</script>
+<style id="compact-product-fields">
+#iq-table .iq-cell{line-height:1.4;padding:6px 7px;font-size:12px}
+#iq-table textarea.iq-description-cell{min-height:0!important;height:auto;line-height:1.4;white-space:pre-wrap}
+label:has(:is(#ip-family,#ip-map-family,#edit-family,#iq-family,#po-import-family-col,[data-approval-field="family"],[data-import-field="family"])),.detail-grid>div:has(#d-family),option[value="family"]{display:none!important}
+</style>
 <script id="product-field-policy">
 /* Preserve dormant product types. Combine legacy Pack and Size literally without unit conversion. */
 window.InspectionProduct=Object.freeze({
@@ -1013,7 +1024,7 @@ function ensureXLSX(){
 window.__inspectionLoadXLSX=ensureXLSX;
 const poSourceFields=["description","brand","category","family","pack","size","plant","alternativeEst","notes"];
 const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
-function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}out.brand=out.brand||clean(el('po-import-default-brand').value);const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;Object.assign(out,window.InspectionApproval.clean(out.description,out.brand,[...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{})]));return window.InspectionProduct.catalog(out);}
+function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}out.brand=out.brand||clean(el('po-import-default-brand').value);const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;Object.assign(out,window.InspectionApproval.clean(out.description,out.brand,[...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{})]));if(!out.category)out.category=window.InspectionProductDisplay.defaultType(out.description);return window.InspectionProduct.catalog(out);}
 function bestColumn(kind){
  if(poSourcePatterns[kind])return headers.findIndex(v=>poSourcePatterns[kind].test(norm(v)));
  const patterns=kind==="weight"?[/^(catchweight|catchwt|cw|actualweight|netweight|receivedweight|weight)$/,/catch.*(weight|wt)/]:kind==="quantity"?[/^(receivedquantity|quantityreceived|qtyreceived|receivedqty|received|cantidadrecibida|goodsreceiptquantity|grquantity|quantity|qty)$/,/received.*(qty|quantity)/,/(qty|quantity).*received/,/quantity/,/qty/]:kind==="item"?[/^item(number|no|id|code)?$/,/^(material|materialnumber|sku|productcode|productnumber|article|articlenumber)$/,/item/,/material/,/sku/]:[/^description$/,/^(itemdescription|productdescription|materialdescription|productname|itemname)$/,/description/,/productname/];
@@ -1342,7 +1353,7 @@ if(!p){root.innerHTML="";root.dataset.draftOwner="";window.InspectionOrderOvervi
 const folded=window.InspectionOrderOverview.capture(root,p.id);root.dataset.draftOwner=p.createdBy||"";root.classList.toggle("draft-readonly",!draftEditable(p));if(draftEditable(p))p.rows.forEach(r=>r.lineId||=crypto.randomUUID());
 root.innerHTML='<div class="po-details-head"><div>'+window.InspectionOrderDirectory.identityHTML(window.InspectionCloud.orderSummary(p),safe)+'</div><div class="row"><button class="btn mini primary" id="po-approve"'+(window.InspectionCloud.isAdministrator()?"":" hidden")+'>Approve PO</button><button class="btn mini" id="po-export-draft">CSV</button><button class="btn mini" id="po-print-draft">Print draft</button><button class="btn mini" id="po-edit-details">Edit details</button><button class="btn mini" id="po-delete-active">Delete draft</button><button class="btn mini" id="po-close-active">Close</button></div></div><div class="order-counts"><span>PO: '+p.rows.length+' item lines</span></div><details class="order-lines" data-order-fold="po"><summary>PO items ('+p.rows.length+')</summary><div class="po-add-row"><input class="input" id="po-add-item" placeholder="Item number"><button class="btn primary" id="po-add-item-btn">Add Item</button></div><button class="btn mobile-inspection-toggle" id="mobile-inspection-toggle">Table / inspection cards</button><div class="tablewrap po-review-table"><table data-layout-key="review-po"><thead><tr><th>Item No.</th><th>Brand / description</th><th>Class</th><th>EST</th>'+(window.InspectionCloud.isAdministrator()?'<th>Priority</th><th>Record EST</th>':'')+'<th>Actions</th></tr></thead><tbody>'+p.rows.map((x,i)=>{
  const product=poDisplayProduct(x),checked=window.InspectionCloud.isPORowVerified(x);
- return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+(x.sourceItem&&x.sourceItem!==x.item?'<div class="small muted">Source: '+safe(x.sourceItem)+'</div>':'')+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([product?.family,window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+(x.sourceMode==='external-picture'?'Review':estPriorityCell(x.item))+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
+ return '<tr><td><input class="input" readonly data-po-item="'+i+'" value="'+safe(x.item)+'">'+(x.sourceItem&&x.sourceItem!==x.item?'<div class="small muted">Source: '+safe(x.sourceItem)+'</div>':'')+poCatalogBadge(x,i)+'</td><td><strong>'+safe(product?.brand||'')+'</strong><textarea rows="2" class="input auto-description" readonly data-po-desc="'+i+'">'+safe(x.description)+'</textarea><details><summary>Product details</summary><p>'+safe([window.InspectionProduct.packSize(product?.pack,product?.size)].filter(Boolean).join(' · '))+'</p><button class="btn mini" data-po-product-detail="'+i+'">Notes, references & photos</button></details></td><td>'+safe(window.InspectionProduct.classLabel(product?.category))+'</td><td><input class="input" readonly data-po-ref="'+i+'" value="'+safe(x.plant)+'"></td>'+(window.InspectionCloud.isAdministrator()?'<td>'+(x.sourceMode==='external-picture'?'Review':estPriorityCell(x.item))+'</td><td>'+(window.InspectionCloud.isAdministrator()?'<button class="btn primary" data-po-confirm="'+i+'">Record shown EST</button><button class="btn" data-po-observed="'+i+'">Record another EST</button>':'')+'</td>':'')+'<td><button class="btn mini" data-po-up="'+i+'">↑</button><button class="btn mini" data-po-down="'+i+'">↓</button><button class="btn mini" data-po-remove="'+i+'">Remove</button></td></tr>';
  }).join('')+'</tbody></table></div>'+mobileInspectionHTML(p)+'</details><section id="draft-delivery-overview"></section>';
 window.InspectionCloud.renderDraftDeliveries?.(document.getElementById('draft-delivery-overview'),p);
 window.InspectionOrderOverview.restore(root,folded);window.InspectionOrderOverview.sync('draft',root,true,()=>{openPO=null;existingPOAccepted=false;renderPOArchive();});
@@ -2498,11 +2509,11 @@ function draw(){
  $("iq-count").textContent=matched.length+" of "+demo.length+" products";
  sortResults();
  $("iq-rows").innerHTML=matched.map(x=>{
-  const cells=editable.map(k=>'<td>'+(k==="category"?queryCategoryCell(x):k==="description"?'<textarea rows="2" class="input iq-cell iq-description-cell" readonly data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" readonly data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
+  const cells=editable.map(k=>'<td'+(k==="family"?" hidden":"")+'>'+(k==="category"?queryCategoryCell(x):k==="description"?'<textarea rows="1" class="input iq-cell iq-description-cell" readonly data-field="description" aria-label="Description for Item '+safe(x.item)+'">'+safe(x[k])+'</textarea>':'<input class="input iq-cell" readonly data-field="'+k+'" value="'+safe(x[k])+'" title="'+safe(x[k])+'" aria-label="'+k+' for Item '+safe(x.item)+'">')+'</td>').join("");
   // Item remains immutable; editable cells are identified by field, not position.
-  return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td><div class="iq-row-actions"><button type="button" class="btn mini iq-edit">Edit</button><button type="button" class="btn mini iq-save" hidden>Save</button><button type="button" class="btn mini iq-cancel" hidden>Cancel</button></div></td></tr>';
+  return '<tr data-iq-item="'+safe(x.item)+'"><td class="strong">'+safe(x.item)+'</td>'+cells+'<td><input type="checkbox" class="iq-select" aria-label="Select Item '+safe(x.item)+'" '+(selectedIds.has(x.item)?"checked":"")+'></td>'+'<td><div class="iq-photo-status">'+((imagesByItem[x.item]||[]).length?'<span class="iq-photo-yes">✓ '+imagesByItem[x.item].length+' photo(s)</span>':'<span class="iq-photo-no">No photo</span>')+'<label class="btn mini iq-photo-add">＋ Add<input type="file" class="iq-photo-upload" accept="image/*" multiple aria-label="Add photos for Item '+safe(x.item)+'"></label></div></td><td hidden><div class="iq-row-actions"><button type="button" class="btn mini iq-edit">Edit</button><button type="button" class="btn mini iq-save" hidden>Save</button><button type="button" class="btn mini iq-cancel" hidden>Cancel</button></div></td></tr>';
  }).join("")||'<tr><td colspan="10" class="empty">No matching products. Try removing a condition.</td></tr>';
- $("iq-rows").querySelectorAll(".iq-description-cell").forEach(el=>{el.style.height="auto";el.style.height=Math.max(46,el.scrollHeight)+"px";});
+ $("iq-rows").querySelectorAll(".iq-description-cell").forEach(el=>window.InspectionProductDisplay.fitDescription(el));
  $("iq-export").disabled=matched.length===0;$("iq-print").disabled=matched.length===0;
  selectionLabel();
 }
@@ -2592,7 +2603,7 @@ $("iq-select-all").onchange=e=>{
  selectedIds=e.target.checked?new Set(matched.map(x=>x.item)):new Set();
  draw();
 };
-$("iq-rows").addEventListener("input",e=>{if(e.target.matches(".iq-description-cell")){e.target.style.height="auto";e.target.style.height=Math.max(46,e.target.scrollHeight)+"px";}});
+$("iq-rows").addEventListener("input",e=>{if(e.target.matches(".iq-description-cell"))window.InspectionProductDisplay.fitDescription(e.target);});
 $("iq-rows").onchange=async e=>{
  if(e.target.matches(".iq-photo-upload")){
   const tr=e.target.closest("[data-iq-item]");if(!tr)return;
@@ -2649,7 +2660,7 @@ $("iq-bulk-apply").onclick=()=>{
 };
 $("iq-print").onclick=()=>{
  if(!matched.length)return;
- const cols=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Product family","family"],["Type","category"],["Photo","__photo"]];
+ const cols=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Type","category"],["Photo","__photo"]];
  let target=document.getElementById("iq-print-area");
  if(!target){target=document.createElement("section");target.id="iq-print-area";document.body.appendChild(target);}
  const values=x=>cols.map(c=>c[1]==="__photo"?((imagesByItem[x.item]||[]).length?"With photo":"Without photo"):x[c[1]]);
@@ -2662,7 +2673,7 @@ $("iq-print").onclick=()=>{
 function csvCell(v){return '"'+String(v??"").replace(/"/g,'""')+'"';}
 $("iq-export").onclick=()=>{
  if(!matched.length)return;
- const columns=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Product family","family"],["Type","category"],["Photo status","__photo"]];
+ const columns=[["Item","item"],["Brand","brand"],["EST","plant"],["Description","description"],["Pack / Size","pack"],["Type","category"],["Photo status","__photo"]];
  const csv="\uFEFF"+columns.map(x=>csvCell(x[0])).join(",")+"\r\n"+matched.map(x=>columns.map(c=>csvCell(c[1]==="__photo"?(imagesByItem[x.item]||[]).length?"With photo":"Without photo":x[c[1]])).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
  const a=document.createElement("a");a.href=url;a.download="inspection-catalog-"+new Date().toISOString().slice(0,10)+".csv";
@@ -2873,7 +2884,7 @@ function productFrom(input){
  const item=window.InspectionCloud.itemKey(input.item);
  const cleaned=window.InspectionApproval.clean(input.description,trim(input.brand),[...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record("inspection-data-hub-brand-profiles-v1")||{})]);
  const brand=cleaned.brand,description=cleaned.description;
- const category=canonicalGroup(input.category)||"";
+ const category=canonicalGroup(input.category)||window.InspectionProductDisplay.defaultType(description);
  return {item,category,brand,family:trim(input.family),description,pack:window.InspectionProduct.packSize(input.pack,input.size),plant:trim(input.plant)};
 }
 function compare(product,original,provided){
@@ -2967,7 +2978,8 @@ el("ip-stage-manual").onclick=async()=>{
  }catch(error){notice(window.InspectionCloud.catalogError(error),true);}
  finally{busy=false;draw();}
 };
-el("ip-manual-clear").onclick=()=>{itemCheckSequence++;clearTimeout(itemCheckTimer);checkedItem="";for(const key of ["item","brand","family","description","pack","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";itemCheckStatus("Enter the Item No. to check the official catalog.","empty");};
+let manualTypeChanged=false;el('ip-category').addEventListener('change',()=>manualTypeChanged=true);el('ip-description').addEventListener('input',()=>{if(!manualTypeChanged)el('ip-category').value=window.InspectionProductDisplay.defaultType(el('ip-description').value);});
+el("ip-manual-clear").onclick=()=>{manualTypeChanged=false;itemCheckSequence++;clearTimeout(itemCheckTimer);checkedItem="";for(const key of ["item","brand","family","description","pack","plant"])el("ip-"+key).value="";el("ip-category").value="Meat";itemCheckStatus("Enter the Item No. to check the official catalog.","empty");};
 el("ip-item").addEventListener("change",()=>{if(!busy&&window.InspectionCloud.itemKey(el("ip-item").value)!==checkedItem)checkManualItem();});
 const mappings={
  item:[/^item(number|no|id|code)?$/,/^material(number|no|id)?$/,/^sku$/,/^product(code|number|id)?$/,/^article(number)?$/,/item/,/material/],
@@ -4393,7 +4405,7 @@ connect();
 .query-sort{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left;display:inline-flex;align-items:center;gap:3px;line-height:1.3}
 .query-sort:focus-visible{outline:2px solid var(--sk-accent,#285b7e);outline-offset:4px;border-radius:2px}
 .sort-arrow{opacity:.65;white-space:nowrap}
-#iq-table{table-layout:fixed;width:100%;min-width:1472px}
+#iq-table{table-layout:fixed;width:100%;min-width:0}
 #iq-table th{white-space:normal}
 #lookup-view #invoice-query-table{table-layout:fixed;width:100%;min-width:1682px}
 #lookup-view #invoice-query-table th{white-space:normal}
@@ -4580,7 +4592,7 @@ window.InspectionTableLayout={refresh};refresh();
 </style><style>.auto-description,textarea.iq-description-cell{overflow:hidden!important;resize:none!important;min-height:46px;max-height:none!important;white-space:pre-wrap;overflow-wrap:anywhere}.history-change-value{max-height:none;overflow:visible;white-space:pre-wrap}#po-details td{vertical-align:top}[data-po-qty]{min-width:80px;max-width:130px}</style><script>
 (function(){
  const watched=new WeakSet(),widths=new WeakMap();let pending=false;
- function fit(el){if(!el.isConnected||!el.getBoundingClientRect().width)return;el.style.height='auto';el.style.height=Math.max(46,el.scrollHeight+2)+'px';}
+ function fit(el){if(el.matches('.iq-description-cell')){window.InspectionProductDisplay.fitDescription(el);return;}if(!el.isConnected||!el.getBoundingClientRect().width)return;el.style.height='auto';el.style.height=Math.max(46,el.scrollHeight+2)+'px';}
  const ro=typeof ResizeObserver==='function'?new ResizeObserver(entries=>{for(const e of entries){const width=e.contentRect.width;if(widths.get(e.target)!==width){widths.set(e.target,width);fit(e.target);}}}):null;
  function scan(){pending=false;document.querySelectorAll('textarea.iq-description-cell,textarea.auto-description').forEach(el=>{if(!watched.has(el)){watched.add(el);ro?.observe(el);}fit(el);});}
  function schedule(){if(!pending){pending=true;(window.requestAnimationFrame||window.setTimeout)(scan);}}
