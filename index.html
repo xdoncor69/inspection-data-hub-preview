@@ -148,7 +148,12 @@ window.InspectionTableTools={
 </style>
 <button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Pending sends</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Pending sends for this account</h3><button class="btn" id="pending-writes-close" type="button">Close</button></div><p class="muted small">Only pending submissions are stored on this device. A conflict requires reviewing the values before editing again.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status" hidden>Connecting to the official database…</div>
 <div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Sign in</button><button class="btn" id="blocker-pending-button" type="button" hidden>View pending sends</button><button class="btn" id="blocker-account-button" type="button" hidden>Account / sign out</button></div></div>
-<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="off" required></label><button class="btn primary" id="online-login-submit" type="submit">Sign in</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
+<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Sign-in method</span><select class="input" id="online-login-method"><option value="password">Password (plus authenticator if enabled)</option><option value="email_code">Code sent to email</option></select></label>
+<label id="online-password-group"><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="current-password" required></label>
+<div id="online-email-verify-group" hidden><label><span class="label">Code from your email</span><input class="input" id="online-email-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="6-digit code"></label></div>
+<button class="btn primary" id="online-login-submit" type="submit">Sign in</button>
+<button class="btn" id="online-request-code" type="button" hidden>Send email code</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
+<dialog id="online-mfa-dialog" class="online-dialog" aria-labelledby="online-mfa-title"><form id="online-mfa-form" autocomplete="off"><h3 id="online-mfa-title">Authenticator verification</h3><p class="muted">Enter the 6-digit code from your authenticator app to complete sign-in.</p><p class="notice" id="online-mfa-message" role="status">A verified authenticator is required for this account.</p><label><span class="label">Authenticator code</span><input class="input" id="online-mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label><div class="row"><button class="btn primary" id="online-mfa-submit" type="submit">Verify code</button><button class="btn" id="online-mfa-signout" type="button">Sign out</button></div></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="purchase-orders"><span class="ico">▤</span> Purchase Orders</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Customers</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
@@ -256,8 +261,26 @@ window.InspectionTableTools={
 <button class="btn settings-tab active primary" type="button" data-view="settings" aria-pressed="true">Aesthetics</button>
 <button class="btn settings-tab" type="button" data-view="import" aria-pressed="false">⇧ Import Products</button>
 <button class="btn settings-tab" type="button" data-view="sync" aria-pressed="false">⟳ Database Sync</button>
+<button class="btn settings-tab" type="button" data-view="security" aria-pressed="false">Security</button>
 </div>
 
+<section class="panel panel-pad hidden" id="security-settings-panel">
+ <div class="section-head"><div><h3>Security</h3><span class="hint">Personal sign-in method and two-step verification</span></div><button type="button" class="btn mini" id="security-refresh">Refresh</button></div>
+ <p class="muted" id="security-identity">Current account</p>
+ <label><span class="label">Preferred sign-in method</span><select class="input" id="security-login-choice"><option value="password">Password (with authenticator if enabled)</option><option value="email_code">Email verification code (no password)</option></select></label>
+ <p class="muted small">The choice is saved to your account. Authenticator verification is an additional security step; an email code cannot replace it after activation.</p>
+ <button class="btn primary" type="button" id="security-save-preference">Save preference</button>
+ <div class="divider" style="height:1px;background:var(--sk-border,#ddd);margin:18px 0"></div>
+ <h4>Authenticator app (TOTP)</h4><p class="muted small" id="security-totp-status">Checking your verification factors…</p>
+ <button class="btn" id="security-start-totp" type="button">Set up authenticator</button>
+ <section id="security-enroll-panel" hidden><p class="muted">Scan this QR using Bitwarden Authenticator, Apple Passwords or another TOTP app. Never share or screenshot this code.</p>
+ <img id="security-totp-qr" alt="Authenticator setup QR code" width="200" height="200" style="background:white;padding:8px;max-width:100%">
+ <details><summary>Manual setup key</summary><code id="security-totp-secret" style="overflow-wrap:anywhere"></code></details>
+ <label><span class="label">6-digit authenticator code</span><input class="input" id="security-enroll-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
+ <div class="row"><button class="btn primary" id="security-confirm-totp" type="button">Verify and activate</button><button class="btn" id="security-cancel-totp" type="button">Cancel</button></div></section>
+ <p class="muted small">After activation, the account will require TOTP for data access. Register a backup factor on a separate device; Supabase does not provide standard recovery codes.</p>
+ <div class="notice" id="security-feedback" role="status"></div>
+</section>
 <div class="panel panel-pad skin-settings">
 <div class="section-head"><div><h3>Aesthetics</h3><span class="hint">Color theme and workspace layout</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
 <p class="muted" style="margin:0 0 20px;line-height:1.65">Choose your color theme and how Purchase Order stages are arranged.</p>
@@ -620,7 +643,7 @@ window.__inspectionSaveCatalog=function(){
 let view="purchase-orders",selected=null,history=[],photoName="";
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const sections=["purchase-orders","global","lookup","history","sync","guide","brands","import","settings","clients"];
-function navigate(v){if(v==="meat")v="purchase-orders";if(v==="dairy")v="global";if(v!=="purchase-orders")window.InspectionOrderOverview?.dismiss();if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Aesthetics, product imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
+function navigate(v){if(v==="meat")v="purchase-orders";if(v==="dairy")v="global";if(v!=="purchase-orders")window.InspectionOrderOverview?.dismiss();if(['history','import','clients'].includes(v)&&!window.InspectionCloud.isAdministrator()){window.InspectionCloud.deny();return}view=v;const settingsRoute=["settings","import","sync","security"].includes(v);document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===(settingsRoute?"settings":v)));document.querySelectorAll(".settings-tab").forEach(b=>{const active=b.dataset.view===v;b.classList.toggle("active",active);b.classList.toggle("primary",active);b.setAttribute("aria-pressed",String(active));});document.querySelector(".skin-settings").classList.toggle("hidden",v!=="settings");document.getElementById("security-settings-panel").classList.toggle("hidden",v!=="security");window.__inspectionSecurityRoute?.(v);sections.forEach(s=>$(s+"-view").classList.toggle("hidden",!(s===v||(s==="settings"&&settingsRoute)||(s==="lookup"&&(v==="meat"||v==="dairy")))));const names={"purchase-orders":["Purchase Orders","Shared drafts, approved POs and POs with delivery"],clients:["Customers","Find, add and edit saved customers"],settings:["Settings","Aesthetics, security, imports and database connection"],import:["Import Products","Add individual Items or review and import SAP spreadsheets"],global:["Product Search","Look up an Item or search the catalog with filters"],history:["Change History","Effective product changes and physical verifications"],brands:["Brands","Manufacturer profiles and establishment stability rules"],sync:["Database Sync","Connection settings and access management"],guide:["Guide & Rules","Understand EST observations, historical statistics and review priorities"]};$("page-title").textContent=settingsRoute?"Settings":names[v][0];$("page-subtitle").textContent=names[v][1];if(v==="global"){$("plant-label").textContent="EST";$("item-count").textContent=demo.length+" catalog Items · Meat + Poultry";selected=null;showProduct();$("item-input").value="";renderRecent();}if(v==="history")renderHistory();if(window.__inspectionWorkspaceRefresh)window.__inspectionWorkspaceRefresh();window.__inspectionNotificationsRoute?.(v);}
 window.__inspectionNavigate=navigate;document.querySelectorAll(".nav,.settings-tab").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
 // Restore the Import Order workspace immediately; do not rely on optional catalog scripts.
 navigate("meat");
@@ -4211,15 +4234,189 @@ async function addImportedCatalog(products){
 
 async function removePhoto(item,index){if(!administrator||!canEdit()){deny();return}const next=clone(photoMetadata);if(!next[item]?.[index])return;next[item].splice(index,1);await commit({[PHOTO_KEY]:next});if(administrator)await loadState();}
 
-function openLogin(){if(session){openAccount();return}overlay('Sign in to access Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Enter the email and password for your application account.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
-function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value=''}
+// Independent sign-in choice: email OTP is aal1; TOTP is a true second factor.
+let securityEnrollment=null,mfaChallengeFactor=null,totpFailures=0,emailFailures=0,lastEmailRequest=0;
+let lastEmailAddress='',emailCodeSent=false,preferredLoginMethod='password';
+const elSecurity=id=>document.getElementById(id);
+function sessionAssurance(){
+ try{const token=session?.access_token?.split('.')[1];if(!token)return 'aal1';
+  const normalized=token.replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(atob(normalized)).aal||'aal1';
+ }catch{return 'aal1'}
+}
+function loginMethodUI(){
+ const method=elSecurity('online-login-method').value,byEmail=method==='email_code';
+ elSecurity('online-password-group').hidden=byEmail;
+ elSecurity('online-password').required=!byEmail;
+ elSecurity('online-email-verify-group').hidden=!byEmail||!emailCodeSent;
+ elSecurity('online-email-code').required=byEmail&&emailCodeSent;
+ elSecurity('online-request-code').hidden=!byEmail||emailCodeSent;
+ elSecurity('online-login-submit').hidden=byEmail&&!emailCodeSent;
+ elSecurity('online-login-submit').textContent=byEmail?'Verify email code':'Sign in';
+}
+async function emailCodeRequest(){
+ const email=elSecurity('online-email').value.trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){elSecurity('online-login-message').textContent='Enter a valid email address.';return;}
+ if(Date.now()-lastEmailRequest<60000){elSecurity('online-login-message').textContent='Wait 60 seconds before requesting another code.';return;}
+ const b=elSecurity('online-request-code');b.disabled=true;
+ try{
+  const response=await fetch(BASE+'/auth/v1/otp',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,create_user:false}),signal:AbortSignal.timeout(20000)});
+  if(!response.ok)throw Error('The code could not be sent. Wait a moment and retry.');
+  lastEmailRequest=Date.now();lastEmailAddress=email;emailFailures=0;emailCodeSent=true;
+  elSecurity('online-login-message').textContent='If this is an existing account, check its inbox for the sign-in code. Enter the digits below.';
+  loginMethodUI();elSecurity('online-email-code').focus();
+ }catch(error){elSecurity('online-login-message').textContent=error.message;}
+ finally{b.disabled=false}
+}
+async function verifiedTotpFactors(){
+ const user=await request('/auth/v1/user');
+ return {user,factors:(Array.isArray(user.factors)?user.factors:[]).filter(f=>f.factor_type==='totp'&&f.status==='verified')};
+}
+async function promptMfaBeforeConnect(){
+ if(!session)return false;
+ const {factors}=await verifiedTotpFactors();
+ if(!factors.length||sessionAssurance()==='aal2')return true;
+ mfaChallengeFactor=factors[0].id;totpFailures=0;
+ elSecurity('online-mfa-message').textContent='Enter the code from your authenticator. An email code or password alone does not unlock this account.';
+ const d=elSecurity('online-mfa-dialog');if(!d.open)d.showModal();elSecurity('online-mfa-code').focus();
+ return false;
+}
+async function verifyFactorCode(factorId,code){
+ if(!/^[0-9]{6}$/.test(code))throw Error('Enter the six-digit authenticator code.');
+ const challenge=await request('/auth/v1/factors/'+encodeURIComponent(factorId)+'/challenge',{method:'POST',body:{}});
+ if(!challenge?.id)throw Error('Could not initiate authenticator verification.');
+ const response=await request('/auth/v1/factors/'+encodeURIComponent(factorId)+'/verify',{method:'POST',body:{challenge_id:challenge.id,code}});
+ if(!response?.access_token||!response?.refresh_token)throw Error('Supabase did not return an updated authenticated session.');
+ const prev=session.user;setSession({...response,user:prev});
+ return response;
+}
+async function submitMfaVerification(event){
+ event.preventDefault();
+ const button=elSecurity('online-mfa-submit');if(totpFailures>=5)return;
+ button.disabled=true;
+ try{
+  await verifyFactorCode(mfaChallengeFactor,elSecurity('online-mfa-code').value.trim());
+  mfaChallengeFactor=null;totpFailures=0;elSecurity('online-mfa-dialog').close();await connect();
+ }catch(error){
+  totpFailures++;
+  elSecurity('online-mfa-message').textContent=totpFailures>=5?
+    'Too many incorrect codes. Sign out and try again later.':('Verification unsuccessful. Check the current authenticator code. '+(5-totpFailures)+' tries remain.');
+ }finally{elSecurity('online-mfa-code').value='';button.disabled=totpFailures>=5}
+}
+async function securityRefresh(){
+ if(!session||!hasDatabaseConnection())return;
+ const feedback=elSecurity('security-feedback');
+ try{
+  const {user,factors}=await verifiedTotpFactors();
+  elSecurity('security-identity').textContent='Account: '+(user.email||session.user.email||'');
+  const saved=await request('/rest/v1/inspection_security_preferences?select=login_method&user_id=eq.'+encodeURIComponent(user.id));
+  preferredLoginMethod=saved?.[0]?.login_method==='email_otp'?'email_code':'password';
+  elSecurity('security-login-choice').value=preferredLoginMethod;
+  elSecurity('security-totp-status').textContent=factors.length?
+     factors.length+' verified authenticator(s). Security level: '+sessionAssurance().toUpperCase()+'.':
+     'No authenticator configured. Enrolling and verifying a code will activate MFA for this account.';
+  elSecurity('security-start-totp').textContent=factors.length?'Add a backup authenticator':'Set up authenticator';
+  elSecurity('security-start-totp').disabled=factors.length>0&&sessionAssurance()!=='aal2';
+  feedback.textContent='';
+ }catch(error){feedback.textContent='Could not check security settings. Reconnect and retry.'}
+}
+async function securitySavePreference(){
+ const choice=elSecurity('security-login-choice').value,notice=elSecurity('security-feedback');
+ if(!['email_code','password'].includes(choice))return;
+ try{
+  const rows=await request('/rest/v1/inspection_security_preferences?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:{user_id:session.user.id,login_method:choice==='email_code'?'email_otp':'password'}});
+  if(!rows?.some(row=>row.user_id===session.user.id))throw Error('Preference update was not confirmed.');
+  preferredLoginMethod=choice;
+  nativeStorage.setItem('inspection-auth-method-'+String(session.user.email||'').toLowerCase(),choice);
+  notice.textContent='Saved for your account. Email codes use your existing verified email; authenticator protection remains independent.';
+ }catch(e){notice.textContent='Could not save your preference. Try again.'}
+}
+function clearSecurityEnrollment(){
+ securityEnrollment=null;
+ elSecurity('security-enroll-panel').hidden=true;elSecurity('security-totp-qr').removeAttribute('src');
+ elSecurity('security-totp-secret').textContent='';elSecurity('security-enroll-code').value='';
+}
+async function securityBeginEnrollment(){
+ const info=elSecurity('security-feedback'),btn=elSecurity('security-start-totp');btn.disabled=true;
+ try{
+  const {factors}=await verifiedTotpFactors();
+  if(factors.length&&sessionAssurance()!=='aal2')throw Error('Verify your existing authenticator before adding another.');
+  const data=await request('/auth/v1/factors',{method:'POST',body:{factor_type:'totp',friendly_name:'Inspection Data Hub '+(factors.length?'Backup':'Primary')}});
+  if(!data?.id||!data.totp?.secret)throw Error('Supabase did not provide a setup factor.');
+  securityEnrollment=data.id;
+  const qr=String(data.totp.qr_code||'');
+  if(/^data:image\/svg\+xml[;,]/i.test(qr))elSecurity('security-totp-qr').src=qr;
+  else elSecurity('security-totp-qr').removeAttribute('src');
+  elSecurity('security-totp-secret').textContent=data.totp.secret;
+  elSecurity('security-enroll-panel').hidden=false;
+  info.textContent='Enter a new code from your authenticator to activate this factor. The setup secret is not stored by Inspection Data Hub.';
+ }catch(e){info.textContent='Authenticator setup could not be started. '+(e.message||'Please retry.');}
+ finally{btn.disabled=false}
+}
+async function securityFinishEnrollment(){
+ if(!securityEnrollment)return;
+ const btn=elSecurity('security-confirm-totp'),message=elSecurity('security-feedback');btn.disabled=true;
+ try{
+  await verifyFactorCode(securityEnrollment,elSecurity('security-enroll-code').value.trim());
+  clearSecurityEnrollment();message.textContent='Authenticator confirmed. MFA is now required for your account. Keep a separate backup factor.';
+  await securityRefresh();await connect();
+ }catch(e){message.textContent='The code was not accepted. Wait for a new authenticator code and retry.'}
+ finally{btn.disabled=false;elSecurity('security-enroll-code').value=''}
+}
+function loginMethodRemember(){
+ const email=elSecurity('online-email').value.trim().toLowerCase();
+ const saved=nativeStorage.getItem('inspection-auth-method-'+email);
+ if(saved==='email_code'||saved==='password'){elSecurity('online-login-method').value=saved;loginMethodUI()}
+}
+window.__inspectionSecurityRoute=view=>{
+ if(view==='security'){securityRefresh();}
+ else if(securityEnrollment)clearSecurityEnrollment();
+};
+elSecurity('online-login-method').onchange=()=>{emailCodeSent=false;emailFailures=0;loginMethodUI()};
+elSecurity('online-email').addEventListener('change',loginMethodRemember);
+elSecurity('online-request-code').onclick=emailCodeRequest;
+elSecurity('online-mfa-form').onsubmit=submitMfaVerification;
+elSecurity('online-mfa-dialog').addEventListener('cancel',event=>event.preventDefault());
+elSecurity('online-mfa-signout').onclick=()=>{elSecurity('online-mfa-dialog').close();logout()};
+elSecurity('security-refresh').onclick=securityRefresh;
+elSecurity('security-save-preference').onclick=securitySavePreference;
+elSecurity('security-start-totp').onclick=securityBeginEnrollment;
+elSecurity('security-confirm-totp').onclick=securityFinishEnrollment;
+elSecurity('security-cancel-totp').onclick=clearSecurityEnrollment;
+loginMethodUI();
+
+function openLogin(){if(session){openAccount();return}overlay('Sign in to access Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Choose password or an email verification code. An enrolled authenticator is still required after sign-in.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
+function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value='';document.getElementById('online-email-code').value='';emailCodeSent=false;emailFailures=0;loginMethodUI()}
 function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrator: full access.':'User: import PO drafts, view all shared drafts, edit your own drafts, and view POs Approved for Inspection. You can upload and update deliveries; catalog changes and official verification are administrator-only. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
- e.preventDefault();if(signingIn)return;signingIn=true;const button=document.getElementById('online-login-submit');button.disabled=true;
- const email=document.getElementById('online-email').value.trim(),password=document.getElementById('online-password').value;
- try{const response=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Could not sign in. Check your email and password.');setSession(await response.json());await loadIdentity();document.getElementById('online-login-dialog').close();await connect();}
- catch(error){if(!session)persistSession();document.getElementById('online-login-message').textContent=error.message;updateRole();}finally{clearLogin();signingIn=false;button.disabled=false;}
+ e.preventDefault();if(signingIn)return;
+ const method=elSecurity('online-login-method').value,email=elSecurity('online-email').value.trim(),password=elSecurity('online-password').value,code=elSecurity('online-email-code').value.trim();
+ if(method==='email_code'&&!emailCodeSent){await emailCodeRequest();return;}
+ if(method==='email_code'&&email.toLowerCase()!==lastEmailAddress){elSecurity('online-login-message').textContent='Request a new code for this email address.';return;}
+ if(method==='email_code'&&emailFailures>=5){elSecurity('online-login-message').textContent='Too many incorrect codes. Request a new code later.';return;}
+ signingIn=true;const button=elSecurity('online-login-submit');button.disabled=true;
+ try{
+  const path=method==='email_code'?'/auth/v1/verify':'/auth/v1/token?grant_type=password';
+  const body=method==='email_code'?{email,token:code,type:'email'}:{email,password};
+  if(method==='email_code'&&!/^[0-9]{6,8}$/.test(code))throw Error('Enter the numeric code sent to your email.');
+  const response=await fetch(BASE+path,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
+  if(!response.ok)throw Error('The sign-in code or credentials were not accepted.');
+  const data=await response.json();
+  if(!data.access_token||!data.refresh_token||!data.user?.id)throw Error('Supabase did not confirm this login.');
+  setSession(data);
+  nativeStorage.setItem('inspection-auth-method-'+email.toLowerCase(),method);
+  elSecurity('online-login-dialog').close();
+  await connect();
+ }catch(error){
+  if(method==='email_code')emailFailures++;
+  if(!session)persistSession();
+  elSecurity('online-login-message').textContent=error.message;
+  updateRole();
+ }finally{
+  elSecurity('online-password').value='';elSecurity('online-email-code').value='';
+  signingIn=false;button.disabled=false;
+ }
 }
+
 async function logout(){
  if(signingOut)return;signingOut=true;
  const previous=session;
@@ -4412,7 +4609,7 @@ async function connectOnce(){
  if(signingOut)return;
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
  await showQueueCount();overlay(hasDatabaseConnection()?'Restoring the official database connection…':'You are signed in. The database connection is still being established…',true);
- try{await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
+ try{if(!await promptMfaBeforeConnect()){overlay('Complete the authenticator verification to unlock Inspection Data Hub.',true);return;}await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
  if(applicationInitializationError)throw applicationInitializationError;
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
  let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
