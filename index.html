@@ -4357,10 +4357,12 @@ connect();
 </style><style id="compact-directory-alignment">
 /* Keep header labels and values on the same left edge; grips occupy the trailing gutter. */
 :root[data-skin] #purchase-orders-view .order-directory-table th,:root[data-skin] #purchase-orders-view .order-directory-table td{padding:6px!important;text-align:left;vertical-align:middle;line-height:1.35}
-:root[data-skin] #purchase-orders-view .order-directory-table th{padding-right:34px!important}
-#purchase-orders-view .order-directory-table .idh-col-move{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:22px;min-width:22px;min-height:24px;height:24px;padding:0;line-height:24px;font-size:13px}
+:root[data-skin] #purchase-orders-view .order-directory-table th{padding-right:26px!important}
+#purchase-orders-view .order-directory-table .idh-col-move{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;min-width:16px;min-height:24px;height:24px;padding:0;line-height:24px;font-size:12px}
 #purchase-orders-view .order-directory-table .order-directory-actions{gap:4px;align-items:center}
-#purchase-orders-view .order-directory-table .order-directory-actions .btn{min-height:26px;padding:4px 6px;font-size:11px;line-height:1.3}
+#purchase-orders-view .order-directory-table .order-directory-actions .btn{min-height:26px;padding:4px;font-size:11px;line-height:1.3}
+#purchase-orders-view .order-directory-table th:not([data-sort="customer"]){font-size:10px;letter-spacing:.04em}
+#purchase-orders-view .order-directory-table td:is([data-idh-col="delivery:0"],[data-idh-col="po:0"]){white-space:nowrap!important;word-break:normal;overflow-wrap:normal;font-variant-numeric:tabular-nums}
 #purchase-orders-view .idh-directory-layout-bar{display:none}
 #purchase-orders-view #approved-po-list,#purchase-orders-view #delivery-po-list{margin-top:0!important}
 </style>
@@ -4399,6 +4401,16 @@ function measureColumns(state){
  const customerTable=/client|customer/i.test(state.table.dataset.layoutKey||state.table.id||'');
  for(const [i,key]of state.base.entries()){
   state.minimums[key]=headerMinimum(state.headers.get(key),state.labels[i]);
+  if(state.table.classList.contains('order-directory-table')){
+   if(/^(delivery|po):/.test(key)){
+    const cell=state.table.querySelector('tbody td:not([colspan])'),style=getComputedStyle(cell||state.headers.get(key));
+    const size=parseFloat(style.fontSize)||12;let digit=size*.65;
+    if(measureContext){measureContext.font=[style.fontStyle||'normal',style.fontWeight||'400',style.fontSize||'12px',style.fontFamily||'sans-serif'].join(' ');digit=Math.max(...Array.from('0123456789',d=>measureContext.measureText(d).width));}
+    const sixDigits=Math.ceil(digit*6+Math.max(0,parseFloat(style.letterSpacing)||0)*5+14);
+    state.minimums[key]=Math.max(state.minimums[key],sixDigits);
+   }
+   if(/^actions:/.test(key))state.minimums[key]=Math.max(state.minimums[key],70);
+  }
   state.defaults[key]=state.table.classList.contains('order-directory-table')?state.minimums[key]:compactDefault(state.labels[i],state.minimums[key],customerTable);
  }
  state.metrics=metricKey();
@@ -4407,7 +4419,7 @@ function measureColumns(state){
 const account=()=>window.InspectionCloud?.layoutAccount?.()||'';
 const rowCells=row=>[...row.children].filter(el=>el.tagName==='TD'||el.tagName==='TH');
 function load(key){try{const value=JSON.parse(localStorage.getItem(key)||'null');return value&&Array.isArray(value.order)&&value.widths&&typeof value.widths==='object'?value:null;}catch{return null;}}
-function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=columnWidth(state,key,state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths,compactVersion:state.table.classList.contains("order-directory-table")?2:undefined}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
+function save(state){const uid=account();if(!uid)return;const widths={};for(const key of state.base)widths[key]=columnWidth(state,key,state.widths[key]);try{localStorage.setItem(PREFIX+uid+':'+state.key,JSON.stringify({order:state.order,widths,compactVersion:state.table.classList.contains("order-directory-table")?3:undefined}));}catch{state.notice.textContent='Could not save column preferences on this device.';}}
 function place(parent,nodes){const current=[...parent.children];if(nodes.every((node,i)=>current[i]===node)&&current.length===nodes.length)return;for(const node of nodes)parent.appendChild(node);}
 function apply(state){
  const {table,base,order}=state;
@@ -4426,7 +4438,7 @@ function restore(state){
  const uid=account(),remeasure=state.metrics!==metricKey();if(remeasure)measureColumns(state);if(state.uid===uid&&!remeasure)return;
  state.uid=uid;const preference=uid?load(PREFIX+uid+':'+state.key):null;
  state.order=preference?[...new Set(preference.order.filter(key=>state.base.includes(key))),...state.base.filter(key=>!preference.order.includes(key))]:[...state.base];
- state.widths={...state.defaults};if(preference&&(!state.table.classList.contains("order-directory-table")||preference.compactVersion===2))for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=columnWidth(state,key,preference.widths[key]);
+ state.widths={...state.defaults};if(preference&&(!state.table.classList.contains("order-directory-table")||preference.compactVersion===3))for(const key of state.base)if(Number.isFinite(Number(preference.widths[key])))state.widths[key]=columnWidth(state,key,preference.widths[key]);
 }
 function move(state,source,target){const i=state.order.indexOf(source),j=state.order.indexOf(target);if(i<0||j<0||i===j)return;state.order.splice(i,1);state.order.splice(j,0,source);state.table.dataset.idhSuppressClick=String(Date.now()+300);apply(state);save(state);}
 function install(table){
