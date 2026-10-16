@@ -108,7 +108,7 @@ window.InspectionTableTools={
 </style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14283e"><meta name="apple-mobile-web-app-capable" content="yes"><style id="order-notifications-style">#push-notification-settings{margin-top:16px}#push-notification-settings .order-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}#push-notification-settings .order-notice p{margin:7px 0;overflow-wrap:anywhere}#certificate-notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--sk-border)}#certificate-notification-user{max-width:100%}#push-notification-settings .btn{min-height:40px}@media(max-width:620px){#push-notification-settings .order-notice{flex-wrap:wrap}#push-notification-settings .order-notice .btn{margin-left:auto}}</style><style id="shared-draft-access-style">#po-details.draft-readonly :is(#po-edit-details,#po-delete-active,.po-add-row,[data-draft-edit],[data-po-up],[data-po-down],[data-po-remove]){display:none!important}#po-details.draft-readonly .po-review-table th:last-child,#po-details.draft-readonly .po-review-table td:last-child{display:none!important}</style><style id="purchase-order-stages-style">#purchase-orders-view #delivery-po-panel{margin-top:0}#purchase-orders-view #delivery-po-panel .section-head h3{font-size:14px}</style><style id="purchase-order-directory-tables">
 #purchase-orders-view .order-directory-table{font-size:12px}
 #purchase-orders-view .order-directory-table th,#purchase-orders-view .order-directory-table td{padding:7px 9px;line-height:1.4;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
-#purchase-orders-view .order-directory-actions{display:flex;align-items:flex-start;gap:5px}
+#purchase-orders-view .order-directory-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:5px}
 #purchase-orders-view .order-directory-actions .btn{white-space:nowrap;min-height:30px}
 #purchase-orders-view .order-directory-more{margin:0}
 #purchase-orders-view .order-directory-more>summary{list-style:none;cursor:pointer}
@@ -383,11 +383,11 @@ window.InspectionOrderDirectory=Object.freeze({
  },
  matches(summary,query){const term=this.normalize(query);return !term||[summary.po,summary.customer,...summary.deliveries].some(value=>this.normalize(value).includes(term));},
  tableHTML(entries,{layoutKey,escape,empty='No orders in this stage.'}){
-  const columns=[['delivery','Del No.',130],['po','PO No.',130],['customer','Customer',250],['salesTeam','Team',100],['status','Status',190],['actions','Actions',160]];
+  const columns=[['delivery','Del',70],['po','PO',65],['customer','Customer',110],['salesTeam','Team',85],['actions','Action',100]];
   return '<div class="tablewrap"><table class="order-directory-table" data-layout-key="'+escape(layoutKey)+'"><colgroup>'+columns.map(c=>'<col style="width:'+c[2]+'px">').join('')+'</colgroup><thead><tr>'+columns.map(c=>'<th data-sort="'+c[0]+'">'+c[1]+'</th>').join('')+'</tr></thead><tbody>'+entries.map(({summary:s,actions})=>{
    const po=s.po|| (s.association==='unknown'?'PO association not recorded':'No PO associated');
-   return '<tr><td>'+escape(s.deliveries.join(' · ')||'—')+'</td><td>'+escape(po)+'</td><td>'+escape(s.customer)+'</td><td>'+escape(window.InspectionTeamLabel(s.salesTeam)||'Not assigned')+'</td><td>'+escape(s.status)+'</td><td><div class="order-directory-actions">'+actions+'</div></td></tr>';
-  }).join('')+(entries.length?'':'<tr><td colspan="6" class="empty">'+escape(empty)+'</td></tr>')+'</tbody></table></div>';
+   return '<tr><td>'+escape(s.deliveries.join(' · ')||'—')+'</td><td>'+escape(po)+'</td><td>'+escape(s.customer)+'</td><td>'+escape(window.InspectionTeamLabel(s.salesTeam)||'Not assigned')+'</td><td><div class="order-directory-actions">'+actions+'</div></td></tr>';
+  }).join('')+(entries.length?'':'<tr><td colspan="5" class="empty">'+escape(empty)+'</td></tr>')+'</tbody></table></div>';
  },
  identityHTML(summary,escape){
   const po=summary.po?'PO No. '+escape(summary.po):summary.association==='unknown'?'PO association not recorded':'No PO associated';
@@ -4388,7 +4388,7 @@ function measureColumns(state){
  const customerTable=/client|customer/i.test(state.table.dataset.layoutKey||state.table.id||'');
  for(const [i,key]of state.base.entries()){
   state.minimums[key]=headerMinimum(state.headers.get(key),state.labels[i]);
-  state.defaults[key]=compactDefault(state.labels[i],state.minimums[key],customerTable);
+  state.defaults[key]=state.table.classList.contains('order-directory-table')?state.minimums[key]:compactDefault(state.labels[i],state.minimums[key],customerTable);
  }
  state.metrics=metricKey();
 }
