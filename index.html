@@ -183,7 +183,7 @@ window.InspectionTableTools={
 </div>
 </section>
 <section id="clients-view" class="hidden"><div id="client-directory" class="panel panel-pad"></div></section>
-<section id="purchase-orders-view" class="hidden"><div class="order-import-actions" role="group" aria-label="Import orders"><button class="btn primary" type="button" id="order-import-po" aria-haspopup="dialog" aria-controls="po-import-dialog">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-haspopup="dialog" aria-controls="sap-delivery-dialog">Delivery First</button><button class="btn" type="button" id="order-import-picture" aria-haspopup="dialog" aria-controls="picture-import-dialog">From Picture</button></div><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO No. or Del No.</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO No., Del No. or customer" autocomplete="off" style="width:min(100%,320px)"><p class="small muted">See PO No., Del No., customer and status before opening an order.</p></div></section><section id="lookup-view" class="hidden"></section>
+<section id="purchase-orders-view" class="hidden"><div class="order-import-actions" role="group" aria-label="Import orders"><button class="btn primary" type="button" id="order-import-po" aria-haspopup="dialog" aria-controls="po-import-dialog">Import PO</button><button class="btn" type="button" id="order-import-delivery" aria-haspopup="dialog" aria-controls="sap-delivery-dialog">Delivery First</button><button class="btn" type="button" id="order-import-picture" aria-haspopup="dialog" aria-controls="picture-import-dialog">From Picture</button></div><div class="panel panel-pad po-directory-search"><label class="label" for="purchase-orders-search">Search by PO, delivery, or customer</label><input class="input" id="purchase-orders-search" type="search" placeholder="PO, delivery, or customer" autocomplete="off" style="width:min(100%,320px)"><div id="po-search-results" hidden aria-live="polite"></div></div></section><section id="lookup-view" class="hidden"></section>
 <dialog id="picture-import-dialog" class="online-dialog" aria-labelledby="picture-title" style="width:1100px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);overflow:auto">
 <div class="section-head"><h2 id="picture-title">From Picture</h2><button type="button" class="btn" id="picture-close">Close</button></div>
 <p>Read third-party / crossdock invoices. Source identifiers are kept independently of the SAP catalog. Review before creating a draft.</p>
@@ -218,7 +218,7 @@ window.InspectionTableTools={
 </div></div></div></dialog>
 
 <section id="guide-view" class="hidden">
-<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Create drafts using Import PO, Delivery First or From Picture at the top of Purchase Orders. Select a saved customer and review the product and EST values. Drafts remain pending administrator approval.</p><p>Inspected contains approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to Deliveries. Open it to view deliveries, download originals or export the summary. Approval publishes the selected EST values; physical verification is a separate action.</p><p>The badge beside each stage title counts the orders currently shown, including any active search filter. Use the eye before a stage title to collapse or expand it. Collapsed stages remain as small title cards above the open stages. On desktop, open columns share the available width; phones keep stacked rows. Visibility is saved in this browser. Drag a column grip to reorder columns or drag a column edge to resize. The grip also supports left/right arrow keys.</p></div>
+<div class="panel panel-pad" id="guide-overview"><h3>Order workflow</h3><p>Create drafts using Import PO, Delivery First or From Picture at the top of Purchase Orders. Select a saved customer and review the product and EST values. Drafts remain pending administrator approval.</p><p>Inspected contains approved POs ready for delivery upload. Once a delivery is loaded, the PO moves to Deliveries. Open it to view deliveries, download originals or export the summary. Approval publishes the selected EST values; physical verification is a separate action.</p><p>The badge beside each stage title counts all orders in that stage. The top search displays separate results with Draft, Inspected or Deliveries labels without filtering the stage lists. Use the eye before a stage title to collapse or expand it. Collapsed stages remain as small title cards above the open stages. On desktop, open columns share the available width; phones keep stacked rows. Visibility is saved in this browser. Drag a column grip to reorder columns or drag a column edge to resize. The grip also supports left/right arrow keys.</p></div>
 <div class="panel panel-pad" id="guide-products"><h3>Product identification</h3><p>Use the Item number, description, brand, Pack / Size, notes and photos to identify a product. Published delivery ESTs come from the approved PO version.</p></div>
 <div class="panel panel-pad" id="guide-priorities"><h3>Review priority</h3><p>High, Medium and Low priorities guide the administrator's review. Internal rules determine the priority; the interface does not display their underlying records.</p></div>
 <div class="panel panel-pad" id="guide-stability"><h3>Stable EST</h3><p>The administrator can manage stable-reference rules for products and brands.</p></div>
@@ -395,6 +395,33 @@ window.InspectionPOLayout=(()=>{
  window.addEventListener?.('pageshow',apply);window.addEventListener?.('inspection:cloud-ready',apply);
  return Object.freeze({mount,apply,normalize,count});
 })();
+</script>
+<style id="po-independent-search-style">
+#po-search-results{margin-top:12px;min-width:0}#po-search-results .po-search-total{margin:0 0 8px}
+#po-search-results .po-search-result{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--sk-border)}
+#po-search-results .po-search-identity{flex:1 1 180px;min-width:0;overflow-wrap:anywhere}
+#po-search-results .po-search-badge{padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:var(--po-stage-head);color:var(--po-stage-ink);white-space:nowrap}
+#po-search-results .po-search-identity strong{font-size:12px}#po-search-results .po-search-identity .small{margin-top:3px}
+</style>
+<script id="po-independent-search">
+window.InspectionOrderSearch=(()=>{
+ const sources=new Map(),labels={approved:'Inspected',draft:'Draft',delivery:'Deliveries'};
+ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const normalize=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+ function matches(entry,query){const s=entry.summary;return [s.po,s.customer,...s.deliveries,entry.description||''].some(v=>normalize(v).includes(normalize(query)));}
+ function render(){const input=document.getElementById('purchase-orders-search'),root=document.getElementById('po-search-results');if(!root||!input)return;const query=normalize(input.value);root.hidden=!query;if(!query){root.replaceChildren();return;}
+  const entries=[...sources.values()].flat().filter(e=>matches(e,query));
+  root.innerHTML='<p class="small muted po-search-total">'+entries.length+' order'+(entries.length===1?'':'s')+' found</p>'+entries.map((e,i)=>'<div class="po-search-result" data-po-stage="'+e.stage+'"><span class="po-search-badge">'+labels[e.stage]+'</span><div class="po-search-identity"><strong>'+escape(e.summary.po?'PO '+e.summary.po:'No PO associated')+(e.summary.deliveries.length?' · Del '+escape(e.summary.deliveries.join(' · ')):'')+'</strong><div class="small">'+escape(e.summary.customer)+'</div></div><button class="btn mini" type="button" data-search-open="'+i+'">Open</button></div>').join('');
+  root.querySelectorAll('[data-search-open]').forEach(b=>b.onclick=()=>entries[Number(b.dataset.searchOpen)].open());
+ }
+ function set(source,entries){sources.set(source,entries);render();}
+ return Object.freeze({set,render,matches});
+})();
+</script>
+<script id="directory-responsive-widths">
+window.InspectionDirectoryWidths=Object.freeze({
+ fit(columns,available){const minimumWidth=columns.reduce((n,c)=>n+c.width,0),width=Math.max(minimumWidth,Math.floor(Number(available)||0)),extra=width-minimumWidth,total=columns.reduce((n,c)=>n+(c.key.startsWith('customer:')?3:1),0);let used=0;const widths={};columns.forEach((c,i)=>{const add=i===columns.length-1?extra-used:Math.floor(extra*(c.key.startsWith('customer:')?3:1)/total);widths[c.key]=c.width+add;used+=add;});return {widths,width,minimumWidth};}
+});
 </script>
 <script id="order-directory-model">
 window.InspectionTeamLabel=value=>{
@@ -886,7 +913,7 @@ if(oldRecent)oldRecent.remove();
 add($("lookup-view"),"beforeend",'<div class="panel worklog" id="po-current-worklog"><div class="section-head"><div><h3>Current Purchase Order</h3><span class="hint">Items are added automatically when you look them up · one active PO</span></div><div class="log-actions"><button class="btn mini primary" id="po-save">✓ Save PO</button><button class="btn mini" id="po-clear">Clear log</button><button class="btn mini" id="log-csv">↓ CSV</button><button class="btn mini" id="log-print">⎙ Print</button></div></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST reference</th><th>Received quantity</th><th>Catch Weight</th><th>Note</th><th>Order</th><th></th></tr></thead><tbody id="log-rows"></tbody></table></div><div class="small muted po-inline-hint">This draft contains reference ESTs only. Save the PO, inspect the cases, and confirm each checked Item in the saved PO.</div></div><div class="panel panel-pad po-archive"><div class="section-head"><div><h3 id="po-workspace-title">Draft <span class="po-stage-count" id="po-count">0 drafts</span></h3></div></div><form id="po-search-form" class="po-search-form" role="search"><label class="label" for="po-search-input">Search Purchase Orders</label><div class="po-search-controls"><input class="input" id="po-search-input" type="search" placeholder="PO No. or customer name (full or partial)" autocomplete="off"><button class="btn mini primary" type="submit">Search</button><button class="btn mini" id="po-search-clear" type="button">Clear</button></div><div class="small muted" id="po-search-status" role="status" aria-live="polite"></div></form><div id="po-list"></div><div id="po-details"></div></div>');
 $("purchase-orders-view").appendChild(document.querySelector(".po-archive"));
 $("po-search-form").hidden=true;
-$("purchase-orders-search").addEventListener("input",()=>{openPO=null;$("po-search-input").value=$("purchase-orders-search").value;renderPOArchive();const approvedSearch=$("approved-po-search");if(approvedSearch){approvedSearch.value=$("purchase-orders-search").value;approvedSearch.dispatchEvent(new Event("input"));}});
+$("purchase-orders-search").addEventListener("input",()=>window.InspectionOrderSearch.render());
 add(document.body,"beforeend",'<div id="print-log-only"><h2>Inspection Data Hub · Current PO Worklog</h2><table><thead><tr><th>#</th><th>Item</th><th>Description</th><th>EST</th><th>Received quantity</th><th>Note</th></tr></thead><tbody id="print-log-rows"></tbody></table></div>');
 function renderLog(){
 $("log-rows").innerHTML=log.map((x,i)=>'<tr><td class="strong">'+(i+1)+'</td><td><input class="input" readonly data-field="item" data-i="'+i+'" value="'+safe(x.item)+'" aria-label="Item"></td><td>'+safe(x.description)+'</td><td><input class="input" readonly data-field="plant" data-i="'+i+'" value="'+safe(x.plant)+'" aria-label="EST reference"></td><td><input class="input" readonly data-field="receivedQuantity" data-i="'+i+'" value="'+safe(x.receivedQuantity||"")+'" aria-label="Received quantity"></td><td><input class="input" readonly data-field="catchWeight" data-i="'+i+'" value="'+safe(x.catchWeight??"")+'" aria-label="Catch Weight"></td><td><input class="input" readonly data-field="note" data-i="'+i+'" value="'+safe(x.note||"")+'" aria-label="Note"></td><td><button class="btn mini" data-move="up" data-i="'+i+'" title="Move up">↑</button> <button class="btn mini" data-move="down" data-i="'+i+'" title="Move down">↓</button></td><td><button class="btn mini" data-delete="'+i+'" title="Remove Item">×</button></td></tr>').join("")||'<tr><td colspan="9" class="empty">Search an Item to add it automatically to this PO.</td></tr>';
@@ -1255,7 +1282,8 @@ function renderPOArchive(){
 const root=$("po-list"),active=invoices.find(p=>p.id===openPO);
 root.classList.toggle("hidden",false);
 $("po-search-form").classList.toggle("hidden",!!active);
-const query=$("po-search-input").value,filtered=invoices.filter(p=>matchesPOSearch(p,query));
+const query="",filtered=invoices;
+window.InspectionOrderSearch.set("draft",invoices.map(p=>({summary:window.InspectionCloud.orderSummary(p),stage:"draft",description:p.rows.map(r=>r.description||"").join(" "),open:()=>activatePO(p.id,true)})));
 window.InspectionPOLayout.count("po-count",filtered.length,"draft");
 $("po-search-status").textContent=normalizePOSearch(query)?filtered.length+" of "+invoices.length+" POs found":"";
 root.innerHTML=window.InspectionOrderDirectory.tableHTML(filtered.map(p=>({
@@ -3564,7 +3592,7 @@ function approvedPanel(){
  const deliveries=document.createElement('div');deliveries.id='delivery-po-panel';deliveries.className='panel panel-pad';
  deliveries.innerHTML='<div class="section-head"><div><h3>Deliveries <span class="po-stage-count" id="delivery-stage-count">0 POs</span></h3></div><button class="btn mini" id="delivery-po-refresh">Refresh</button></div><div id="delivery-po-list" style="margin-top:16px"></div>';
  root.after(deliveries);
- const approvedSearch=document.getElementById('approved-po-search');approvedSearch.hidden=true;approvedSearch.previousElementSibling.hidden=true;approvedSearch.value=document.getElementById('purchase-orders-search').value;approvedSearch.oninput=()=>{selectedApproved=null;renderApprovedPOs();};
+ const approvedSearch=document.getElementById('approved-po-search');approvedSearch.hidden=true;approvedSearch.previousElementSibling.hidden=true;approvedSearch.value='';approvedSearch.oninput=()=>{selectedApproved=null;renderApprovedPOs();};
  document.getElementById('approved-po-refresh').onclick=async()=>{if(!canEdit())return;await connect()};
  document.getElementById('delivery-po-refresh').onclick=document.getElementById('approved-po-refresh').onclick;
  window.InspectionPOLayout?.apply();
@@ -3885,8 +3913,8 @@ function approvedRowsHTML(p){return '<div class="tablewrap"><table data-layout-k
 function approvedEvidenceHTML(){return '';}
 function renderApprovedPOs(){
  if(!started||!approvedPanel())return;
- const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),term=normalize(document.getElementById('approved-po-search').value).trim();
- const rows=approvedPOs.filter(a=>orderMatches(a.snapshot,term,a.id));
+ const term='',rows=approvedPOs;
+ window.InspectionOrderSearch.set('approved',approvedPOs.map(a=>({summary:orderSummary(a.snapshot,a.id),stage:deliveryOrderIDs.has(a.id)?'delivery':'approved',description:a.snapshot.rows.map(r=>r.description||'').join(' '),open:()=>{selectedApproved=a.id;renderApprovedPOs();}})));
  const groups=partitionApprovedOrders(rows,deliveryOrderIDs);
  window.InspectionPOLayout.count("approved-stage-count",groups.approved.length,"PO");window.InspectionPOLayout.count("delivery-stage-count",groups.withDelivery.length,"PO");
  document.getElementById('approved-po-list').innerHTML=window.InspectionOrderDirectory.tableHTML(groups.approved.map(approvedOrderEntry),{layoutKey:'purchase-order-approved',escape:escapeHTML,empty:term?'No matching POs approved for inspection.':'No POs in this stage.'});
@@ -4403,7 +4431,8 @@ connect();
 (function(){
 'use strict';
 const PREFIX='idh-table-layout-v1:';
-const states=new WeakMap();
+const states=new WeakMap(),observedWrappers=new Set();
+const widthObserver=typeof ResizeObserver==='function'?new ResizeObserver(()=>refresh()):null;
 let queued=false,drag=null;
 const clamp=value=>Math.max(50,Math.min(1400,Math.round(Number(value)||100)));
 let fontRevision=0;
@@ -4463,8 +4492,10 @@ function apply(state){
  let cols=[...group.children];if(cols.length!==base.length){group.replaceChildren(...base.map(key=>{const col=document.createElement('col');col.dataset.idhCol=key;return col;}));cols=[...group.children];}
  if(cols.some(col=>!col.dataset.idhCol))cols.forEach((col,i)=>col.dataset.idhCol=base[i]);
  const map=new Map(cols.map(col=>[col.dataset.idhCol,col]));place(group,order.map(key=>map.get(key)));
- for(const key of base){map.get(key).style.width=columnWidth(state,key,state.widths[key])+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle){handle.setAttribute('aria-valuenow',String(columnWidth(state,key,state.widths[key])));handle.setAttribute('aria-valuemin',String(state.minimums[key]));}map.get(key).hidden=header.hidden;}
- const width=base.reduce((total,key)=>total+(state.headers.get(key).hidden?0:columnWidth(state,key,state.widths[key])),0);table.style.setProperty('width',width+'px','important');table.style.setProperty('min-width',width+'px','important');table.style.setProperty('table-layout','fixed','important');
+ const minimums=base.filter(key=>!state.headers.get(key).hidden).map(key=>({key,width:columnWidth(state,key,state.widths[key])}));
+ const fitted=window.InspectionDirectoryWidths.fit(minimums,table.classList.contains('order-directory-table')?table.parentElement.clientWidth:0);state.renderedWidths=fitted.widths;
+ for(const key of base){map.get(key).style.width=(fitted.widths[key]||columnWidth(state,key,state.widths[key]))+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle){handle.setAttribute('aria-valuenow',String(fitted.widths[key]||columnWidth(state,key,state.widths[key])));handle.setAttribute('aria-valuemin',String(state.minimums[key]));}map.get(key).hidden=header.hidden;}
+ table.style.setProperty('width',fitted.width+'px','important');table.style.setProperty('min-width',fitted.minimumWidth+'px','important');table.style.setProperty('table-layout','fixed','important');
 }
 function restore(state){
  const uid=account(),remeasure=state.metrics!==metricKey();if(remeasure)measureColumns(state);if(state.uid===uid&&!remeasure)return;
@@ -4486,7 +4517,7 @@ function install(table){
  const defaults={};cells.forEach((cell,i)=>{cell.dataset.idhCol=base[i];});
  const notice=document.createElement('div');notice.className='idh-table-layout-bar';notice.textContent='Drag headers to reorder · drag column edges to resize';if(table.classList.contains('order-directory-table'))notice.classList.add('idh-directory-layout-bar');
  table.before(notice);
- state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,labels,order:[...base],minimums:{},defaults,widths:{},metrics:null,uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');
+ state={table,header,headers:new Map(cells.map((cell,i)=>[base[i],cell])),base,key,labels,order:[...base],minimums:{},defaults,widths:{},metrics:null,uid:null,notice};states.set(table,state);table.classList.add('idh-adjustable-table');if(widthObserver&&table.classList.contains('order-directory-table')){observedWrappers.add(table.parentElement);widthObserver.observe(table.parentElement);}
  cells.forEach((cell,i)=>{
   const col=base[i];cell.draggable=true;cell.title='Drag to reorder '+labels[i];
   const handle=document.createElement('span');handle.className='idh-col-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','Resize '+labels[i]);handle.setAttribute('aria-valuemin','50');handle.setAttribute('aria-valuemax','1400');cell.appendChild(handle);
@@ -4516,7 +4547,7 @@ function install(table){
   mover.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();const index=state.order.indexOf(col),target=state.order[index+(e.key==='ArrowLeft'?-1:1)];if(target)move(state,col,target);mover.focus();};
   handle.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();e.stopPropagation();state.widths[col]=columnWidth(state,col,state.widths[col]+(e.key==='ArrowLeft'?-10:10));apply(state);save(state);};
   handle.onpointerdown=e=>{
-   if(e.button!==0)return;e.preventDefault();e.stopPropagation();const start=e.clientX,width=state.widths[col];cell.draggable=false;handle.setPointerCapture?.(e.pointerId);document.documentElement.classList.add('idh-resizing-columns');
+   if(e.button!==0)return;e.preventDefault();e.stopPropagation();const start=e.clientX,width=state.renderedWidths?.[col]||state.widths[col];cell.draggable=false;handle.setPointerCapture?.(e.pointerId);document.documentElement.classList.add('idh-resizing-columns');
    const resize=event=>{state.widths[col]=columnWidth(state,col,width+event.clientX-start);apply(state);};
    const finish=event=>{if(event.type==='pointerup')resize(event);handle.removeEventListener('pointermove',resize);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);document.documentElement.classList.remove('idh-resizing-columns');cell.draggable=true;table.dataset.idhSuppressClick=String(Date.now()+300);save(state);};
    handle.addEventListener('pointermove',resize);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
@@ -4528,7 +4559,7 @@ function install(table){
  });
  restore(state);apply(state);
 }
-function refresh(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;document.querySelectorAll('table').forEach(install);});}
+function refresh(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;for(const wrapper of observedWrappers)if(!wrapper.isConnected){widthObserver?.unobserve(wrapper);observedWrappers.delete(wrapper);}document.querySelectorAll('table').forEach(install);});}
 document.addEventListener('click',e=>{if(e.target.closest('.idh-col-resize,.idh-col-move')||Number(e.target.closest('table')?.dataset.idhSuppressClick)>Date.now()){e.preventDefault();e.stopImmediatePropagation();}},true);
 new MutationObserver(refresh).observe(document.body,{childList:true,subtree:true});
 window.addEventListener('resize',refresh);
