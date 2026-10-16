@@ -995,33 +995,106 @@ el("order-import-po").onclick=()=>{
 };
 el("po-import-close").onclick=()=>{importDialog.close();resetOrderImport();};
 importDialog.addEventListener("cancel",resetOrderImport);
-function parseDelimited(text){
- text=String(text).replace(/^\uFEFF/,"");
- const firstLine=text.split(/\r?\n/).find(line=>line.trim())||"";
- const counts=[",","\t",";"].map(sep=>({sep,count:firstLine.split(sep).length-1})).sort((a,b)=>b.count-a.count);
- const sep=counts[0].count?counts[0].sep:",";
+function parseDelimited(text){return window.__inspectionParseDelimited(text);}
+// Central pinned SheetJS loader; never let the styled exporter replace the reader.
+const INSPECTION_XLSX_URL="./vendor/sheetjs-0.20.3.full.min.js";
+const INSPECTION_XLSX_VERSION="0.20.3";
+const INSPECTION_MAX_ROWS=10000,INSPECTION_MAX_COLS=256;
+let inspectionXLSXLoader=null;
+function ensureXLSX(){
+ if(window.XLSX?.version===INSPECTION_XLSX_VERSION&&window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json)return Promise.resolve(window.XLSX);
+ if(inspectionXLSXLoader)return inspectionXLSXLoader;
+ inspectionXLSXLoader=new Promise((resolve,reject)=>{
+  const script=document.createElement("script");script.src=INSPECTION_XLSX_URL;script.integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT";script.crossOrigin="anonymous";script.async=true;
+  script.onload=()=>window.XLSX?.version===INSPECTION_XLSX_VERSION&&window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json
+    ?resolve(window.XLSX):reject(Error("Expected the official SheetJS 0.20.3 reader."));
+  script.onerror=()=>reject(Error("Excel reader unavailable. Check the connection, or import CSV/TSV."));
+  document.head.appendChild(script);
+ }).catch(error=>{inspectionXLSXLoader=null;throw error;});
+ return inspectionXLSXLoader;
+}
+window.__inspectionLoadXLSX=ensureXLSX;
+// Keep legacy .xls binary and UTF-16LE tab-separated SAP files, even when labelled .xls.
+function inspectionCheckZipSafety(bytes){
+ // Scan the ZIP central directory before SheetJS inflates XML. A compressed size alone
+ // cannot bound decompression memory; reject ZIP64, excessive entries and expansion.
+ if(bytes.length<4||bytes[0]!==80||bytes[1]!==75)return;
+ const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ let end=-1;
+ for(let p=bytes.length-22;p>=Math.max(0,bytes.length-65557);p--){
+  if(dv.getUint32(p,true)===0x06054b50){end=p;break;}
+ }
+ if(end<0)throw Error("Invalid ZIP workbook directory.");
+ const count=dv.getUint16(end+10,true),size=dv.getUint32(end+12,true),offset=dv.getUint32(end+16,true);
+ if(count===65535||count>1024||size===0xFFFFFFFF||offset===0xFFFFFFFF||offset+size>bytes.length)
+  throw Error("Spreadsheet ZIP has an unsupported or oversized directory.");
+ let position=offset,total=0;
+ for(let i=0;i<count;i++){
+  if(position+46>bytes.length||dv.getUint32(position,true)!==0x02014b50)
+   throw Error("Invalid workbook ZIP entry.");
+  const compressed=dv.getUint32(position+20,true),expanded=dv.getUint32(position+24,true);
+  const nameLen=dv.getUint16(position+28,true),extraLen=dv.getUint16(position+30,true),commentLen=dv.getUint16(position+32,true);
+  if(compressed===0xFFFFFFFF||expanded===0xFFFFFFFF||expanded>32*1024*1024||
+     (expanded>1024*1024&&expanded>compressed*600))
+   throw Error("Spreadsheet contains an excessively compressed entry.");
+  total+=expanded;
+  if(total>96*1024*1024)throw Error("Workbook expands beyond the 96 MB safety limit.");
+  position+=46+nameLen+extraLen+commentLen;
+ }
+}
+window.__inspectionReadWorkbook=async function(file,{maxBytes=12*1024*1024,maxRows=INSPECTION_MAX_ROWS}={}){
+ if(!file||file.size===0)throw Error("Select a nonempty spreadsheet.");
+ if(file.size>maxBytes)throw Error("File exceeds the "+Math.round(maxBytes/1048576)+" MB import limit.");
+ const ext=file.name.split(".").pop().toLowerCase();
+ if(!["xlsx","xls"].includes(ext))throw Error("Supported Excel formats: .xlsx and .xls (including SAP text exports).");
+ const XLSX=await ensureXLSX(),buffer=await file.arrayBuffer(),bytes=new Uint8Array(buffer);
+ inspectionCheckZipSafety(bytes);
+ const opts={type:"array",sheetRows:maxRows+64,cellDates:false,cellFormula:false,cellHTML:false,cellNF:true,cellText:true};
+ let book;
+ if(ext==="xls"&&bytes.length>=2&&((bytes[0]===255&&bytes[1]===254)||(bytes[0]===254&&bytes[1]===255))){
+  const decoded=new TextDecoder(bytes[0]===255?"utf-16le":"utf-16be").decode(bytes);
+  // SAP may deliver Unicode TSV with an .xls extension, not a binary BIFF workbook.
+  book=XLSX.read(decoded,{...opts,type:"string",FS:"\t",raw:true});
+ }else book=XLSX.read(buffer,opts);
+ if(!book?.SheetNames?.length||book.SheetNames.length>32)throw Error("Invalid workbook or too many worksheets (max 32).");
+ for(const name of book.SheetNames){
+  const ref=book.Sheets[name]?.["!ref"];if(!ref)continue;
+  const dimension=XLSX.utils.decode_range(ref);
+  if(dimension.e.c-dimension.s.c+1>INSPECTION_MAX_COLS)throw Error("Spreadsheet exceeds 256 columns.");
+ }
+ return {XLSX,book,buffer};
+};
+window.__inspectionParseDelimited=function(source){
+ const text=String(source).replace(/^\uFEFF/,'');
+ if(text.length>12*1024*1024)throw Error("Text spreadsheet exceeds the 12 MB limit.");
+ const first=(text.slice(0,65536).split(/\r?\n/).find(line=>line.trim())||"");
+ const sep=[",","\t",";"].map(v=>({v,n:first.split(v).length-1})).sort((a,b)=>b.n-a.n)[0].v;
  const rows=[];let row=[],cell="",quoted=false;
+ function addCell(){if(row.length>=INSPECTION_MAX_COLS)throw Error("Text spreadsheet exceeds 256 columns.");row.push(cell);cell="";}
+ function addRow(){
+  addCell();if(row.some(v=>v.trim())){rows.push(row);if(rows.length>INSPECTION_MAX_ROWS+64)throw Error("Text spreadsheet exceeds 10,000 data rows.");}
+  row=[];cell="";
+ }
  for(let i=0;i<text.length;i++){
   const c=text[i];
   if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
-  else if(c===sep&&!quoted){row.push(cell);cell="";}
-  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>clean(x)))rows.push(row);row=[];cell="";}
+  else if(c===sep&&!quoted)addCell();
+  else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;addRow();}
   else cell+=c;
+  if(cell.length>32767)throw Error("A text spreadsheet cell exceeds 32,767 characters.");
  }
- row.push(cell);if(row.some(x=>clean(x)))rows.push(row);
+ if(quoted)throw Error("Unterminated quoted value in text spreadsheet.");
+ addRow();return rows;
+};
+window.__inspectionValidateRows=function(rows,context="Spreadsheet",limit=INSPECTION_MAX_ROWS){
+ if(!Array.isArray(rows)||rows.length>limit+64)throw Error(context+": at most "+limit+" data rows are supported.");
+ for(const row of rows){
+  if(!Array.isArray(row))continue;
+  if(row.length>INSPECTION_MAX_COLS)throw Error(context+": maximum 256 columns.");
+  for(const value of row)if(value!=null&&String(value).length>32767)throw Error(context+": a cell exceeds Excel's 32,767-character limit.");
+ }
  return rows;
-}
-function ensureXLSX(){
- if(window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json)return Promise.resolve(window.XLSX);
- return new Promise((resolve,reject)=>{
-  const script=document.createElement("script");
-  script.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-  script.async=true;script.onload=()=>window.XLSX?.read?resolve(window.XLSX):reject(new Error("Excel reader did not load. Export CSV from SAP/SIPI and try again."));
-  script.onerror=()=>reject(new Error("Could not load the Excel reader. Check your internet connection or export the invoice as CSV."));
-  document.head.appendChild(script);
- });
-}
-window.__inspectionLoadXLSX=ensureXLSX;
+};
 const poSourceFields=["description","brand","category","family","pack","size","plant","alternativeEst","notes"];
 const poSourcePatterns={brand:/^(brand|brandname|marca)$/,category:/^(class|category|type|producttype|clase)$/,family:/^(family|productfamily|familia)$/,pack:/^(casepack|case|pack|packsize|packaging)$/,size:/^(sizeunit|size|unitsize)$/,plant:/^(est|estno|estnumber|estplant|plant|plantno|plantnumber|establishment|establishmentnumber)$/,alternativeEst:/^(alternativeest|alternativeestplantreferences|alternativereferences)$/,notes:/^(notes|note|remarks|notas)$/};
 function sourceProduct(values,mapping){const out={};for(const key of poSourceFields){const col=mapping[key];out[key]=col!==''&&col!==undefined?clean(values[Number(col)]):'';}out.brand=out.brand||clean(el('po-import-default-brand').value);const types={meat:'Meat',carne:'Meat',poultry:'Poultry',dairy:'Dairy'};out.category=types[out.category.toLowerCase()]||out.category;Object.assign(out,window.InspectionApproval.clean(out.description,out.brand,[...demo.map(p=>p.brand),...Object.keys(window.InspectionCloud.record('inspection-data-hub-brand-profiles-v1')||{})]));if(!out.category)out.category=window.InspectionProductDisplay.defaultType(out.description);return window.InspectionProduct.catalog(out);}
@@ -1124,10 +1197,10 @@ async function loadFile(file){
  if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
  else if(["xlsx","xls"].includes(ext)){
   setStatus("Reading Excel file…");
-  const XLSX=await ensureXLSX(),book=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+  const {XLSX,book}=await window.__inspectionReadWorkbook(file);
   const sheet=book.Sheets[book.SheetNames[0]];
   if(!sheet)throw Error("The workbook has no readable worksheet.");
-  rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:false,blankrows:false});
+  rows=window.__inspectionValidateRows(XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:false,blankrows:false}),"PO / Sales Order");
  }else throw Error("Supported formats: .xlsx, .xls, .csv, .tsv.");
  if(sequence!==importLoadSequence)return;
  if(!rows||rows.length<2)throw Error("No invoice rows found. The file needs a header row and at least one Item.");
@@ -3000,28 +3073,8 @@ function setMaps(){
  }
  el("ip-stage-file").disabled=!headers.length;
 }
-function parseDelimited(text){
- text=String(text).replace(/^\uFEFF/,"");
- const first=(text.split(/\r?\n/).find(s=>s.trim())||"");
- const sep=[",","\t",";"].map(s=>({s,n:first.split(s).length-1})).sort((a,b)=>b.n-a.n)[0].s;
- const out=[];let row=[],cell="",quoted=false;
- for(let i=0;i<text.length;i++){
-  const c=text[i];
-  if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
-  else if(c===sep&&!quoted){row.push(cell);cell="";}
-  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>trim(x)))out.push(row);row=[];cell="";}
-  else cell+=c;
- }
- row.push(cell);if(row.some(x=>trim(x)))out.push(row);return out;
-}
-async function xlsxLib(){
- if(window.XLSX?.read)return window.XLSX;
- return new Promise((resolve,reject)=>{
-  const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.async=true;
-  s.onload=()=>window.XLSX?.read?resolve(window.XLSX):reject(new Error("Excel reader unavailable. Export CSV from SAP instead."));
-  s.onerror=()=>reject(new Error("Could not load Excel reader. Export CSV from SAP or check internet connectivity."));document.head.appendChild(s);
- });
-}
+function parseDelimited(text){return window.__inspectionParseDelimited(text);}
+const xlsxLib=window.__inspectionLoadXLSX;
 el("ip-file").onchange=async e=>{
  const file=e.target.files?.[0],sequence=++fileReadSequence;headers=[];rawRows=[];staged=[];draw();el("ip-stage-file").disabled=true;
  if(!file)return;
@@ -3029,7 +3082,7 @@ el("ip-file").onchange=async e=>{
   if(file.size>12*1024*1024)throw Error("Maximum file size is 12 MB.");
   let rows;const ext=file.name.split(".").pop().toLowerCase();
   if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
-  else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const XLSX=await xlsxLib();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false});}
+  else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const {XLSX,book}=await window.__inspectionReadWorkbook(file);rows=window.__inspectionValidateRows(XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false}),"Product catalog");}
   else throw Error("Supported file formats: XLSX, XLS, CSV and TSV.");
   if(sequence!==fileReadSequence)return;
   if(!rows||rows.length<2)throw Error("File needs a header row and at least one product.");
@@ -3644,20 +3697,44 @@ function deliveryFileName(po){
  const clean=value=>String(value??'').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').replace(/[. ]+$/,'');
  return 'PO'+clean(po.po)+' - D'+clean(po.deliveryNumber)+' '+clean(po.customerName)+'.xlsx';
 }
+// ExcelJS is a writer only; it never overwrites the official XLSX reader.
 let deliveryStyleLoader=null;
 function loadDeliveryExporter(){
- if(window.XLSX?.style_version)return Promise.resolve(window.XLSX);
+ if(window.ExcelJS?.Workbook)return Promise.resolve(window.ExcelJS);
  if(deliveryStyleLoader)return deliveryStyleLoader;
- deliveryStyleLoader=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';script.async=true;script.onload=()=>window.XLSX?.style_version?resolve(window.XLSX):reject(Error('The delivery exporter did not load.'));script.onerror=()=>reject(Error('Could not load the delivery exporter. Check the connection and try again.'));document.head.appendChild(script);}).catch(error=>{deliveryStyleLoader=null;throw error;});
+ deliveryStyleLoader=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='./vendor/exceljs-hardened-5.0.0.min.js';script.integrity='sha384-6yvA6DF5pib8afXuAOKT4TLXI62psTCPbhNQpZymQQ9eaGpLC9c8KZ2SaFtniJV6';script.crossOrigin='anonymous';
+  script.async=true;
+  script.onload=()=>window.ExcelJS?.Workbook?resolve(window.ExcelJS):reject(Error('ExcelJS Hardened 5.0.0 was not loaded.'));
+  script.onerror=()=>reject(Error('The styled Excel exporter could not be loaded. Check the connection.'));
+  document.head.appendChild(script);
+ }).catch(error=>{deliveryStyleLoader=null;throw error;});
  return deliveryStyleLoader;
 }
-function deliveryExportSheet(XLSX,values){
- const quantities=values.slice(1).map(row=>row[3]),known=quantities.filter(v=>typeof v==='number'&&Number.isFinite(v)),missing=quantities.length-known.length;
+function deliveryExportSheet(workbook,values){
+ if(values.length>10001)throw Error('Delivery exceeds 10,000 rows.');
+ const sheet=workbook.addWorksheet('Delivery');
+ sheet.columns=[{width:55},{width:18,style:{numFmt:'@'}},{width:18},{width:14},{width:20,style:{numFmt:'@'}}];
+ for(const row of values){
+  // ExcelJS stores strings as inline/shared text, never as formula objects.
+  // Item, EST and externally-supplied descriptions must stay literal, including '=' prefixes and leading zeros.
+  sheet.addRow(row.map((value,index)=>[0,1,4].includes(index)?String(value??''):
+     typeof value==='number'&&Number.isFinite(value)?value:String(value??'')));
+ }
+ const quantities=values.slice(1).map(row=>row[3]);
+ const known=quantities.filter(v=>typeof v==='number'&&Number.isFinite(v)),missing=quantities.length-known.length;
  const totalRow=values.length+4,range='D2:D'+values.length;
- const total={t:known.length?'n':'s',v:known.length?known.reduce((a,b)=>a+b,0):'',f:'IF(COUNT('+range+')=0,"",SUM('+range+'))',s:{border:Object.fromEntries(['top','bottom','left','right'].map(k=>[k,{style:'thin',color:{rgb:'000000'}}]))}};
- const sheet=XLSX.utils.aoa_to_sheet([...values,[],[],[],[missing?missing+' row(s) without numeric quantity; total includes supplied quantities only.':'','','Total Quantity',total,'']]);
- sheet['!cols']=[{wch:55},{wch:18},{wch:18},{wch:14},{wch:20}];
- if(missing){sheet['A'+totalRow].s={alignment:{wrapText:true}};sheet['!rows']=[];sheet['!rows'][totalRow-1]={hpt:32};}
+ if(missing){
+  sheet.getCell('A'+totalRow).value=missing+' row(s) without numeric quantity; total includes supplied quantities only.';
+  sheet.getCell('A'+totalRow).alignment={wrapText:true};
+  sheet.getRow(totalRow).height=32;
+ }
+ sheet.getCell('D'+totalRow).value={formula:'IF(COUNT('+range+')=0,"",SUM('+range+'))',
+   result:known.length?known.reduce((a,b)=>a+b,0):''};
+ sheet.getCell('C'+totalRow).value='Total Quantity';
+ const border={style:'thin',color:{argb:'FF000000'}};
+ sheet.getCell('D'+totalRow).border={top:border,bottom:border,left:border,right:border};
  return sheet;
 }
 async function exportDeliveryFile(po,button){
@@ -3667,11 +3744,14 @@ async function exportDeliveryFile(po,button){
  if(values.length===1){alert('This approved PO has no Items to export.');return;}
  if(button){button.disabled=true;button.textContent='Exporting…';}
  try{
-  const XLSX=await loadDeliveryExporter();
-  if(!XLSX.utils?.aoa_to_sheet||!XLSX.utils?.book_new||!XLSX.writeFile)throw Error('The Excel exporter could not be loaded. Please try again.');
-  const workbook=XLSX.utils.book_new(),sheet=deliveryExportSheet(XLSX,values);
-  XLSX.utils.book_append_sheet(workbook,sheet,'Delivery');
-  XLSX.writeFile(workbook,deliveryFileName(po),{bookType:'xlsx',cellStyles:true});
+  const ExcelJS=await loadDeliveryExporter();
+   const workbook=new ExcelJS.Workbook();
+   deliveryExportSheet(workbook,values);
+   const fileBytes=await workbook.xlsx.writeBuffer();
+   const url=URL.createObjectURL(new Blob([fileBytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+   const anchor=document.createElement('a');anchor.href=url;anchor.download=deliveryFileName(po);
+   document.body.appendChild(anchor);anchor.click();anchor.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),30000);
  }catch(error){alert('Delivery export failed: '+error.message);}
  finally{if(button?.isConnected){button.disabled=false;button.textContent='↓ Export Delivery';}}
 }
@@ -3878,9 +3958,9 @@ function openSAPDelivery(a,existing=null,batch=null){
  el('sap-delivery-cancel').onclick=()=>batch?batch.remove():dialog.close();if(!batch){dialog.deliveryImportVersion=null;dialog.oncancel=null;dialog.onclose=()=>selection=null;}
  el('sap-delivery-file').onchange=async e=>{
   const file=e.target.files?.[0];if(!file)return;table=null;preview=[];sourceBlob=null;sourcePath='';associations={};descriptionChoices={};el('sap-delivery-preview').innerHTML='';el('sap-delivery-mapping').classList.add('hidden');el('sap-delivery-save').disabled=true;status('Reading original SAP file…');batch?.update();const version=selection={};
-  try{if(!/\.xlsx?$/i.test(file.name))throw Error('Only .xls and .xlsx SAP files are supported.');if(file.size>20971520)throw Error('File exceeds 20 MB.');const bytes=await file.arrayBuffer(),XLSX=await window.__inspectionLoadXLSX(),book=XLSX.read(bytes,{type:'array',cellNF:true});if(selection!==version)return;
+  try{const {XLSX,book,buffer:bytes}=await window.__inspectionReadWorkbook(file,{maxBytes:20*1024*1024});if(selection!==version)return;
    const products=await refreshCatalog();if(selection!==version)return;if(!products)throw Error('Catalog query superseded. Select the file again.');
-   for(const sheet of book.SheetNames){try{table=sapDeliveryTable(XLSX.utils.sheet_to_json(book.Sheets[sheet],{header:1,defval:'',raw:true}));table.data.forEach((row,i)=>{const cell=book.Sheets[sheet][XLSX.utils.encode_cell({r:table.headerIndex+i+1,c:table.mapping.item})];if(cell?.t==='n'&&/^0[0-9]+$/.test(cell.w||''))row[table.mapping.item]=cell.w;});break;}catch{}}if(!table)throw Error('Unsupported structure: Item No., Item Description and Quantity headers were not found.');
+   for(const sheet of book.SheetNames){try{table=sapDeliveryTable(window.__inspectionValidateRows(XLSX.utils.sheet_to_json(book.Sheets[sheet],{header:1,defval:'',raw:true}),"SAP delivery"));if(table.data.length>10000)throw Error('SAP delivery has more than 10,000 rows.');table.data.forEach((row,i)=>{const cell=book.Sheets[sheet][XLSX.utils.encode_cell({r:table.headerIndex+i+1,c:table.mapping.item})];if(cell?.t==='n'&&/^0[0-9]+$/.test(cell.w||''))row[table.mapping.item]=cell.w;});break;}catch{}}if(!table)throw Error('Unsupported structure: Item No., Item Description and Quantity headers were not found.');
    fileName=file.name;sourcePath='';sourceBlob=new Blob([bytes],{type:file.type||'application/octet-stream'});mappings();
   }catch(error){if(selection===version){status('Could not load file: '+error.message,true);batch?.update();}}
  };
