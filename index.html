@@ -420,7 +420,13 @@ window.InspectionOrderSearch=(()=>{
 </script>
 <script id="directory-responsive-widths">
 window.InspectionDirectoryWidths=Object.freeze({
- fit(columns,available){const minimumWidth=columns.reduce((n,c)=>n+c.width,0),width=Math.max(minimumWidth,Math.floor(Number(available)||0)),extra=width-minimumWidth,total=columns.reduce((n,c)=>n+(c.key.startsWith('customer:')?3:1),0);let used=0;const widths={};columns.forEach((c,i)=>{const add=i===columns.length-1?extra-used:Math.floor(extra*(c.key.startsWith('customer:')?3:1)/total);widths[c.key]=c.width+add;used+=add;});return {widths,width,minimumWidth};}
+ fit(columns,available){
+  const values=columns.map(c=>({...c,minimum:Math.min(c.width,Math.max(0,c.minimum??c.width))})),minimumWidth=values.reduce((n,c)=>n+c.minimum,0),preferredWidth=values.reduce((n,c)=>n+c.width,0),width=Math.max(minimumWidth,Math.floor(Number(available)||0)),widths={};
+  let used=0;
+  if(width<preferredWidth){const slack=preferredWidth-minimumWidth,remaining=width-minimumWidth;let cumulative=0;for(const c of values){cumulative+=c.width-c.minimum;const allocation=Math.floor(cumulative*remaining/slack);widths[c.key]=c.minimum+allocation-used;used=allocation;}}
+  else{const extra=width-preferredWidth,total=values.reduce((n,c)=>n+(c.key.startsWith('customer:')?3:1),0);values.forEach((c,i)=>{const add=i===values.length-1?extra-used:Math.floor(extra*(c.key.startsWith('customer:')?3:1)/total);widths[c.key]=c.width+add;used+=add;});}
+  return {widths,width,minimumWidth};
+ }
 });
 </script>
 <script id="order-directory-model">
@@ -4492,7 +4498,7 @@ function apply(state){
  let cols=[...group.children];if(cols.length!==base.length){group.replaceChildren(...base.map(key=>{const col=document.createElement('col');col.dataset.idhCol=key;return col;}));cols=[...group.children];}
  if(cols.some(col=>!col.dataset.idhCol))cols.forEach((col,i)=>col.dataset.idhCol=base[i]);
  const map=new Map(cols.map(col=>[col.dataset.idhCol,col]));place(group,order.map(key=>map.get(key)));
- const minimums=base.filter(key=>!state.headers.get(key).hidden).map(key=>({key,width:columnWidth(state,key,state.widths[key])}));
+ const minimums=base.filter(key=>!state.headers.get(key).hidden).map(key=>({key,width:columnWidth(state,key,state.widths[key]),minimum:table.classList.contains('order-directory-table')?state.minimums[key]:columnWidth(state,key,state.widths[key])}));
  const fitted=window.InspectionDirectoryWidths.fit(minimums,table.classList.contains('order-directory-table')?table.parentElement.clientWidth:0);state.renderedWidths=fitted.widths;
  for(const key of base){map.get(key).style.width=(fitted.widths[key]||columnWidth(state,key,state.widths[key]))+'px';const header=state.headers.get(key),handle=header.querySelector('.idh-col-resize');if(handle){handle.setAttribute('aria-valuenow',String(fitted.widths[key]||columnWidth(state,key,state.widths[key])));handle.setAttribute('aria-valuemin',String(state.minimums[key]));}map.get(key).hidden=header.hidden;}
  table.style.setProperty('width',fitted.width+'px','important');table.style.setProperty('min-width',fitted.minimumWidth+'px','important');table.style.setProperty('table-layout','fixed','important');
