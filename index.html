@@ -153,7 +153,7 @@ window.InspectionTableTools={
 <div id="online-email-verify-group" hidden><label><span class="label">Code from your email</span><input class="input" id="online-email-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="6-digit code"></label></div>
 <button class="btn primary" id="online-login-submit" type="submit">Sign in</button>
 <button class="btn" id="online-request-code" type="button" hidden>Send email code</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
-<dialog id="online-mfa-dialog" class="online-dialog" aria-labelledby="online-mfa-title"><form id="online-mfa-form" autocomplete="off"><h3 id="online-mfa-title">Authenticator verification</h3><p class="muted">Enter the 6-digit code from your authenticator app to complete sign-in.</p><p class="notice" id="online-mfa-message" role="status">A verified authenticator is required for this account.</p><label><span class="label">Authenticator code</span><input class="input" id="online-mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label><div class="row"><button class="btn primary" id="online-mfa-submit" type="submit">Verify code</button><button class="btn" id="online-mfa-signout" type="button">Sign out</button></div></form></dialog>
+<dialog id="online-mfa-dialog" class="online-dialog" aria-labelledby="online-mfa-title"><form id="online-mfa-form" autocomplete="off"><h3 id="online-mfa-title">Authenticator verification</h3><p class="muted">Enter the 6-digit code from your authenticator app to complete sign-in.</p><p class="notice" id="online-mfa-message" role="status">A verified authenticator is required for this account.</p><label><span class="label">Authenticator device</span><select class="input" id="online-mfa-factor"></select></label><label><span class="label">Authenticator code</span><input class="input" id="online-mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label><div class="row"><button class="btn primary" id="online-mfa-submit" type="submit">Verify code</button><button class="btn" id="online-mfa-signout" type="button">Sign out</button></div></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="purchase-orders"><span class="ico">▤</span> Purchase Orders</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Customers</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
@@ -279,7 +279,7 @@ window.InspectionTableTools={
  <label><span class="label">6-digit authenticator code</span><input class="input" id="security-enroll-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
  <div class="row"><button class="btn primary" id="security-confirm-totp" type="button">Verify and activate</button><button class="btn" id="security-cancel-totp" type="button">Cancel</button></div></section>
  <p class="muted small">After activation, the account will require TOTP for data access. Register a backup factor on a separate device; Supabase does not provide standard recovery codes.</p>
- <div class="notice" id="security-feedback" role="status"></div>
+ <div id="security-reverify-panel" hidden><label><span class="label">Verify your authenticator again for sensitive operations</span><input class="input" inputmode="numeric" id="security-reverify-code" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"></label><button type="button" class="btn" id="security-reverify">Verify again</button></div><div class="notice" id="security-feedback" role="status"></div>
 </section>
 <div class="panel panel-pad skin-settings">
 <div class="section-head"><div><h3>Aesthetics</h3><span class="hint">Color theme and workspace layout</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
@@ -4276,6 +4276,9 @@ async function promptMfaBeforeConnect(){
  const {factors}=await verifiedTotpFactors();
  if(!factors.length||sessionAssurance()==='aal2')return true;
  mfaChallengeFactor=factors[0].id;totpFailures=0;
+ const selection=elSecurity('online-mfa-factor');selection.replaceChildren();
+ factors.forEach((factor,i)=>{const option=document.createElement('option');option.value=factor.id;option.textContent=factor.friendly_name||('Authenticator '+(i+1));selection.appendChild(option);});
+ selection.value=mfaChallengeFactor;
  elSecurity('online-mfa-message').textContent='Enter the code from your authenticator. An email code or password alone does not unlock this account.';
  const d=elSecurity('online-mfa-dialog');if(!d.open)d.showModal();elSecurity('online-mfa-code').focus();
  return false;
@@ -4294,7 +4297,7 @@ async function submitMfaVerification(event){
  const button=elSecurity('online-mfa-submit');if(totpFailures>=5)return;
  button.disabled=true;
  try{
-  await verifyFactorCode(mfaChallengeFactor,elSecurity('online-mfa-code').value.trim());
+  await verifyFactorCode(elSecurity('online-mfa-factor').value||mfaChallengeFactor,elSecurity('online-mfa-code').value.trim());
   mfaChallengeFactor=null;totpFailures=0;elSecurity('online-mfa-dialog').close();await connect();
  }catch(error){
   totpFailures++;
@@ -4316,7 +4319,8 @@ async function securityRefresh(){
      'No authenticator configured. Enrolling and verifying a code will activate MFA for this account.';
   elSecurity('security-start-totp').textContent=factors.length?'Add a backup authenticator':'Set up authenticator';
   elSecurity('security-start-totp').disabled=factors.length>0&&sessionAssurance()!=='aal2';
-  feedback.textContent='';
+  elSecurity('security-reverify-panel').hidden=!factors.length;
+  if(!feedback.textContent)feedback.textContent='Security settings loaded.';
  }catch(error){feedback.textContent='Could not check security settings. Reconnect and retry.'}
 }
 async function securitySavePreference(){
@@ -4331,7 +4335,9 @@ async function securitySavePreference(){
  }catch(e){notice.textContent='Could not save your preference. Try again.'}
 }
 function clearSecurityEnrollment(){
+ const abandoned=securityEnrollment;
  securityEnrollment=null;
+ if(abandoned&&session){request('/auth/v1/factors/'+encodeURIComponent(abandoned),{method:'DELETE'}).catch(()=>{});}
  elSecurity('security-enroll-panel').hidden=true;elSecurity('security-totp-qr').removeAttribute('src');
  elSecurity('security-totp-secret').textContent='';elSecurity('security-enroll-code').value='';
 }
@@ -4357,11 +4363,27 @@ async function securityFinishEnrollment(){
  const btn=elSecurity('security-confirm-totp'),message=elSecurity('security-feedback');btn.disabled=true;
  try{
   await verifyFactorCode(securityEnrollment,elSecurity('security-enroll-code').value.trim());
-  clearSecurityEnrollment();message.textContent='Authenticator confirmed. MFA is now required for your account. Keep a separate backup factor.';
-  await securityRefresh();await connect();
+  securityEnrollment=null;clearSecurityEnrollment();
+  await securityRefresh();message.textContent='Authenticator confirmed. MFA is now required. Configure a backup on a separate device.';
+  await connect();
  }catch(e){message.textContent='The code was not accepted. Wait for a new authenticator code and retry.'}
  finally{btn.disabled=false;elSecurity('security-enroll-code').value=''}
 }
+async function securityReverify(){
+ const status=elSecurity('security-feedback'),button=elSecurity('security-reverify');
+ button.disabled=true;
+ try{
+  const code=elSecurity('security-reverify-code').value.trim();
+  const {factors}=await verifiedTotpFactors();
+  if(!factors.length)throw Error('No verified authenticator is registered.');
+  const current=Date.now();if(current-securityLastVerifyAttempt<3000)throw Error('Wait before trying another code.');
+  securityLastVerifyAttempt=current;
+  await verifyFactorCode(factors[0].id,code);
+  status.textContent='Authenticator verified. Sensitive administrator operations are available for the next 15 minutes.';
+ }catch(error){status.textContent='The authenticator code was not accepted. Wait for a new code and retry.'}
+ finally{elSecurity('security-reverify-code').value='';button.disabled=false}
+}
+let securityLastVerifyAttempt=0;
 function loginMethodRemember(){
  const email=elSecurity('online-email').value.trim().toLowerCase();
  const saved=nativeStorage.getItem('inspection-auth-method-'+email);
@@ -4381,6 +4403,7 @@ elSecurity('security-refresh').onclick=securityRefresh;
 elSecurity('security-save-preference').onclick=securitySavePreference;
 elSecurity('security-start-totp').onclick=securityBeginEnrollment;
 elSecurity('security-confirm-totp').onclick=securityFinishEnrollment;
+elSecurity('security-reverify').onclick=securityReverify;
 elSecurity('security-cancel-totp').onclick=clearSecurityEnrollment;
 loginMethodUI();
 
