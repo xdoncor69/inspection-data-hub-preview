@@ -616,32 +616,107 @@ const escHtml=s=>safe(String(s??""));
 const setStatus=(s,error=false)=>{el("po-import-status").textContent=s;el("po-import-status").style.color=error?"#ad4343":"";};
 const toggle=el("po-import-toggle"),body=el("po-import-body");
 toggle.onclick=()=>{const opening=body.classList.contains("hidden");body.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"− Hide import":"↑ Import Excel / CSV";};
-function parseDelimited(text){
- text=String(text).replace(/^\uFEFF/,"");
- const firstLine=text.split(/\r?\n/).find(line=>line.trim())||"";
- const counts=[",","\t",";"].map(sep=>({sep,count:firstLine.split(sep).length-1})).sort((a,b)=>b.count-a.count);
- const sep=counts[0].count?counts[0].sep:",";
+function parseDelimited(text){return window.__inspectionParseDelimited(text);}
+// Central pinned SheetJS loader; never let the styled exporter replace the reader.
+const INSPECTION_XLSX_URL="./vendor/sheetjs-0.20.3.full.min.js";
+const INSPECTION_XLSX_VERSION="0.20.3";
+const INSPECTION_MAX_ROWS=10000,INSPECTION_MAX_COLS=256;
+let inspectionXLSXLoader=null;
+function ensureXLSX(){
+ if(window.XLSX?.version===INSPECTION_XLSX_VERSION&&window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json)return Promise.resolve(window.XLSX);
+ if(inspectionXLSXLoader)return inspectionXLSXLoader;
+ inspectionXLSXLoader=new Promise((resolve,reject)=>{
+  const script=document.createElement("script");script.src=INSPECTION_XLSX_URL;script.integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT";script.crossOrigin="anonymous";script.async=true;
+  script.onload=()=>window.XLSX?.version===INSPECTION_XLSX_VERSION&&window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json
+    ?resolve(window.XLSX):reject(Error("Expected the official SheetJS 0.20.3 reader."));
+  script.onerror=()=>reject(Error("Excel reader unavailable. Check the connection, or import CSV/TSV."));
+  document.head.appendChild(script);
+ }).catch(error=>{inspectionXLSXLoader=null;throw error;});
+ return inspectionXLSXLoader;
+}
+window.__inspectionLoadXLSX=ensureXLSX;
+// Keep legacy .xls binary and UTF-16LE tab-separated SAP files, even when labelled .xls.
+function inspectionCheckZipSafety(bytes){
+ // Scan the ZIP central directory before SheetJS inflates XML. A compressed size alone
+ // cannot bound decompression memory; reject ZIP64, excessive entries and expansion.
+ if(bytes.length<4||bytes[0]!==80||bytes[1]!==75)return;
+ const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ let end=-1;
+ for(let p=bytes.length-22;p>=Math.max(0,bytes.length-65557);p--){
+  if(dv.getUint32(p,true)===0x06054b50){end=p;break;}
+ }
+ if(end<0)throw Error("Invalid ZIP workbook directory.");
+ const count=dv.getUint16(end+10,true),size=dv.getUint32(end+12,true),offset=dv.getUint32(end+16,true);
+ if(count===65535||count>1024||size===0xFFFFFFFF||offset===0xFFFFFFFF||offset+size>bytes.length)
+  throw Error("Spreadsheet ZIP has an unsupported or oversized directory.");
+ let position=offset,total=0;
+ for(let i=0;i<count;i++){
+  if(position+46>bytes.length||dv.getUint32(position,true)!==0x02014b50)
+   throw Error("Invalid workbook ZIP entry.");
+  const compressed=dv.getUint32(position+20,true),expanded=dv.getUint32(position+24,true);
+  const nameLen=dv.getUint16(position+28,true),extraLen=dv.getUint16(position+30,true),commentLen=dv.getUint16(position+32,true);
+  if(compressed===0xFFFFFFFF||expanded===0xFFFFFFFF||expanded>32*1024*1024||
+     (expanded>1024*1024&&expanded>compressed*600))
+   throw Error("Spreadsheet contains an excessively compressed entry.");
+  total+=expanded;
+  if(total>96*1024*1024)throw Error("Workbook expands beyond the 96 MB safety limit.");
+  position+=46+nameLen+extraLen+commentLen;
+ }
+}
+window.__inspectionReadWorkbook=async function(file,{maxBytes=12*1024*1024,maxRows=INSPECTION_MAX_ROWS}={}){
+ if(!file||file.size===0)throw Error("Select a nonempty spreadsheet.");
+ if(file.size>maxBytes)throw Error("File exceeds the "+Math.round(maxBytes/1048576)+" MB import limit.");
+ const ext=file.name.split(".").pop().toLowerCase();
+ if(!["xlsx","xls"].includes(ext))throw Error("Supported Excel formats: .xlsx and .xls (including SAP text exports).");
+ const XLSX=await ensureXLSX(),buffer=await file.arrayBuffer(),bytes=new Uint8Array(buffer);
+ inspectionCheckZipSafety(bytes);
+ const opts={type:"array",sheetRows:maxRows+64,cellDates:false,cellFormula:false,cellHTML:false,cellNF:true,cellText:true};
+ let book;
+ if(ext==="xls"&&bytes.length>=2&&((bytes[0]===255&&bytes[1]===254)||(bytes[0]===254&&bytes[1]===255))){
+  const decoded=new TextDecoder(bytes[0]===255?"utf-16le":"utf-16be").decode(bytes);
+  // SAP may deliver Unicode TSV with an .xls extension, not a binary BIFF workbook.
+  book=XLSX.read(decoded,{...opts,type:"string",FS:"\t",raw:true});
+ }else book=XLSX.read(buffer,opts);
+ if(!book?.SheetNames?.length||book.SheetNames.length>32)throw Error("Invalid workbook or too many worksheets (max 32).");
+ for(const name of book.SheetNames){
+  const ref=book.Sheets[name]?.["!ref"];if(!ref)continue;
+  const dimension=XLSX.utils.decode_range(ref);
+  if(dimension.e.c-dimension.s.c+1>INSPECTION_MAX_COLS)throw Error("Spreadsheet exceeds 256 columns.");
+ }
+ return {XLSX,book,buffer};
+};
+window.__inspectionParseDelimited=function(source){
+ const text=String(source).replace(/^\uFEFF/,'');
+ if(text.length>12*1024*1024)throw Error("Text spreadsheet exceeds the 12 MB limit.");
+ const first=(text.slice(0,65536).split(/\r?\n/).find(line=>line.trim())||"");
+ const sep=[",","\t",";"].map(v=>({v,n:first.split(v).length-1})).sort((a,b)=>b.n-a.n)[0].v;
  const rows=[];let row=[],cell="",quoted=false;
+ function addCell(){if(row.length>=INSPECTION_MAX_COLS)throw Error("Text spreadsheet exceeds 256 columns.");row.push(cell);cell="";}
+ function addRow(){
+  addCell();if(row.some(v=>v.trim())){rows.push(row);if(rows.length>INSPECTION_MAX_ROWS+64)throw Error("Text spreadsheet exceeds 10,000 data rows.");}
+  row=[];cell="";
+ }
  for(let i=0;i<text.length;i++){
   const c=text[i];
   if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
-  else if(c===sep&&!quoted){row.push(cell);cell="";}
-  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>clean(x)))rows.push(row);row=[];cell="";}
+  else if(c===sep&&!quoted)addCell();
+  else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;addRow();}
   else cell+=c;
+  if(cell.length>32767)throw Error("A text spreadsheet cell exceeds 32,767 characters.");
  }
- row.push(cell);if(row.some(x=>clean(x)))rows.push(row);
+ if(quoted)throw Error("Unterminated quoted value in text spreadsheet.");
+ addRow();return rows;
+};
+window.__inspectionValidateRows=function(rows,context="Spreadsheet",limit=INSPECTION_MAX_ROWS){
+ if(!Array.isArray(rows)||rows.length>limit+64)throw Error(context+": at most "+limit+" data rows are supported.");
+ for(const row of rows){
+  if(!Array.isArray(row))continue;
+  if(row.length>INSPECTION_MAX_COLS)throw Error(context+": maximum 256 columns.");
+  for(const value of row)if(value!=null&&String(value).length>32767)throw Error(context+": a cell exceeds Excel's 32,767-character limit.");
+ }
  return rows;
-}
-function ensureXLSX(){
- if(window.XLSX?.read&&window.XLSX?.utils?.sheet_to_json)return Promise.resolve(window.XLSX);
- return new Promise((resolve,reject)=>{
-  const script=document.createElement("script");
-  script.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-  script.async=true;script.onload=()=>window.XLSX?.read?resolve(window.XLSX):reject(new Error("Excel reader did not load. Export CSV from SAP/SIPI and try again."));
-  script.onerror=()=>reject(new Error("Could not load the Excel reader. Check your internet connection or export the invoice as CSV."));
-  document.head.appendChild(script);
- });
-}
+};
+
 function bestColumn(kind){
  const patterns=kind==="item"?[/^item(number|no|id|code)?$/,/^(material|materialnumber|sku|productcode|productnumber|article|articlenumber)$/,/item/,/material/,/sku/]:[/^description$/,/^(itemdescription|productdescription|materialdescription|productname|itemname)$/,/description/,/productname/];
  let index=-1;for(const pattern of patterns){index=headers.findIndex(v=>pattern.test(norm(v)));if(index>=0)break;}
@@ -678,13 +753,13 @@ async function loadFile(file){
  fileName=file.name;sourceFile=file;
  const ext=file.name.split(".").pop().toLowerCase();
  let rows;
- if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
+ if(["csv","tsv","txt"].includes(ext))rows=window.__inspectionParseDelimited(await file.text());
  else if(["xlsx","xls"].includes(ext)){
   setStatus("Reading Excel file…");
-  const XLSX=await ensureXLSX(),book=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+  const {XLSX,book}=await window.__inspectionReadWorkbook(file);
   const sheet=book.Sheets[book.SheetNames[0]];
   if(!sheet)throw Error("The workbook has no readable worksheet.");
-  rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:false,blankrows:false});
+  rows=window.__inspectionValidateRows(XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:false,blankrows:false}),"PO / Sales Order");
  }else throw Error("Supported formats: .xlsx, .xls, .csv, .tsv.");
  if(!rows||rows.length<2)throw Error("No invoice rows found. The file needs a header row and at least one Item.");
  if(rows.length>10001)throw Error("Import is limited to 10,000 data rows.");
@@ -2402,36 +2477,16 @@ function setMaps(){
  }
  el("ip-stage-file").disabled=!headers.length;
 }
-function parseDelimited(text){
- text=String(text).replace(/^\uFEFF/,"");
- const first=(text.split(/\r?\n/).find(s=>s.trim())||"");
- const sep=[",","\t",";"].map(s=>({s,n:first.split(s).length-1})).sort((a,b)=>b.n-a.n)[0].s;
- const out=[];let row=[],cell="",quoted=false;
- for(let i=0;i<text.length;i++){
-  const c=text[i];
-  if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
-  else if(c===sep&&!quoted){row.push(cell);cell="";}
-  else if((c==="\n"||c==="\r")&&!quoted){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>trim(x)))out.push(row);row=[];cell="";}
-  else cell+=c;
- }
- row.push(cell);if(row.some(x=>trim(x)))out.push(row);return out;
-}
-async function xlsxLib(){
- if(window.XLSX?.read)return window.XLSX;
- return new Promise((resolve,reject)=>{
-  const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.async=true;
-  s.onload=()=>window.XLSX?.read?resolve(window.XLSX):reject(new Error("Excel reader unavailable. Export CSV from SAP instead."));
-  s.onerror=()=>reject(new Error("Could not load Excel reader. Export CSV from SAP or check internet connectivity."));document.head.appendChild(s);
- });
-}
+function parseDelimited(text){return window.__inspectionParseDelimited(text);}
+const xlsxLib=window.__inspectionLoadXLSX;
 el("ip-file").onchange=async e=>{
  const file=e.target.files?.[0];headers=[];rawRows=[];el("ip-stage-file").disabled=true;
  if(!file)return;
  try{
   if(file.size>12*1024*1024)throw Error("Maximum file size is 12 MB.");
   let rows;const ext=file.name.split(".").pop().toLowerCase();
-  if(["csv","tsv","txt"].includes(ext))rows=parseDelimited(await file.text());
-  else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const XLSX=await xlsxLib();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false});}
+  if(["csv","tsv","txt"].includes(ext))rows=window.__inspectionParseDelimited(await file.text());
+  else if(["xlsx","xls"].includes(ext)){notice("Reading Excel workbook…");const {XLSX,book}=await window.__inspectionReadWorkbook(file);rows=window.__inspectionValidateRows(XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1,defval:"",raw:false,blankrows:false}),"Product catalog");}
   else throw Error("Supported file formats: XLSX, XLS, CSV and TSV.");
   if(!rows||rows.length<2)throw Error("File needs a header row and at least one product.");
   if(rows.length>10001)throw Error("Maximum 10,000 product rows per import.");
