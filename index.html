@@ -272,7 +272,7 @@ window.InspectionTableTools={
  <p class="muted small">Sign-in uses your password first. Once required for your account, a code delivered to your verified email is mandatory before data access. An authenticator factor is a separate, stronger verification for sensitive administration.</p>
  <button class="btn primary" type="button" id="security-save-preference" hidden>Save preference</button>
  <p class="muted small" id="security-email-state">Checking email verification policy…</p>
- <button class="btn" type="button" id="security-test-email">Test email code delivery for my account</button>
+ <button class="btn" type="button" id="security-test-email">Test email delivery (SMTP required)</button>
  <div class="divider" style="height:1px;background:var(--sk-border,#ddd);margin:18px 0"></div>
  <h4>Authenticator app (TOTP)</h4><p class="muted small" id="security-totp-status">Checking your verification factors…</p>
  <button class="btn" id="security-start-totp" type="button">Set up authenticator</button>
@@ -4314,7 +4314,7 @@ async function securityRefresh(){
  try{
   const {user,factors}=await verifiedTotpFactors();
   const emailRequired=await emailStepupRequirement();
-  elSecurity('security-email-state').textContent=emailRequired?'Email code is required after password login for this account.':'Email second step is in test mode pending verified delivery. You can test your own mailbox below.';
+  elSecurity('security-email-state').textContent=emailRequired?'Email code is required after password login for this account. Contact the administrator if delivery fails.':'Email verification is in test mode, not mandatory yet. For six-digit codes, configure an authenticated SMTP sender and the Supabase Magic Link / OTP template using {{ .Token }}. Supabase accepting a request does not confirm delivery.';
   elSecurity('security-identity').textContent='Account: '+(user.email||session.user.email||'');
   const saved=await request('/rest/v1/inspection_security_preferences?select=login_method&user_id=eq.'+encodeURIComponent(user.id));
   preferredLoginMethod=saved?.[0]?.login_method==='email_otp'?'email_code':'password';
@@ -4464,9 +4464,9 @@ async function emailStepupSend(){
  try{
   await emailSecondStepRequest('send');
   emailStepupSent=true;
-  elSecurity('online-email-stepup-message').textContent='Check your account email and enter the six-digit code. Do not share the code.';
+  elSecurity('online-email-stepup-message').textContent='Supabase accepted the request; this does not prove email delivery. Check Inbox, Spam and All Mail. If no email arrives or the message contains a sign-in link instead of a six-digit code, an administrator must configure custom SMTP and the code-only email template. Do not share codes or links.';
  }catch(error){
-  elSecurity('online-email-stepup-message').textContent='Unable to send. Confirm the email sender is configured and retry after the rate limit.';
+  elSecurity('online-email-stepup-message').textContent='Email request was rejected or rate-limited. Confirm SMTP, sender and rate limits in Supabase before retrying. No account has been enrolled automatically.';
  }finally{button.disabled=false;emailStepupBusy=false;}
 }
 async function emailStepupVerify(event){
