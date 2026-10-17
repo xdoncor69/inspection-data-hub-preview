@@ -4322,8 +4322,8 @@ async function securityRefresh(){
   elSecurity('security-totp-status').textContent=factors.length?
      factors.length+' verified authenticator(s). Security level: '+sessionAssurance().toUpperCase()+'.':
      'No authenticator configured. Enrolling and verifying a code will activate MFA for this account.';
-  elSecurity('security-start-totp').textContent=factors.length?'Add a backup authenticator':'Set up authenticator';
-  elSecurity('security-start-totp').disabled=factors.length>0&&sessionAssurance()!=='aal2';
+  elSecurity('security-start-totp').textContent=factors.length?'Add a backup authenticator (fresh code required)':'Set up authenticator';
+  elSecurity('security-start-totp').disabled=false;
   elSecurity('security-reverify-panel').hidden=!factors.length;
   const options=elSecurity('security-reverify-factor');options.replaceChildren();
   factors.forEach((factor,i)=>{const option=document.createElement('option');option.value=factor.id;option.textContent=factor.friendly_name||('Authenticator '+(i+1));options.appendChild(option);});
@@ -4348,11 +4348,19 @@ function clearSecurityEnrollment(){
  elSecurity('security-enroll-panel').hidden=true;elSecurity('security-totp-qr').removeAttribute('src');
  elSecurity('security-totp-secret').textContent='';elSecurity('security-enroll-code').value='';
 }
+function recentTotpProof(maxSeconds=900){
+ try{
+  const payload=JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+  if(payload.aal!=='aal2'||!Array.isArray(payload.amr))return false;
+  return payload.amr.some(m=>m.method==='totp'&&Number.isFinite(Number(m.timestamp))&&
+   Date.now()/1000-Number(m.timestamp)>=0&&Date.now()/1000-Number(m.timestamp)<maxSeconds);
+ }catch{return false}
+}
 async function securityBeginEnrollment(){
  const info=elSecurity('security-feedback'),btn=elSecurity('security-start-totp');btn.disabled=true;
  try{
   const {factors}=await verifiedTotpFactors();
-  if(factors.length&&sessionAssurance()!=='aal2')throw Error('Verify your existing authenticator before adding another.');
+  if(factors.length&&!recentTotpProof())throw Error('Verify your existing authenticator again in Settings → Security before adding another device.');
   const data=await request('/auth/v1/factors',{method:'POST',body:{factor_type:'totp',friendly_name:'Inspection Data Hub '+(factors.length?'Backup':'Primary')}});
   if(!data?.id||!data.totp?.secret)throw Error('Supabase did not provide a setup factor.');
   securityEnrollment=data.id;
@@ -4418,7 +4426,19 @@ loginMethodUI();
 // Additional password-bound email challenge. Not an aal2 TOTP factor.
 let emailStepupSent=false,emailStepupBusy=false,emailStepupTest=false;
 async function emailSecondStepRequest(action,code){
- return request('/functions/v1/inspection-email-second-step',{method:'POST',body:code===undefined?{action}:{action,code}});
+ // A rejected OTP returns HTTP 401. Never auto-refresh/replay this non-idempotent request:
+ // retrying would consume two attempts for a single user submission.
+ if(!session?.access_token)throw Error('Sign in with your password first.');
+ if(session.expires_at&&session.expires_at*1000<Date.now()+60000)await refreshSession();
+ const res=await fetch(BASE+'/functions/v1/inspection-email-second-step',{
+  method:'POST',
+  headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+  body:JSON.stringify(code===undefined?{action}:{action,code}),
+  signal:AbortSignal.timeout(20000)
+ });
+ const data=await res.json().catch(()=>({}));
+ if(!res.ok)throw Error('The code could not be confirmed. Wait before retrying or request a new code.');
+ return data;
 }
 async function emailStepupRequirement(){
  return request('/rest/v1/rpc/inspection_email_stepup_requirement',{method:'POST',body:{}});
