@@ -279,7 +279,7 @@ window.InspectionTableTools={
  <label><span class="label">6-digit authenticator code</span><input class="input" id="security-enroll-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
  <div class="row"><button class="btn primary" id="security-confirm-totp" type="button">Verify and activate</button><button class="btn" id="security-cancel-totp" type="button">Cancel</button></div></section>
  <p class="muted small">After activation, the account will require TOTP for data access. Register a backup factor on a separate device; Supabase does not provide standard recovery codes.</p>
- <div id="security-reverify-panel" hidden><label><span class="label">Verify your authenticator again for sensitive operations</span><input class="input" inputmode="numeric" id="security-reverify-code" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"></label><button type="button" class="btn" id="security-reverify">Verify again</button></div><div class="notice" id="security-feedback" role="status"></div>
+ <div id="security-reverify-panel" hidden><label><span class="label">Authenticator device</span><select class="input" id="security-reverify-factor"></select></label><label><span class="label">Verify your authenticator again for sensitive operations</span><input class="input" inputmode="numeric" id="security-reverify-code" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"></label><button type="button" class="btn" id="security-reverify">Verify again</button></div><div class="notice" id="security-feedback" role="status"></div>
 </section>
 <div class="panel panel-pad skin-settings">
 <div class="section-head"><div><h3>Aesthetics</h3><span class="hint">Color theme and workspace layout</span></div><span class="pill" id="skin-active-name">Slate Executive</span></div>
@@ -4249,7 +4249,7 @@ function loginMethodUI(){
  elSecurity('online-password').required=!byEmail;
  elSecurity('online-email-verify-group').hidden=!byEmail||!emailCodeSent;
  elSecurity('online-email-code').required=byEmail&&emailCodeSent;
- elSecurity('online-request-code').hidden=!byEmail||emailCodeSent;
+ elSecurity('online-request-code').hidden=!byEmail;elSecurity('online-request-code').textContent=emailCodeSent?'Resend email code':'Send email code';
  elSecurity('online-login-submit').hidden=byEmail&&!emailCodeSent;
  elSecurity('online-login-submit').textContent=byEmail?'Verify email code':'Sign in';
 }
@@ -4320,6 +4320,8 @@ async function securityRefresh(){
   elSecurity('security-start-totp').textContent=factors.length?'Add a backup authenticator':'Set up authenticator';
   elSecurity('security-start-totp').disabled=factors.length>0&&sessionAssurance()!=='aal2';
   elSecurity('security-reverify-panel').hidden=!factors.length;
+  const options=elSecurity('security-reverify-factor');options.replaceChildren();
+  factors.forEach((factor,i)=>{const option=document.createElement('option');option.value=factor.id;option.textContent=factor.friendly_name||('Authenticator '+(i+1));options.appendChild(option);});
   if(!feedback.textContent)feedback.textContent='Security settings loaded.';
  }catch(error){feedback.textContent='Could not check security settings. Reconnect and retry.'}
 }
@@ -4378,7 +4380,7 @@ async function securityReverify(){
   if(!factors.length)throw Error('No verified authenticator is registered.');
   const current=Date.now();if(current-securityLastVerifyAttempt<3000)throw Error('Wait before trying another code.');
   securityLastVerifyAttempt=current;
-  await verifyFactorCode(factors[0].id,code);
+  await verifyFactorCode(elSecurity('security-reverify-factor').value||factors[0].id,code);
   status.textContent='Authenticator verified. Sensitive administrator operations are available for the next 15 minutes.';
  }catch(error){status.textContent='The authenticator code was not accepted. Wait for a new code and retry.'}
  finally{elSecurity('security-reverify-code').value='';button.disabled=false}
@@ -4394,7 +4396,10 @@ window.__inspectionSecurityRoute=view=>{
  else if(securityEnrollment)clearSecurityEnrollment();
 };
 elSecurity('online-login-method').onchange=()=>{emailCodeSent=false;emailFailures=0;loginMethodUI()};
-elSecurity('online-email').addEventListener('change',loginMethodRemember);
+elSecurity('online-email').addEventListener('change',()=>{
+ if(elSecurity('online-email').value.trim().toLowerCase()!==lastEmailAddress){emailCodeSent=false;loginMethodUI();}
+ loginMethodRemember();
+});
 elSecurity('online-request-code').onclick=emailCodeRequest;
 elSecurity('online-mfa-form').onsubmit=submitMfaVerification;
 elSecurity('online-mfa-dialog').addEventListener('cancel',event=>event.preventDefault());
