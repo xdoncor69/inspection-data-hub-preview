@@ -148,12 +148,13 @@ window.InspectionTableTools={
 </style>
 <button class="btn mini" id="pending-writes-button" type="button" hidden style="position:fixed;right:16px;bottom:16px;z-index:1001">Pending sends</button><dialog id="pending-writes-dialog" class="online-dialog"><div class="section-head"><h3>Pending sends for this account</h3><button class="btn" id="pending-writes-close" type="button">Close</button></div><p class="muted small">Only pending submissions are stored on this device. A conflict requires reviewing the values before editing again.</p><div id="pending-writes-list"></div></dialog><div id="cloud-banner" role="status" hidden>Connecting to the official database…</div>
 <div id="cloud-blocker" role="status"><div><h2>Inspection Data Hub</h2><p id="cloud-blocker-text">Connecting to the official database…</p><button class="btn primary" id="cloud-retry" hidden>Retry connection</button><button class="btn" id="required-login-button" type="button">Sign in</button><button class="btn" id="blocker-pending-button" type="button" hidden>View pending sends</button><button class="btn" id="blocker-account-button" type="button" hidden>Account / sign out</button></div></div>
-<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label><span class="label">Sign-in method</span><select class="input" id="online-login-method"><option value="password">Password (plus authenticator if enabled)</option><option value="email_code">Code sent to email</option></select></label>
+<dialog id="online-login-dialog" class="online-dialog" aria-labelledby="online-login-title"><form id="online-login-form" autocomplete="off"><div class="section-head"><h3 id="online-login-title">Account login</h3><button type="button" class="btn mini" id="online-login-close" aria-label="Close login">×</button></div><div class="notice" id="online-login-message" role="status">Enter the email and password for your application account.</div><label><span class="label">Email</span><input class="input" id="online-email" type="email" autocomplete="off" required></label><label hidden><span class="label">Sign-in method</span><select class="input" id="online-login-method"><option value="password">Password</option></select></label>
 <label id="online-password-group"><span class="label">Password</span><input class="input" id="online-password" type="password" autocomplete="current-password" required></label>
 <div id="online-email-verify-group" hidden><label><span class="label">Code from your email</span><input class="input" id="online-email-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="6-digit code"></label></div>
 <button class="btn primary" id="online-login-submit" type="submit">Sign in</button>
 <button class="btn" id="online-request-code" type="button" hidden>Send email code</button><p class="muted small">Your password is not stored. Your session stays signed in on this browser until you sign out or change accounts.</p></form></dialog>
 <dialog id="online-mfa-dialog" class="online-dialog" aria-labelledby="online-mfa-title"><form id="online-mfa-form" autocomplete="off"><h3 id="online-mfa-title">Authenticator verification</h3><p class="muted">Enter the 6-digit code from your authenticator app to complete sign-in.</p><p class="notice" id="online-mfa-message" role="status">A verified authenticator is required for this account.</p><label><span class="label">Authenticator device</span><select class="input" id="online-mfa-factor"></select></label><label><span class="label">Authenticator code</span><input class="input" id="online-mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></label><div class="row"><button class="btn primary" id="online-mfa-submit" type="submit">Verify code</button><button class="btn" id="online-mfa-signout" type="button">Sign out</button></div></form></dialog>
+<dialog id="online-email-stepup-dialog" class="online-dialog" aria-labelledby="online-email-stepup-title"><form id="online-email-stepup-form" autocomplete="off"><h3 id="online-email-stepup-title">Verify your email to finish signing in</h3><p class="muted">Your password has been accepted. Enter the six-digit code sent to the email address registered to this account. This verification is independent of any authenticator app.</p><p class="notice" id="online-email-stepup-message" role="status">Request a code to continue.</p><label><span class="label">Email verification code</span><input class="input" id="online-email-stepup-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><div class="row"><button type="submit" class="btn primary" id="online-email-stepup-verify">Verify email</button><button type="button" class="btn" id="online-email-stepup-send">Send / resend code</button><button type="button" class="btn" id="online-email-stepup-signout">Sign out</button></div></form></dialog>
 <dialog id="online-account-dialog" class="online-dialog"><h3>Application account</h3><strong id="account-identity"></strong><p class="muted" id="account-access"></p><div class="row"><button class="btn" id="online-account-close">Close</button><button class="btn primary" id="online-account-logout">Sign out / Change user</button></div></dialog>
 
 <div class="shell"><aside class="sidebar"><div class="brand">INSPECTION<span>DATA HUB</span></div><button class="nav active" data-view="purchase-orders"><span class="ico">▤</span> Purchase Orders</button><button class="nav" data-view="global"><span class="ico">▦</span> Product Search</button><button class="nav" data-view="history"><span class="ico">✓</span> Change History </button><button class="nav" data-view="clients" hidden><span class="ico">▤</span> Customers</button><button class="nav" data-view="settings"><span class="ico">⚙</span> Settings</button><div class="side-foot">● ONLINE WORKSPACE<br><br>ONLINE WORKSPACE</div></aside>
@@ -267,9 +268,11 @@ window.InspectionTableTools={
 <section class="panel panel-pad hidden" id="security-settings-panel">
  <div class="section-head"><div><h3>Security</h3><span class="hint">Personal sign-in method and two-step verification</span></div><button type="button" class="btn mini" id="security-refresh">Refresh</button></div>
  <p class="muted" id="security-identity">Current account</p>
- <label><span class="label">Preferred sign-in method</span><select class="input" id="security-login-choice"><option value="password">Password (with authenticator if enabled)</option><option value="email_code">Email verification code (no password)</option></select></label>
- <p class="muted small">The choice is saved to your account. Authenticator verification is an additional security step; an email code cannot replace it after activation.</p>
- <button class="btn primary" type="button" id="security-save-preference">Save preference</button>
+ <label hidden><span class="label">Preferred sign-in method</span><select class="input" id="security-login-choice"><option value="password">Password</option></select></label>
+ <p class="muted small">Sign-in uses your password first. Once required for your account, a code delivered to your verified email is mandatory before data access. An authenticator factor is a separate, stronger verification for sensitive administration.</p>
+ <button class="btn primary" type="button" id="security-save-preference" hidden>Save preference</button>
+ <p class="muted small" id="security-email-state">Checking email verification policy…</p>
+ <button class="btn" type="button" id="security-test-email">Test email code delivery for my account</button>
  <div class="divider" style="height:1px;background:var(--sk-border,#ddd);margin:18px 0"></div>
  <h4>Authenticator app (TOTP)</h4><p class="muted small" id="security-totp-status">Checking your verification factors…</p>
  <button class="btn" id="security-start-totp" type="button">Set up authenticator</button>
@@ -4310,6 +4313,8 @@ async function securityRefresh(){
  const feedback=elSecurity('security-feedback');
  try{
   const {user,factors}=await verifiedTotpFactors();
+  const emailRequired=await emailStepupRequirement();
+  elSecurity('security-email-state').textContent=emailRequired?'Email code is required after password login for this account.':'Email second step is in test mode pending verified delivery. You can test your own mailbox below.';
   elSecurity('security-identity').textContent='Account: '+(user.email||session.user.email||'');
   const saved=await request('/rest/v1/inspection_security_preferences?select=login_method&user_id=eq.'+encodeURIComponent(user.id));
   preferredLoginMethod=saved?.[0]?.login_method==='email_otp'?'email_code':'password';
@@ -4387,9 +4392,7 @@ async function securityReverify(){
 }
 let securityLastVerifyAttempt=0;
 function loginMethodRemember(){
- const email=elSecurity('online-email').value.trim().toLowerCase();
- const saved=nativeStorage.getItem('inspection-auth-method-'+email);
- if(saved==='email_code'||saved==='password'){elSecurity('online-login-method').value=saved;loginMethodUI()}
+ elSecurity('online-login-method').value='password';loginMethodUI();
 }
 window.__inspectionSecurityRoute=view=>{
  if(view==='security'){securityRefresh();}
@@ -4412,7 +4415,85 @@ elSecurity('security-reverify').onclick=securityReverify;
 elSecurity('security-cancel-totp').onclick=clearSecurityEnrollment;
 loginMethodUI();
 
-function openLogin(){if(session){openAccount();return}overlay('Sign in to access Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Choose password or an email verification code. An enrolled authenticator is still required after sign-in.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
+// Additional password-bound email challenge. Not an aal2 TOTP factor.
+let emailStepupSent=false,emailStepupBusy=false,emailStepupTest=false;
+async function emailSecondStepRequest(action,code){
+ return request('/functions/v1/inspection-email-second-step',{method:'POST',body:code===undefined?{action}:{action,code}});
+}
+async function emailStepupRequirement(){
+ return request('/rest/v1/rpc/inspection_email_stepup_requirement',{method:'POST',body:{}});
+}
+async function ensureEmailStepup(){
+ if(!session)return false;
+ if(!await emailStepupRequirement())return true; // Rollout disabled for this account.
+ const result=await emailSecondStepRequest('status');
+ if(result?.verified)return true;
+ const dialog=elSecurity('online-email-stepup-dialog');
+ emailStepupTest=false;
+ if(!dialog.open)dialog.showModal();
+ if(!emailStepupSent){
+  await emailStepupSend();
+ }else{
+  elSecurity('online-email-stepup-message').textContent='Enter the email code already sent, or request a new code.';
+ }
+ return false;
+}
+async function emailStepupSend(){
+ if(!session||emailStepupBusy)return;
+ const button=elSecurity('online-email-stepup-send');emailStepupBusy=true;button.disabled=true;
+ try{
+  await emailSecondStepRequest('send');
+  emailStepupSent=true;
+  elSecurity('online-email-stepup-message').textContent='Check your account email and enter the six-digit code. Do not share the code.';
+ }catch(error){
+  elSecurity('online-email-stepup-message').textContent='Unable to send. Confirm the email sender is configured and retry after the rate limit.';
+ }finally{button.disabled=false;emailStepupBusy=false;}
+}
+async function emailStepupVerify(event){
+ event.preventDefault();if(emailStepupBusy||!session)return;
+ const code=elSecurity('online-email-stepup-code').value.trim();
+ if(!/^[0-9]{6}$/.test(code))return;
+ const button=elSecurity('online-email-stepup-verify');emailStepupBusy=true;button.disabled=true;
+ try{
+  await emailSecondStepRequest('verify',code);
+  const test=emailStepupTest;
+  elSecurity('online-email-stepup-dialog').close();
+  emailStepupSent=false;emailStepupTest=false;
+  elSecurity('security-email-state').textContent='Email code verified for this password session.';
+  if(!test)await connect();
+  else await securityRefresh();
+ }catch(error){
+  elSecurity('online-email-stepup-message').textContent='Code incorrect, expired, already used, or attempts limited. Request a new code if necessary.';
+ }finally{
+  elSecurity('online-email-stepup-code').value='';
+  button.disabled=false;emailStepupBusy=false;
+ }
+}
+async function testEmailStepup(){
+ if(!session||emailStepupBusy)return;
+ try{
+  const required=await emailStepupRequirement();
+  if(required){
+   const result=await emailSecondStepRequest('status');
+   if(result.verified){elSecurity('security-email-state').textContent='Email verified for this session.';return;}
+  }
+  emailStepupTest=true;
+  const dialog=elSecurity('online-email-stepup-dialog');
+  if(!dialog.open)dialog.showModal();
+  await emailStepupSend();
+ }catch(error){
+  elSecurity('security-email-state').textContent='Email verification service is unavailable. Existing access remains staged.';
+ }
+}
+elSecurity('online-email-stepup-form').onsubmit=emailStepupVerify;
+elSecurity('online-email-stepup-send').onclick=emailStepupSend;
+elSecurity('online-email-stepup-dialog').addEventListener('cancel',event=>event.preventDefault());
+elSecurity('online-email-stepup-signout').onclick=()=>{
+ elSecurity('online-email-stepup-dialog').close();emailStepupSent=false;emailStepupTest=false;logout();
+};
+elSecurity('security-test-email').onclick=testEmailStepup;
+
+function openLogin(){if(session){openAccount();return}overlay('Sign in to access Inspection Data Hub.',true);document.getElementById('online-login-message').textContent='Sign in with your password. If email verification is required, enter the code sent to your account email. Your authenticator may also be required.';const d=document.getElementById('online-login-dialog');if(!d.open)d.showModal();document.getElementById('online-email').focus();}
 function clearLogin(){document.getElementById('online-email').value='';document.getElementById('online-password').value='';document.getElementById('online-email-code').value='';emailCodeSent=false;emailFailures=0;loginMethodUI()}
 function openAccount(){document.getElementById('account-identity').textContent=session?.user.email||'';document.getElementById('account-access').textContent=administrator?'Administrator: full access.':'User: import PO drafts, view all shared drafts, edit your own drafts, and view POs Approved for Inspection. You can upload and update deliveries; catalog changes and official verification are administrator-only. Only the administrator can approve POs or modify official product data directly.';document.getElementById('online-account-dialog').showModal()}
 async function login(e){
@@ -4637,7 +4718,7 @@ async function connectOnce(){
  if(signingOut)return;
  if(!session){ready=false;administrator=false;updateRole();openLogin();return}
  await showQueueCount();overlay(hasDatabaseConnection()?'Restoring the official database connection…':'You are signed in. The database connection is still being established…',true);
- try{if(!await promptMfaBeforeConnect()){overlay('Complete the authenticator verification to unlock Inspection Data Hub.',true);return;}await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
+ try{if(!await ensureEmailStepup()){overlay('Complete the email verification to unlock Inspection Data Hub.',true);return;}if(!await promptMfaBeforeConnect()){overlay('Complete the authenticator verification to unlock Inspection Data Hub.',true);return;}await loadIdentity();await loadState();await drainQueue();await loadState();if(!started){
  if(applicationInitializationError)throw applicationInitializationError;
  const scripts=[...document.querySelectorAll('script[type="application/inspection-script"]')];
  let startupError=null;const onStartupError=e=>{startupError=e.error||Error(e.message)};window.addEventListener('error',onStartupError);
