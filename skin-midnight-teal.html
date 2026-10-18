@@ -1,1 +1,39 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Inspection Data Hub has moved</title><style>body{font:18px system-ui;max-width:640px;margin:12vh auto;padding:24px;color:#23394b}a{color:#245d98}</style><h1>Inspection Data Hub has moved</h1><p>This legacy deployment is retired.</p><p><a href="https://inspection-data-hub.doncor69.workers.dev/">Open Inspection Data Hub</a></p><script>for(const s of [localStorage,sessionStorage])for(const k of ['inspection-data-hub-auth-session-v2','inspection-data-hub-supabase-session-v1','inspection-data-hub-supabase-config-v1','inspection-data-hub-cloud-restored'])try{s.removeItem(k)}catch{};if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{});</script></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Inspection Data Hub — We've moved</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:#24384b;font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:650px;margin:7vh auto;padding:32px;background:#fff;border:1px solid #dce4ed;border-radius:18px}.tag{color:#416a93;font-size:12px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,6vw,38px);line-height:1.15;margin:12px 0 16px}h2{font-size:19px;margin:26px 0 10px}p{margin:0 0 18px;color:#52677b}ul{padding-left:22px;margin:0}li{margin:8px 0}.button{display:inline-block;background:#315f8c;color:white;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:9px;margin:8px 0 4px}.footer{font-size:13px;margin:24px 0 0;color:#6b7d8f}@media(max-width:700px){main{margin:20px 14px;padding:25px}}
+</style>
+</head>
+<body><main>
+<div class="tag">Security &amp; development update</div>
+<h1>Inspection Data Hub has moved</h1>
+<p>We moved to Cloudflare to support new security layers and continued development.</p>
+<a class="button" href="https://inspection-data-hub.doncor69.workers.dev/">Open Inspection Data Hub →</a>
+<h2>What's improved</h2>
+<ul>
+<li>A new backend checks protected requests.</li>
+<li>Sign-in tokens are managed on the server.</li>
+<li>Sessions expire and can be revoked.</li>
+<li>Direct access to protected data and files is restricted.</li>
+<li>Existing user and administrator permissions are preserved.</li>
+<li>Changes and security checks are documented.</li>
+</ul>
+<h2>Next steps</h2>
+<ul>
+<li>Connect our own domain.</li>
+<li>Complete two-step verification and account recovery.</li>
+<li>Finish testing uploads, downloads and exports.</li>
+<li>Continue improving security and the app.</li>
+</ul>
+<p class="footer">This old address is retired. Please use the Cloudflare link above.</p>
+</main>
+<script>
+for(const s of [localStorage,sessionStorage])for(const k of ['inspection-data-hub-auth-session-v2','inspection-data-hub-supabase-session-v1','inspection-data-hub-supabase-config-v1','inspection-data-hub-cloud-restored'])try{s.removeItem(k)}catch{};
+if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{});
+</script>
+</body></html>
