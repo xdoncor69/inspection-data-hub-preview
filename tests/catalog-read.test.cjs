@@ -1,9 +1,0 @@
-const fs=require('fs'),vm=require('vm'),assert=require('assert');const html=fs.readFileSync(process.argv[2]||(fs.existsSync('preview/index.html')?'preview/index.html':'index.html'),'utf8');
-const code=html.slice(html.indexOf('let catalogRequestSequence='),html.indexOf('async function initializeCatalogValidation('));
-function ctx(){const key='inspection-data-hub-catalog-overrides-v1',refs='inspection-data-hub-est-references-v1';const v={k:key,requireDatabaseConnection(){},canConsult:()=>true,session:{user:{id:'a'}},dirtyDomains:new Set(),saving:false,official:{[key]:{},[refs]:{}},collectors:new Map(),ownJobs:async()=>[],memory:new Map(),catalogGeneration:'g',revision:1,clone:structuredClone,request:async()=>({revision:2,catalog:{'001':{plant:'P1'}},references:{},validations:[],deliveries:{}}),replaceObject:(a,b)=>{Object.keys(a).forEach(k=>delete a[k]);Object.assign(a,b)}};vm.createContext(v);vm.runInContext(code,v);return v;}
-(async()=>{let c=ctx();let r=await c.refreshCatalog();assert.equal(r[0].item,'001');assert.equal(c.official[c.k]['001'].plant,'P1');
-c=ctx();let pending=[];c.request=()=>new Promise(r=>pending.push(r));const p1=c.refreshCatalog();await new Promise(setImmediate);const p2=c.refreshCatalog();await new Promise(setImmediate);pending[1]({revision:3,catalog:{'new':{}}});await p2;pending[0]({revision:2,catalog:{'old':{}}});assert.equal(await p1,null);assert(c.official[c.k].new);assert(!c.official[c.k].old);
-c=ctx();c.dirtyDomains.add(c.k);await assert.rejects(()=>c.refreshCatalog(),/saving/);
-c=ctx();c.request=async()=>({revision:0,catalog:{}});await assert.rejects(()=>c.refreshCatalog(),/changed/);
-c=ctx();c.request=async()=>{c.session.user.id='b';return {revision:2,catalog:{}}};assert.equal(await c.refreshCatalog(),null);
-console.log('PASS official refresh: complete scalar catalog, revision protection, out-of-order responses, unsaved edit protection, account isolation.');})().catch(e=>{console.error(e);process.exitCode=1});
